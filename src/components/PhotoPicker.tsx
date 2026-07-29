@@ -9,6 +9,8 @@ type Props = {
   uri: string | null;
   onChange: (uri: string | null) => void;
   style?: StyleProp<ViewStyle>;
+  label?: string;
+  alertTitle?: string;
 };
 
 async function pickFromLibrary(onChange: (uri: string) => void) {
@@ -41,15 +43,18 @@ async function pickFromCamera(onChange: (uri: string) => void) {
   if (!result.canceled && result.assets[0]) onChange(result.assets[0].uri);
 }
 
-// Mirrors the design's <image-slot> for "Foto" on Onboarding, but wired to
-// a real picker: tap to choose from the gallery (or camera on native).
-export default function PetPhotoPicker({ uri, onChange, style }: Props) {
+// Mirrors the design's <image-slot> (e.g. "Foto" on Onboarding, the owner/
+// walker avatar), but wired to a real picker: tap to choose from the
+// gallery (or camera on native).
+export default function PhotoPicker({
+  uri, onChange, style, label = 'Foto', alertTitle = 'Elegir foto',
+}: Props) {
   const handlePress = () => {
     if (Platform.OS === 'web') {
       pickFromLibrary(onChange);
       return;
     }
-    Alert.alert('Foto de tu mascota', undefined, [
+    Alert.alert(alertTitle, undefined, [
       { text: 'Tomar foto', onPress: () => pickFromCamera(onChange) },
       { text: 'Elegir de galería', onPress: () => pickFromLibrary(onChange) },
       { text: 'Cancelar', style: 'cancel' },
@@ -69,7 +74,7 @@ export default function PetPhotoPicker({ uri, onChange, style }: Props) {
       ) : (
         <>
           <Camera size={22} strokeWidth={1.5} color={colors.text} style={{ opacity: 0.45 }} />
-          <Text style={styles.label}>Foto</Text>
+          <Text style={styles.label}>{label}</Text>
         </>
       )}
     </Pressable>

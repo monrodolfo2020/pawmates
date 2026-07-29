@@ -5,6 +5,7 @@ type State = {
   petName: string;
   breed: string;
   petPhotoUri: string | null;
+  walkerPhotoUri: string | null;
   size: string;
   temperament: string[];
   vaccines: string[];
@@ -17,6 +18,7 @@ type State = {
 
 type Ctx = State & {
   setPetPhotoUri: (v: string | null) => void;
+  setWalkerPhotoUri: (v: string | null) => void;
   setSize: (v: string) => void;
   toggleTemperament: (v: string) => void;
   toggleVaccine: (v: string) => void;
@@ -39,6 +41,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     petName: 'Rocky',
     breed: 'Labrador retriever',
     petPhotoUri: null,
+    walkerPhotoUri: null,
     size: 'Mediano',
     temperament: ['Juguetón', 'Sociable'],
     vaccines: ['Rabia', 'Parvovirus'],
@@ -55,6 +58,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     return {
       ...state,
       setPetPhotoUri: (v) => setState((s) => ({ ...s, petPhotoUri: v })),
+      setWalkerPhotoUri: (v) => setState((s) => ({ ...s, walkerPhotoUri: v })),
       setSize: (v) => setState((s) => ({ ...s, size: v })),
       toggleTemperament: (v) => setState((s) => ({ ...s, temperament: toggleIn(s.temperament, v) })),
       toggleVaccine: (v) => setState((s) => ({ ...s, vaccines: toggleIn(s.vaccines, v) })),

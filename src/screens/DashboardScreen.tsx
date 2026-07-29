@@ -8,18 +8,31 @@ import { CardKicker, CardTitle, CardMeta, CardBody } from '../components/CardTex
 import Tag from '../components/Tag';
 import Button from '../components/Button';
 import BottomTabBar from '../components/BottomTabBar';
+import PhotoPicker from '../components/PhotoPicker';
 import { colors, fonts, space } from '../theme/tokens';
 import { weekDays, requests } from '../state/mockData';
+import { useAppState } from '../state/AppState';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Dashboard'>;
 
 export default function DashboardScreen({ navigation }: Props) {
+  const s = useAppState();
+
   return (
     <ScreenContainer>
       <View style={styles.header}>
-        <View>
-          <Text style={styles.kicker}>Modo paseador</Text>
-          <Text style={styles.title}>Hola, Camila</Text>
+        <View style={styles.headerLeft}>
+          <PhotoPicker
+            uri={s.walkerPhotoUri}
+            onChange={s.setWalkerPhotoUri}
+            style={styles.avatar}
+            label="Tú"
+            alertTitle="Foto de perfil"
+          />
+          <View>
+            <Text style={styles.kicker}>Modo paseador</Text>
+            <Text style={styles.title}>Hola, Camila</Text>
+          </View>
         </View>
         <Pressable
           onPress={() => (navigation.canGoBack() ? navigation.goBack() : navigation.navigate('Home'))}
@@ -75,6 +88,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.s4, paddingTop: space.s4, paddingBottom: space.s2,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
   },
+  headerLeft: { flexDirection: 'row', alignItems: 'center', gap: space.s3 },
+  avatar: { width: 40, height: 40 },
   kicker: { fontFamily: fonts.body, fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', color: colors.accent },
   title: { fontFamily: fonts.heading, fontSize: 22, color: colors.text },
   scroll: { paddingHorizontal: space.s4, gap: space.s4, paddingBottom: space.s4 },

@@ -5,7 +5,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
 import Field, { InputDisplay } from '../components/Field';
-import PetPhotoPicker from '../components/PetPhotoPicker';
+import PhotoPicker from '../components/PhotoPicker';
 import Segmented from '../components/Segmented';
 import Tag from '../components/Tag';
 import RadioRow from '../components/RadioRow';
@@ -31,7 +31,12 @@ export default function OnboardingScreen({ navigation }: Props) {
         </Text>
 
         <View style={styles.petRow}>
-          <PetPhotoPicker uri={s.petPhotoUri} onChange={s.setPetPhotoUri} style={styles.petPhoto} />
+          <PhotoPicker
+            uri={s.petPhotoUri}
+            onChange={s.setPetPhotoUri}
+            style={styles.petPhoto}
+            alertTitle="Foto de tu mascota"
+          />
           <View style={{ flex: 1, gap: space.s2 }}>
             <Field label="Nombre">
               <InputDisplay value={s.petName} />
