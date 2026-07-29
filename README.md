@@ -1,8 +1,8 @@
 # PawMates (Expo / React Native)
 
-A clickable, mock-data-only implementation of the PawMates design handoff
-(see `../README.md`, `../chats/chat1.md`, `../project/PawMates.dc.html`) —
-a dog-walking marketplace connecting owners with walkers.
+A clickable, mock-data-only implementation of a PawMates design handoff —
+a dog-walking marketplace connecting owners with walkers, built from a
+Claude Design prototype (Spanish-language UI, "Industry" design system).
 
 No backend: everything is in-memory (React Context), matching the scope
 of the original design prototype.
@@ -23,16 +23,23 @@ described in the design doc.
 
 ## Design system
 
-Visual tokens (`src/theme/tokens.ts`) mirror
-`../project/_ds/industry-.../styles.css` 1:1 — steel-blue accent, Barlow
-Condensed headings over Barlow body text, square-cornered "blueprint" cards
-with corner registration marks (`src/components/CornerMarks.tsx`), no
-rounded corners except where the source system uses none.
+Visual tokens (`src/theme/tokens.ts`) mirror the source Industry design
+system 1:1 — steel-blue accent, Barlow Condensed headings over Barlow body
+text, square-cornered "blueprint" cards with corner registration marks
+(`src/components/CornerMarks.tsx`), no rounded corners except where the
+source system uses none.
 
 ## Run it
 
 ```
 npm install
-npm run ios      # or npm run android
-npm run web       # quick preview in a browser (no simulator needed)
+npx expo start     # then scan the QR with Expo Go (iOS/Android) — no simulator needed
+```
+
+Or with a simulator / browser installed:
+
+```
+npm run ios        # requires Xcode
+npm run android     # requires Android Studio
+npm run web         # runs in any browser
 ```
