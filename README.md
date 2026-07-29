@@ -43,3 +43,12 @@ npm run ios        # requires Xcode
 npm run android     # requires Android Studio
 npm run web         # runs in any browser
 ```
+
+## Live web preview
+
+Every push to `main` rebuilds the web export and redeploys it to the
+`gh-pages` branch via `.github/workflows/deploy-pages.yml`. With GitHub
+Pages set to "Deploy from a branch → gh-pages / (root)" in the repo
+settings, that's published at:
+
+https://monrodolfo2020.github.io/pawmates/

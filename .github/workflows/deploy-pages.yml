@@ -1,0 +1,55 @@
+name: Deploy web preview to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Prefixes asset/bundle URLs with /<repo-name> so they resolve under
+      # the GitHub Pages project-site subpath. Patches the checkout only —
+      # main's app.json (used by `expo start` for Expo Go / simulators)
+      # stays base-path-free.
+      - name: Set base path for the Pages subpath
+        run: |
+          node -e "
+            const fs = require('fs');
+            const cfg = JSON.parse(fs.readFileSync('app.json', 'utf8'));
+            cfg.expo.experiments = { ...(cfg.expo.experiments || {}), baseUrl: '/${{ github.event.repository.name }}' };
+            fs.writeFileSync('app.json', JSON.stringify(cfg, null, 2));
+          "
+
+      - name: Export static web build
+        run: npx expo export --platform web
+        env:
+          EXPO_OFFLINE: "1"
+          EXPO_NO_DEPENDENCY_VALIDATION: "1"
+
+      - name: Deploy to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          force_orphan: true
