@@ -4,6 +4,7 @@ import { BASE_PRICE } from './mockData';
 type State = {
   petName: string;
   breed: string;
+  petPhotoUri: string | null;
   size: string;
   temperament: string[];
   vaccines: string[];
@@ -15,6 +16,7 @@ type State = {
 };
 
 type Ctx = State & {
+  setPetPhotoUri: (v: string | null) => void;
   setSize: (v: string) => void;
   toggleTemperament: (v: string) => void;
   toggleVaccine: (v: string) => void;
@@ -36,6 +38,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<State>({
     petName: 'Rocky',
     breed: 'Labrador retriever',
+    petPhotoUri: null,
     size: 'Mediano',
     temperament: ['Juguetón', 'Sociable'],
     vaccines: ['Rabia', 'Parvovirus'],
@@ -51,6 +54,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     const total = BASE_PRICE + tipAmount;
     return {
       ...state,
+      setPetPhotoUri: (v) => setState((s) => ({ ...s, petPhotoUri: v })),
       setSize: (v) => setState((s) => ({ ...s, size: v })),
       toggleTemperament: (v) => setState((s) => ({ ...s, temperament: toggleIn(s.temperament, v) })),
       toggleVaccine: (v) => setState((s) => ({ ...s, vaccines: toggleIn(s.vaccines, v) })),

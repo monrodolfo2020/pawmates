@@ -20,6 +20,15 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "PawMates usa tu galería para elegir la foto de tu mascota.",
+          "cameraPermission": "PawMates usa la cámara para tomar una foto de tu mascota."
+        }
+      ]
+    ]
   }
 }
