@@ -25,7 +25,7 @@ const STATUS_LABEL: Record<string, string> = {
   error: 'Error de conexión',
 };
 
-export default function LiveWalkScreen({}: Props) {
+export default function LiveWalkScreen({ navigation }: Props) {
   const s = useAppState();
   const startedRef = useRef(false);
 
@@ -92,15 +92,26 @@ export default function LiveWalkScreen({}: Props) {
       </ScrollView>
 
       <View style={styles.footer}>
-        <Button
-          variant="primary"
-          block
-          blueprint
-          disabled={finished || s.bookingStatus === 'completing'}
-          onPress={() => void s.completeTrip()}
-        >
-          {finished ? 'Paseo terminado' : 'Finalizar paseo'}
-        </Button>
+        {finished ? (
+          <Button
+            variant="primary"
+            block
+            blueprint
+            onPress={() => navigation.navigate('Home')}
+          >
+            Volver al inicio
+          </Button>
+        ) : (
+          <Button
+            variant="primary"
+            block
+            blueprint
+            disabled={s.bookingStatus === 'completing'}
+            onPress={() => void s.completeTrip()}
+          >
+            Finalizar paseo
+          </Button>
+        )}
       </View>
     </ScreenContainer>
   );
