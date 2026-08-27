@@ -23,12 +23,24 @@ export default function HomeScreen({ navigation }: Props) {
     <ScreenContainer>
       <View style={styles.header}>
         <View>
-          <Text style={styles.kicker}>Hola</Text>
+          <Text style={styles.kicker}>Hola, {s.name ?? s.email ?? ''}</Text>
           <Text style={styles.title}>Paseadores cerca de ti</Text>
         </View>
-        <Pressable onPress={() => navigation.navigate('Dashboard')}>
-          <ImagePlaceholder label="Tú" style={styles.avatar} />
-        </Pressable>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s2 }}>
+          {s.roles.includes('admin') && (
+            <Pressable onPress={() => navigation.navigate('Admin')}>
+              <Tag variant="outline">Admin</Tag>
+            </Pressable>
+          )}
+          {s.roles.includes('provider') && (
+            <Pressable onPress={() => navigation.navigate('Dashboard')}>
+              <Tag variant="outline">Modo paseador</Tag>
+            </Pressable>
+          )}
+          <Pressable onPress={() => void s.logout()}>
+            <Tag variant="outline">Salir</Tag>
+          </Pressable>
+        </View>
       </View>
 
       <View style={styles.segRow}>

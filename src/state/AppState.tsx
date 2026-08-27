@@ -1,5 +1,6 @@
-import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
-import { api } from '../api/client';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { api, AuthResult, MeResult, Pet, Role } from '../api/client';
 import { BASE_PRICE } from './mockData';
 
 export type BookingStatus =
@@ -14,10 +15,16 @@ export type BookingStatus =
   | 'completed'
   | 'error';
 
+export type AuthStatus = 'checking' | 'guest' | 'authed';
+
+const SESSION_KEY = 'pawmates.session';
+
 type State = {
+  // Editable draft used by OnboardingScreen before a Pet actually exists.
   petName: string;
   breed: string;
   petPhotoUri: string | null;
+  petPhotoBase64: string | null;
   walkerPhotoUri: string | null;
   size: string;
   temperament: string[];
@@ -27,19 +34,30 @@ type State = {
   time: string;
   tip: number;
   payment: string;
-  // Session against the real pawmates-backend — no login screen exists
-  // yet, so this is created lazily on first use (see ensureSession) and
-  // kept only in memory for this app run (see src/api/client.ts).
+  // Real session against pawmates-backend's Identity Bounded Context.
+  authStatus: AuthStatus;
   accountId: string | null;
   token: string | null;
+  email: string | null;
+  name: string | null;
+  roles: Role[];
+  authError: string | null;
+  pets: Pet[];
+  petsLoading: boolean;
+  /** True once the first /v1/pets fetch after login/signup has resolved —
+   * lets RootNavigator wait for the real answer instead of picking
+   * Onboarding just because `pets` still holds its empty initial value. */
+  petsChecked: boolean;
   bookingId: string | null;
   bookingStatus: BookingStatus;
   bookingError: string | null;
 };
 
 type Ctx = State & {
-  setPetPhotoUri: (v: string | null) => void;
+  setPetPhoto: (v: { uri: string; base64: string | null } | null) => void;
   setWalkerPhotoUri: (v: string | null) => void;
+  setPetName: (v: string) => void;
+  setBreed: (v: string) => void;
   setSize: (v: string) => void;
   toggleTemperament: (v: string) => void;
   toggleVaccine: (v: string) => void;
@@ -50,13 +68,22 @@ type Ctx = State & {
   setPayment: (v: string) => void;
   tipAmount: number;
   total: number;
-  /** Reserva un paseo inmediato en el backend real y guarda su id. */
+  signup: (params: {
+    email: string;
+    password: string;
+    role: 'owner' | 'provider';
+    name?: string;
+    facePhoto?: string;
+    idDocumentPhoto?: string;
+  }) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+  addRole: (params: { role: 'owner' | 'provider'; facePhoto?: string; idDocumentPhoto?: string }) => Promise<void>;
+  /** Crea (o actualiza la primera) mascota del dueño con los campos del formulario. */
+  savePet: () => Promise<void>;
   createBooking: (durationMinutes: number) => Promise<void>;
-  /** El paseador (simulado) acepta y se autoriza el pago. */
   acceptBooking: () => Promise<void>;
-  /** Arranca el paseo en vivo. */
   startTrip: () => Promise<void>;
-  /** Termina el paseo en vivo. */
   completeTrip: () => Promise<void>;
 };
 
@@ -67,20 +94,29 @@ const toggleIn = (list: string[], value: string) =>
 
 export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<State>({
-    petName: 'Rocky',
-    breed: 'Labrador retriever',
+    petName: '',
+    breed: '',
     petPhotoUri: null,
+    petPhotoBase64: null,
     walkerPhotoUri: null,
     size: 'Mediano',
-    temperament: ['Juguetón', 'Sociable'],
-    vaccines: ['Rabia', 'Parvovirus'],
+    temperament: [],
+    vaccines: [],
     discoverView: 'lista',
     days: ['Lun', 'Mié', 'Vie'],
     time: '8:00 am',
     tip: 15,
     payment: 'Tarjeta •• 4482',
+    authStatus: 'checking',
     accountId: null,
     token: null,
+    email: null,
+    name: null,
+    roles: [],
+    authError: null,
+    pets: [],
+    petsLoading: false,
+    petsChecked: false,
     bookingId: null,
     bookingStatus: 'idle',
     bookingError: null,
@@ -93,20 +129,171 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const stateRef = useRef(state);
   stateRef.current = state;
 
-  const ensureSession = useCallback(async (): Promise<{ accountId: string; token: string }> => {
-    if (stateRef.current.token && stateRef.current.accountId) {
-      return { accountId: stateRef.current.accountId, token: stateRef.current.token };
+  const loadPets = useCallback(async (token: string) => {
+    setState((s) => ({ ...s, petsLoading: true }));
+    try {
+      const pets = await api.listPets(token);
+      setState((s) => ({
+        ...s,
+        pets,
+        petsLoading: false,
+        petsChecked: true,
+        petName: pets[0]?.name ?? s.petName,
+        breed: pets[0]?.breed ?? s.breed,
+        size: pets[0]?.size ?? s.size,
+        temperament: pets[0]?.temperament ?? s.temperament,
+        vaccines: pets[0]?.vaccines ?? s.vaccines,
+        petPhotoUri: pets[0]?.photo ?? s.petPhotoUri,
+      }));
+    } catch {
+      setState((s) => ({ ...s, petsLoading: false, petsChecked: true }));
     }
-    const session = await api.devLogin(undefined, 'owner');
-    setState((s) => ({ ...s, accountId: session.accountId, token: session.token }));
-    return session;
+  }, []);
+
+  const applyAuth = useCallback(
+    async (session: { accountId: string; token: string; roles: Role[] }, me?: Pick<MeResult, 'email' | 'name'>) => {
+      setState((s) => ({
+        ...s,
+        authStatus: 'authed',
+        accountId: session.accountId,
+        token: session.token,
+        roles: session.roles,
+        email: me?.email ?? s.email,
+        name: me?.name ?? s.name,
+        authError: null,
+      }));
+      await AsyncStorage.setItem(
+        SESSION_KEY,
+        JSON.stringify({ accountId: session.accountId, token: session.token }),
+      );
+      if (session.roles.includes('owner')) void loadPets(session.token);
+    },
+    [loadPets],
+  );
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const raw = await AsyncStorage.getItem(SESSION_KEY);
+        if (raw) {
+          const saved = JSON.parse(raw) as { accountId: string; token: string };
+          const me = await api.me(saved.token);
+          await applyAuth({ accountId: me.id, token: saved.token, roles: me.roles }, me);
+          return;
+        }
+      } catch {
+        // Falls through to 'guest' below — an expired/invalid token just
+        // means signing in again, not a fatal error.
+      }
+      setState((s) => ({ ...s, authStatus: 'guest' }));
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const signup = useCallback(
+    async (params: {
+      email: string;
+      password: string;
+      role: 'owner' | 'provider';
+      name?: string;
+      facePhoto?: string;
+      idDocumentPhoto?: string;
+    }) => {
+      setState((s) => ({ ...s, authError: null }));
+      try {
+        const result: AuthResult = await api.signup(params);
+        await applyAuth(result);
+        setState((s) => ({ ...s, email: params.email.toLowerCase(), name: params.name ?? s.name }));
+      } catch (err) {
+        setState((s) => ({
+          ...s,
+          authError: err instanceof Error ? err.message : 'No se pudo crear la cuenta.',
+        }));
+        throw err;
+      }
+    },
+    [applyAuth],
+  );
+
+  const login = useCallback(
+    async (email: string, password: string) => {
+      setState((s) => ({ ...s, authError: null }));
+      try {
+        const result: AuthResult = await api.login(email, password);
+        const me = await api.me(result.token);
+        await applyAuth(result, me);
+      } catch (err) {
+        setState((s) => ({
+          ...s,
+          authError: err instanceof Error ? err.message : 'No se pudo iniciar sesión.',
+        }));
+        throw err;
+      }
+    },
+    [applyAuth],
+  );
+
+  const logout = useCallback(async () => {
+    await AsyncStorage.removeItem(SESSION_KEY);
+    setState((s) => ({
+      ...s,
+      authStatus: 'guest',
+      accountId: null,
+      token: null,
+      email: null,
+      name: null,
+      roles: [],
+      pets: [],
+      petsChecked: false,
+      bookingId: null,
+      bookingStatus: 'idle',
+    }));
+  }, []);
+
+  const addRole = useCallback(
+    async (params: { role: 'owner' | 'provider'; facePhoto?: string; idDocumentPhoto?: string }) => {
+      const token = stateRef.current.token;
+      if (!token) return;
+      setState((s) => ({ ...s, authError: null }));
+      try {
+        const result = await api.addRole(token, params);
+        setState((s) => ({ ...s, roles: result.roles }));
+        if (result.roles.includes('owner')) void loadPets(token);
+      } catch (err) {
+        setState((s) => ({
+          ...s,
+          authError: err instanceof Error ? err.message : 'No se pudo agregar el rol.',
+        }));
+        throw err;
+      }
+    },
+    [loadPets],
+  );
+
+  const savePet = useCallback(async () => {
+    const { token, pets, petName, breed, size, temperament, vaccines, petPhotoBase64 } = stateRef.current;
+    if (!token) return;
+    const existing = pets[0];
+    const photo = petPhotoBase64 ?? existing?.photo ?? null;
+    const saved = existing
+      ? await api.updatePet(token, existing.id, { name: petName, breed, size, temperament, vaccines, photo })
+      : await api.createPet(token, { name: petName, breed, size, temperament, vaccines, photo });
+    setState((s) => ({
+      ...s,
+      pets: existing ? s.pets.map((p) => (p.id === saved.id ? saved : p)) : [saved, ...s.pets],
+      petPhotoBase64: null,
+    }));
   }, []);
 
   const createBooking = useCallback(async (durationMinutes: number) => {
     setState((s) => ({ ...s, bookingStatus: 'creating', bookingError: null }));
     try {
-      const { token } = await ensureSession();
-      const booking = await api.createBooking(token, durationMinutes);
+      const { token, pets } = stateRef.current;
+      const petId = pets[0]?.id;
+      if (!token || !petId) {
+        throw new Error('Agrega primero los datos de tu mascota.');
+      }
+      const booking = await api.createBooking(token, petId, durationMinutes);
       setState((s) => ({ ...s, bookingId: booking.id, bookingStatus: 'created' }));
     } catch (err) {
       setState((s) => ({
@@ -116,11 +303,10 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       }));
       throw err;
     }
-  }, [ensureSession]);
+  }, []);
 
   const acceptBooking = useCallback(async () => {
-    const { token } = stateRef.current;
-    const bookingId = stateRef.current.bookingId;
+    const { token, bookingId } = stateRef.current;
     if (!token || !bookingId) return;
     setState((s) => ({ ...s, bookingStatus: 'accepting', bookingError: null }));
     try {
@@ -175,8 +361,11 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     const total = BASE_PRICE + tipAmount;
     return {
       ...state,
-      setPetPhotoUri: (v) => setState((s) => ({ ...s, petPhotoUri: v })),
+      setPetPhoto: (v) =>
+        setState((s) => ({ ...s, petPhotoUri: v?.uri ?? null, petPhotoBase64: v?.base64 ?? s.petPhotoBase64 })),
       setWalkerPhotoUri: (v) => setState((s) => ({ ...s, walkerPhotoUri: v })),
+      setPetName: (v) => setState((s) => ({ ...s, petName: v })),
+      setBreed: (v) => setState((s) => ({ ...s, breed: v })),
       setSize: (v) => setState((s) => ({ ...s, size: v })),
       toggleTemperament: (v) => setState((s) => ({ ...s, temperament: toggleIn(s.temperament, v) })),
       toggleVaccine: (v) => setState((s) => ({ ...s, vaccines: toggleIn(s.vaccines, v) })),
@@ -185,6 +374,11 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       setTime: (v) => setState((s) => ({ ...s, time: v })),
       setTip: (v) => setState((s) => ({ ...s, tip: v })),
       setPayment: (v) => setState((s) => ({ ...s, payment: v })),
+      signup,
+      login,
+      logout,
+      addRole,
+      savePet,
       createBooking,
       acceptBooking,
       startTrip,
@@ -192,7 +386,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       tipAmount,
       total,
     };
-  }, [state, createBooking, acceptBooking, startTrip, completeTrip]);
+  }, [state, signup, login, logout, addRole, savePet, createBooking, acceptBooking, startTrip, completeTrip]);
 
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>;
 }

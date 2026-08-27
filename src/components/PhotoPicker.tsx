@@ -5,15 +5,24 @@ import { Camera, Pencil } from 'lucide-react-native';
 import { colors, fonts } from '../theme/tokens';
 import CornerMarks from './CornerMarks';
 
+export type PhotoResult = { uri: string; base64: string | null };
+
 type Props = {
   uri: string | null;
-  onChange: (uri: string | null) => void;
+  onChange: (result: PhotoResult) => void;
   style?: StyleProp<ViewStyle>;
   label?: string;
   alertTitle?: string;
 };
 
-async function pickFromLibrary(onChange: (uri: string) => void) {
+function toResult(asset: ImagePicker.ImagePickerAsset): PhotoResult {
+  return {
+    uri: asset.uri,
+    base64: asset.base64 ? `data:${asset.mimeType ?? 'image/jpeg'};base64,${asset.base64}` : null,
+  };
+}
+
+async function pickFromLibrary(onChange: (result: PhotoResult) => void) {
   const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
   if (!perm.granted) {
     Alert.alert('Permiso necesario', 'Activa el acceso a tus fotos para elegir una imagen.');
@@ -24,11 +33,12 @@ async function pickFromLibrary(onChange: (uri: string) => void) {
     allowsEditing: true,
     aspect: [1, 1],
     quality: 0.8,
+    base64: true,
   });
-  if (!result.canceled && result.assets[0]) onChange(result.assets[0].uri);
+  if (!result.canceled && result.assets[0]) onChange(toResult(result.assets[0]));
 }
 
-async function pickFromCamera(onChange: (uri: string) => void) {
+async function pickFromCamera(onChange: (result: PhotoResult) => void) {
   const perm = await ImagePicker.requestCameraPermissionsAsync();
   if (!perm.granted) {
     Alert.alert('Permiso necesario', 'Activa el acceso a la cámara para tomar una foto.');
@@ -39,8 +49,9 @@ async function pickFromCamera(onChange: (uri: string) => void) {
     allowsEditing: true,
     aspect: [1, 1],
     quality: 0.8,
+    base64: true,
   });
-  if (!result.canceled && result.assets[0]) onChange(result.assets[0].uri);
+  if (!result.canceled && result.assets[0]) onChange(toResult(result.assets[0]));
 }
 
 // Mirrors the design's <image-slot> (e.g. "Foto" on Onboarding, the owner/

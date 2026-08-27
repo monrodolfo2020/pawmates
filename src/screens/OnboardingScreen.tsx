@@ -1,15 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { ArrowRight } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
-import Field, { InputDisplay } from '../components/Field';
+import Field from '../components/Field';
+import TextField from '../components/TextField';
 import PhotoPicker from '../components/PhotoPicker';
 import Segmented from '../components/Segmented';
 import Tag from '../components/Tag';
 import RadioRow from '../components/RadioRow';
 import Button from '../components/Button';
+import Card from '../components/Card';
+import { CardBody } from '../components/CardText';
 import { colors, fonts, space } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
 import { sizeOptions, temperamentOptions, vaccineOptions } from '../state/mockData';
@@ -18,6 +21,21 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Onboarding'>;
 
 export default function OnboardingScreen({ navigation }: Props) {
   const s = useAppState();
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSave = async () => {
+    setError(null);
+    setSaving(true);
+    try {
+      await s.savePet();
+      navigation.replace('Home');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo guardar a tu mascota.');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <ScreenContainer>
@@ -33,17 +51,13 @@ export default function OnboardingScreen({ navigation }: Props) {
         <View style={styles.petRow}>
           <PhotoPicker
             uri={s.petPhotoUri}
-            onChange={s.setPetPhotoUri}
+            onChange={s.setPetPhoto}
             style={styles.petPhoto}
             alertTitle="Foto de tu mascota"
           />
           <View style={{ flex: 1, gap: space.s2 }}>
-            <Field label="Nombre">
-              <InputDisplay value={s.petName} />
-            </Field>
-            <Field label="Raza">
-              <InputDisplay value={s.breed} />
-            </Field>
+            <TextField label="Nombre" value={s.petName} onChangeText={s.setPetName} placeholder="Rocky" autoCapitalize="words" />
+            <TextField label="Raza" value={s.breed} onChangeText={s.setBreed} placeholder="Labrador retriever" autoCapitalize="words" />
           </View>
         </View>
 
@@ -82,16 +96,23 @@ export default function OnboardingScreen({ navigation }: Props) {
             ))}
           </View>
         </Field>
+
+        {error && (
+          <Card>
+            <CardBody style={{ color: colors.accent }}>{error}</CardBody>
+          </Card>
+        )}
       </ScrollView>
       <View style={styles.footer}>
         <Button
           variant="primary"
           block
           blueprint
+          disabled={saving || !s.petName || !s.breed}
           icon={<ArrowRight size={14} strokeWidth={1.5} color={colors.bg} />}
-          onPress={() => navigation.replace('Home')}
+          onPress={handleSave}
         >
-          Guardar y continuar
+          {saving ? 'Guardando…' : 'Guardar y continuar'}
         </Button>
       </View>
     </ScreenContainer>

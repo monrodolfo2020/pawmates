@@ -24,21 +24,28 @@ export default function DashboardScreen({ navigation }: Props) {
         <View style={styles.headerLeft}>
           <PhotoPicker
             uri={s.walkerPhotoUri}
-            onChange={s.setWalkerPhotoUri}
+            onChange={(v) => s.setWalkerPhotoUri(v.uri)}
             style={styles.avatar}
             label="Tú"
             alertTitle="Foto de perfil"
           />
           <View>
             <Text style={styles.kicker}>Modo paseador</Text>
-            <Text style={styles.title}>Hola, Camila</Text>
+            <Text style={styles.title}>Hola, {s.name ?? s.email ?? 'paseador'}</Text>
           </View>
         </View>
-        <Pressable
-          onPress={() => (navigation.canGoBack() ? navigation.goBack() : navigation.navigate('Home'))}
-        >
-          <Tag variant="outline">Modo dueño</Tag>
-        </Pressable>
+        <View style={{ flexDirection: 'row', gap: 6 }}>
+          {s.roles.includes('owner') && (
+            <Pressable
+              onPress={() => (navigation.canGoBack() ? navigation.goBack() : navigation.navigate('Home'))}
+            >
+              <Tag variant="outline">Modo dueño</Tag>
+            </Pressable>
+          )}
+          <Pressable onPress={() => void s.logout()}>
+            <Tag variant="outline">Salir</Tag>
+          </Pressable>
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll}>

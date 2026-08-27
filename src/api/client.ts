@@ -38,9 +38,29 @@ async function request<T>(
   return json?.data as T;
 }
 
-export interface DevLoginResult {
+export type Role = 'owner' | 'provider' | 'admin';
+
+export interface AuthResult {
   accountId: string;
   token: string;
+  roles: Role[];
+}
+
+export interface MeResult {
+  id: string;
+  email: string;
+  name: string | null;
+  roles: Role[];
+}
+
+export interface Pet {
+  id: string;
+  name: string;
+  breed: string;
+  size: string;
+  temperament: string[];
+  vaccines: string[];
+  photo: string | null;
 }
 
 export interface BookingResult {
@@ -48,35 +68,93 @@ export interface BookingResult {
   status: string;
 }
 
+export interface AdminAccount {
+  id: string;
+  email: string;
+  name: string | null;
+  roles: Role[];
+  createdAt: string;
+}
+
+export interface AdminVerification {
+  id: string;
+  accountId: string;
+  status: 'pending' | 'verified' | 'rejected';
+  createdAt: string;
+}
+
 /**
- * pawmates-backend has no real Marketplace/Pets/Identity Bounded Context
- * in this MVP (see its README) — every provider/pet/service/address id
- * below is a fixed placeholder the backend's Fake adapter accepts
- * unconditionally, standing in for "the one demo walker" until real
- * discovery exists.
+ * pawmates-backend has no real Marketplace/Discovery Bounded Context in
+ * this MVP (see its README) — every provider/service/address id below is a
+ * fixed placeholder the backend's Fake adapter accepts unconditionally,
+ * standing in for "the one demo walker" until real discovery exists. Only
+ * the pet is real now (see Identity's Pets endpoints below).
  */
 // class-validator's @IsUUID() (no version pinned) requires an actual v4
 // shape — version nibble '4', variant nibble in {8,9,a,b} — not just any
-// 8-4-4-4-12 hex string, so these can't be as simply hand-typed as
-// booking-svc's own DEMO_PROVIDER_ID constant (never passed through that
-// validator, only ever stored as a raw Postgres uuid column).
+// 8-4-4-4-12 hex string.
 const DEMO_PROVIDER_SERVICE_ID = '00000000-0000-4000-8000-0000000000b1';
-const DEMO_PET_ID = '00000000-0000-4000-8000-0000000000b2';
 const DEMO_SERVICE_TYPE_CODE = '00000000-0000-4000-8000-0000000000b3';
 const DEMO_ADDRESS_ID = '00000000-0000-4000-8000-0000000000b4';
 
 export const api = {
-  devLogin(accountId?: string, role: 'owner' | 'provider' = 'owner') {
-    return request<DevLoginResult>('/v1/auth/dev-login', {
-      method: 'POST',
-      body: { accountId, role },
-    });
+  signup(params: {
+    email: string;
+    password: string;
+    role: 'owner' | 'provider';
+    name?: string;
+    facePhoto?: string;
+    idDocumentPhoto?: string;
+  }) {
+    return request<AuthResult>('/v1/auth/signup', { method: 'POST', body: params });
+  },
+
+  login(email: string, password: string) {
+    return request<AuthResult>('/v1/auth/login', { method: 'POST', body: { email, password } });
+  },
+
+  addRole(
+    token: string,
+    params: { role: 'owner' | 'provider'; facePhoto?: string; idDocumentPhoto?: string },
+  ) {
+    return request<AuthResult>('/v1/auth/roles', { method: 'POST', token, body: params });
+  },
+
+  me(token: string) {
+    return request<MeResult>('/v1/me', { token });
+  },
+
+  listPets(token: string) {
+    return request<Pet[]>('/v1/pets', { token });
+  },
+
+  createPet(
+    token: string,
+    params: { name: string; breed: string; size: string; temperament: string[]; vaccines: string[]; photo?: string | null },
+  ) {
+    return request<Pet>('/v1/pets', { method: 'POST', token, body: params });
+  },
+
+  updatePet(
+    token: string,
+    petId: string,
+    params: Partial<{ name: string; breed: string; size: string; temperament: string[]; vaccines: string[]; photo: string | null }>,
+  ) {
+    return request<Pet>(`/v1/pets/${petId}`, { method: 'PATCH', token, body: params });
+  },
+
+  adminListAccounts(token: string) {
+    return request<AdminAccount[]>('/v1/admin/accounts', { token });
+  },
+
+  adminListVerifications(token: string) {
+    return request<AdminVerification[]>('/v1/admin/provider-verifications', { token });
   },
 
   /** A single immediate booking (durationValue in minutes) — this demo skips
    * the recurring-schedule endpoint since "Live paseo" only makes sense for
    * a walk starting now, not one scheduled for a future day. */
-  createBooking(token: string, durationValue: number) {
+  createBooking(token: string, petId: string, durationValue: number) {
     return request<BookingResult>('/v1/bookings', {
       method: 'POST',
       token,
@@ -85,7 +163,7 @@ export const api = {
         providerServiceId: DEMO_PROVIDER_SERVICE_ID,
         lines: [
           {
-            petId: DEMO_PET_ID,
+            petId,
             serviceTypeCode: DEMO_SERVICE_TYPE_CODE,
             durationValue,
             durationUnit: 'min',
