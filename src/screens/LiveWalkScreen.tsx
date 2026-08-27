@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { MessageCircle, Phone } from 'lucide-react-native';
 import Svg, { Path } from 'react-native-svg';
@@ -12,14 +12,38 @@ import ImagePlaceholder from '../components/ImagePlaceholder';
 import Tag from '../components/Tag';
 import { colors, fonts, space } from '../theme/tokens';
 import { liveLog } from '../state/mockData';
+import { useAppState } from '../state/AppState';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Live'>;
 
+const STATUS_LABEL: Record<string, string> = {
+  confirmed: 'Iniciando…',
+  starting: 'Iniciando…',
+  in_progress: '● En vivo',
+  completing: 'Terminando…',
+  completed: '✓ Paseo terminado',
+  error: 'Error de conexión',
+};
+
 export default function LiveWalkScreen({}: Props) {
+  const s = useAppState();
+  const startedRef = useRef(false);
+
+  useEffect(() => {
+    // StrictMode/fast-refresh can mount this screen more than once — only
+    // ever start the real trip the first time this screen is reached.
+    if (startedRef.current) return;
+    startedRef.current = true;
+    void s.startTrip();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const finished = s.bookingStatus === 'completed';
+
   return (
     <ScreenContainer>
       <View style={styles.header}>
-        <Tag variant="accent">● En vivo · 14 min</Tag>
+        <Tag variant="accent">{STATUS_LABEL[s.bookingStatus] ?? '● En vivo'}</Tag>
         <Text style={styles.kicker}>Camila R.</Text>
       </View>
 
@@ -46,6 +70,14 @@ export default function LiveWalkScreen({}: Props) {
         </Button>
       </View>
 
+      {s.bookingStatus === 'error' && s.bookingError && (
+        <View style={{ paddingHorizontal: space.s4, paddingTop: space.s2 }}>
+          <Card>
+            <CardBody style={{ color: colors.accent }}>{s.bookingError}</CardBody>
+          </Card>
+        </View>
+      )}
+
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text style={styles.h5}>Bitácora del paseo</Text>
         {liveLog.map((entry) => (
@@ -58,6 +90,18 @@ export default function LiveWalkScreen({}: Props) {
           </Card>
         ))}
       </ScrollView>
+
+      <View style={styles.footer}>
+        <Button
+          variant="primary"
+          block
+          blueprint
+          disabled={finished || s.bookingStatus === 'completing'}
+          onPress={() => void s.completeTrip()}
+        >
+          {finished ? 'Paseo terminado' : 'Finalizar paseo'}
+        </Button>
+      </View>
     </ScreenContainer>
   );
 }
@@ -84,4 +128,5 @@ const styles = StyleSheet.create({
   scroll: { padding: space.s4, gap: space.s2 },
   h5: { fontFamily: fonts.heading, fontSize: 16, color: colors.text, marginBottom: 4 },
   logPhoto: { width: 48, height: 48, marginRight: space.s3 },
+  footer: { padding: space.s4 },
 });

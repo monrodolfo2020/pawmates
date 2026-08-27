@@ -21,6 +21,16 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Booking'>;
 export default function BookingScreen({ navigation }: Props) {
   const s = useAppState();
   const [duration, setDuration] = useState('60');
+  const submitting = s.bookingStatus === 'creating';
+
+  const handleContinue = async () => {
+    try {
+      await s.createBooking(Number(duration));
+      navigation.navigate('Checkout', { walkerId: 'w1' });
+    } catch {
+      // s.bookingError is already set for display below; stay on this screen.
+    }
+  };
 
   return (
     <ScreenContainer>
@@ -69,15 +79,16 @@ export default function BookingScreen({ navigation }: Props) {
             cualquier paseo individual sin costo hasta 2h antes.
           </CardBody>
         </Card>
+
+        {s.bookingStatus === 'error' && s.bookingError && (
+          <Card>
+            <CardBody style={{ color: colors.accent }}>{s.bookingError}</CardBody>
+          </Card>
+        )}
       </ScrollView>
       <View style={styles.footer}>
-        <Button
-          variant="primary"
-          block
-          blueprint
-          onPress={() => navigation.navigate('Checkout', { walkerId: 'w1' })}
-        >
-          Continuar a pago
+        <Button variant="primary" block blueprint disabled={submitting} onPress={handleContinue}>
+          {submitting ? 'Reservando…' : 'Continuar a pago'}
         </Button>
       </View>
     </ScreenContainer>

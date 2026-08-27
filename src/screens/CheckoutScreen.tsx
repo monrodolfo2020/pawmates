@@ -21,6 +21,16 @@ const money = (n: number) => `$${n.toFixed(2)}`;
 export default function CheckoutScreen({ navigation }: Props) {
   const s = useAppState();
   const serviceFee = 3.2;
+  const submitting = s.bookingStatus === 'accepting';
+
+  const handleConfirm = async () => {
+    try {
+      await s.acceptBooking();
+      navigation.navigate('Live', { walkerId: 'w1' });
+    } catch {
+      // s.bookingError is already set for display below; stay on this screen.
+    }
+  };
 
   return (
     <ScreenContainer>
@@ -73,15 +83,18 @@ export default function CheckoutScreen({ navigation }: Props) {
             ))}
           </View>
         </Field>
+
+        {s.bookingStatus === 'error' && s.bookingError && (
+          <Card>
+            <Text style={{ fontFamily: fonts.body, fontSize: 13, color: colors.accent }}>
+              {s.bookingError}
+            </Text>
+          </Card>
+        )}
       </ScrollView>
       <View style={styles.footer}>
-        <Button
-          variant="primary"
-          block
-          blueprint
-          onPress={() => navigation.navigate('Live', { walkerId: 'w1' })}
-        >
-          Confirmar y pagar
+        <Button variant="primary" block blueprint disabled={submitting} onPress={handleConfirm}>
+          {submitting ? 'Procesando…' : 'Confirmar y pagar'}
         </Button>
       </View>
     </ScreenContainer>
