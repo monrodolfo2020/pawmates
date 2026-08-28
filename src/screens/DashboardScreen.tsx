@@ -85,7 +85,15 @@ export default function DashboardScreen({ navigation }: Props) {
         </View>
       </ScrollView>
 
-      <BottomTabBar items={['Panel', 'Solicitudes', 'Mensajes', 'Perfil']} activeIndex={0} />
+      <BottomTabBar
+        items={[
+          { label: 'Panel', onPress: () => navigation.navigate('Dashboard') },
+          { label: 'Solicitudes', onPress: () => navigation.navigate('ComingSoon', { title: 'Solicitudes' }) },
+          { label: 'Mensajes', onPress: () => navigation.navigate('ComingSoon', { title: 'Mensajes' }) },
+          { label: 'Perfil', onPress: () => navigation.navigate('Profile') },
+        ]}
+        activeIndex={0}
+      />
     </ScreenContainer>
   );
 }

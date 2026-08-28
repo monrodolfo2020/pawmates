@@ -78,7 +78,15 @@ export default function HomeScreen({ navigation }: Props) {
         ))}
       </ScrollView>
 
-      <BottomTabBar items={['Inicio', 'Reservas', 'Mensajes', 'Perfil']} activeIndex={0} />
+      <BottomTabBar
+        items={[
+          { label: 'Inicio', onPress: () => navigation.navigate('Home') },
+          { label: 'Reservas', onPress: () => navigation.navigate('Bookings') },
+          { label: 'Mensajes', onPress: () => navigation.navigate('ComingSoon', { title: 'Mensajes' }) },
+          { label: 'Perfil', onPress: () => navigation.navigate('Profile') },
+        ]}
+        activeIndex={0}
+      />
     </ScreenContainer>
   );
 }

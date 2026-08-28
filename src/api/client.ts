@@ -68,6 +68,13 @@ export interface BookingResult {
   status: string;
 }
 
+export interface BookingSummary {
+  id: string;
+  status: string;
+  scheduledAt: string;
+  priceBreakdown: { totalAmount: number; currency: string } | null;
+}
+
 export interface AdminAccount {
   id: string;
   email: string;
@@ -172,6 +179,10 @@ export const api = {
         ],
       },
     });
+  },
+
+  listBookings(token: string) {
+    return request<BookingSummary[]>('/v1/bookings', { token });
   },
 
   acceptBooking(token: string, bookingId: string) {

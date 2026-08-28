@@ -1,17 +1,16 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Pressable, Text, StyleSheet } from 'react-native';
 import { colors, fonts, space } from '../theme/tokens';
 
-// Decorative bottom strip mirroring the design's tab labels — the design
-// doesn't wire these tabs to real screens beyond the current one (Inicio /
-// Panel), so this stays visual only, matching the prototype 1:1.
-export default function BottomTabBar({ items, activeIndex }: { items: string[]; activeIndex: number }) {
+export type TabItem = { label: string; onPress: () => void };
+
+export default function BottomTabBar({ items, activeIndex }: { items: TabItem[]; activeIndex: number }) {
   return (
     <View style={styles.wrap}>
-      {items.map((label, i) => (
-        <View key={label} style={styles.item}>
-          <Text style={[styles.label, i === activeIndex && styles.active]}>{label}</Text>
-        </View>
+      {items.map((item, i) => (
+        <Pressable key={item.label} style={styles.item} onPress={item.onPress}>
+          <Text style={[styles.label, i === activeIndex && styles.active]}>{item.label}</Text>
+        </Pressable>
       ))}
     </View>
   );

@@ -11,6 +11,9 @@ import CheckoutScreen from '../screens/CheckoutScreen';
 import LiveWalkScreen from '../screens/LiveWalkScreen';
 import DashboardScreen from '../screens/DashboardScreen';
 import AdminScreen from '../screens/AdminScreen';
+import ProfileScreen from '../screens/ProfileScreen';
+import BookingsScreen from '../screens/BookingsScreen';
+import ComingSoonScreen from '../screens/ComingSoonScreen';
 import { useAppState } from '../state/AppState';
 
 export type RootStackParamList = {
@@ -25,6 +28,9 @@ export type RootStackParamList = {
   Live: { walkerId: string };
   Dashboard: undefined;
   Admin: undefined;
+  Profile: undefined;
+  Bookings: undefined;
+  ComingSoon: { title: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -86,6 +92,9 @@ export default function RootNavigator() {
       <Stack.Screen name="Live" component={LiveWalkScreen} />
       <Stack.Screen name="Dashboard" component={DashboardScreen} />
       <Stack.Screen name="Admin" component={AdminScreen} />
+      <Stack.Screen name="Profile" component={ProfileScreen} />
+      <Stack.Screen name="Bookings" component={BookingsScreen} />
+      <Stack.Screen name="ComingSoon" component={ComingSoonScreen} />
     </Stack.Navigator>
   );
 }
