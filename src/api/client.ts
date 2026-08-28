@@ -102,11 +102,25 @@ export type ProductCategory = 'treat' | 'toy' | 'accessory' | 'service_addon' | 
 export interface Product {
   id: string;
   storefrontId: string;
+  catalogItemId: string | null;
   name: string;
   description: string | null;
   price: { amount: number; currency: string };
   stockQuantity: number | null;
   category: ProductCategory;
+  isActive: boolean;
+}
+
+export interface CatalogItem {
+  id: string;
+  name: string;
+  description: string | null;
+  category: ProductCategory;
+  suggestedPrice: { amount: number; currency: string };
+  photo: string | null;
+}
+
+export interface AdminCatalogItem extends CatalogItem {
   isActive: boolean;
 }
 
@@ -305,20 +319,20 @@ export const api = {
     return request<StorefrontDetail | null>('/v1/storefronts/me', { token });
   },
 
-  openStorefront(token: string, params: { name: string; description?: string }) {
+  /** Admin-only: opens a storefront on a provider's behalf. */
+  openStorefront(token: string, params: { providerId: string; name: string; description?: string }) {
     return request<Storefront>('/v1/storefronts', { method: 'POST', token, body: params });
   },
 
+  listCatalog(token: string) {
+    return request<CatalogItem[]>('/v1/storefronts/catalog', { token });
+  },
+
+  /** Lists a product from the catalog — price/stock are the provider's to
+   * set, but name/description/category always come from the catalog item. */
   addProduct(
     token: string,
-    params: {
-      name: string;
-      description?: string;
-      priceAmount: number;
-      priceCurrency: string;
-      stockQuantity?: number;
-      category: ProductCategory;
-    },
+    params: { catalogItemId: string; priceAmount?: number; priceCurrency?: string; stockQuantity?: number },
   ) {
     return request<Product>('/v1/storefronts/me/products', { method: 'POST', token, body: params });
   },
@@ -376,5 +390,17 @@ export const api = {
 
   adminListOrders(token: string) {
     return request<AdminOrder[]>('/v1/admin/orders', { token });
+  },
+
+  adminListCatalog(token: string) {
+    return request<AdminCatalogItem[]>('/v1/admin/catalog', { token });
+  },
+
+  adminUpdateCatalogItem(
+    token: string,
+    id: string,
+    params: Partial<{ name: string; description: string; suggestedPriceAmount: number; photo: string; isActive: boolean }>,
+  ) {
+    return request<AdminCatalogItem>(`/v1/admin/catalog/${id}`, { method: 'PATCH', token, body: params });
   },
 };

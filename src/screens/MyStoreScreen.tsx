@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
-import { ChevronLeft } from 'lucide-react-native';
+import { ChevronLeft, Store } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
@@ -12,19 +12,19 @@ import Segmented from '../components/Segmented';
 import Card from '../components/Card';
 import { CardTitle, CardMeta, CardBody } from '../components/CardText';
 import Tag from '../components/Tag';
-import { api, Product, ProductCategory, StorefrontDetail } from '../api/client';
+import { api, CatalogItem, Product, ProductCategory, StorefrontDetail } from '../api/client';
 import { colors, fonts, space } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MyStore'>;
 
-const CATEGORY_OPTIONS: { label: string; value: ProductCategory }[] = [
-  { label: 'Premio', value: 'treat' },
-  { label: 'Juguete', value: 'toy' },
-  { label: 'Accesorio', value: 'accessory' },
-  { label: 'Extra', value: 'service_addon' },
-  { label: 'Otro', value: 'other' },
-];
+const CATEGORY_LABEL: Record<ProductCategory, string> = {
+  treat: 'Premio',
+  toy: 'Juguete',
+  accessory: 'Accesorio',
+  service_addon: 'Extra',
+  other: 'Otro',
+};
 
 const money = (cents: number, currency: string) => `$${(cents / 100).toFixed(2)} ${currency}`;
 
@@ -64,62 +64,17 @@ export default function MyStoreScreen({ navigation }: Props) {
         </View>
       )}
       {store === null && (
-        <OpenStorefrontForm
-          onOpened={() => {
-            setError(null);
-            load();
-          }}
-        />
+        <View style={styles.body}>
+          <Store size={32} strokeWidth={1.5} color={colors.accent} />
+          <Text style={styles.h5}>Todavía no tienes tienda</Text>
+          <CardBody>
+            Por ahora, el administrador de la plataforma es quien crea la tienda de cada
+            paseador. Pídele que la abra para tu cuenta — en cuanto lo haga, la verás aquí.
+          </CardBody>
+        </View>
       )}
       {store && <StoreManager store={store} onChange={load} navigation={navigation} />}
     </ScreenContainer>
-  );
-}
-
-function OpenStorefrontForm({ onOpened }: { onOpened: () => void }) {
-  const s = useAppState();
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleSubmit = async () => {
-    if (!s.token) return;
-    setSubmitting(true);
-    setError(null);
-    try {
-      await api.openStorefront(s.token, { name, description: description || undefined });
-      onOpened();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo abrir la tienda.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  return (
-    <ScrollView contentContainerStyle={styles.body}>
-      <Text style={styles.h5}>Abre tu tienda</Text>
-      <CardBody>
-        Vende premios, juguetes y accesorios directamente a tus clientes — se entregan en su
-        próximo paseo contigo.
-      </CardBody>
-      <TextField label="Nombre de la tienda" value={name} onChangeText={setName} placeholder="Snacks de Camila" />
-      <TextField
-        label="Descripción (opcional)"
-        value={description}
-        onChangeText={setDescription}
-        placeholder="Premios y accesorios para perros felices"
-      />
-      {error && (
-        <Card>
-          <CardBody style={{ color: colors.accent }}>{error}</CardBody>
-        </Card>
-      )}
-      <Button variant="primary" blueprint block disabled={submitting || name.length < 2} onPress={handleSubmit}>
-        {submitting ? 'Abriendo…' : 'Abrir tienda'}
-      </Button>
-    </ScrollView>
   );
 }
 
@@ -132,7 +87,7 @@ function StoreManager({
   onChange: () => void;
   navigation: Props['navigation'];
 }) {
-  const [showForm, setShowForm] = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
 
   return (
     <ScrollView contentContainerStyle={styles.body}>
@@ -149,17 +104,15 @@ function StoreManager({
       <View style={{ gap: space.s2 }}>
         <View style={styles.row}>
           <Text style={styles.h5}>Productos ({store.products.length})</Text>
-          <Button variant="ghost" onPress={() => setShowForm((v) => !v)}>
-            {showForm ? 'Cancelar' : '+ Agregar'}
+          <Button variant="ghost" onPress={() => setShowPicker((v) => !v)}>
+            {showPicker ? 'Cerrar catálogo' : '+ Agregar del catálogo'}
           </Button>
         </View>
 
-        {showForm && (
-          <AddProductForm
-            onAdded={() => {
-              setShowForm(false);
-              onChange();
-            }}
+        {showPicker && (
+          <CatalogPicker
+            alreadyListed={new Set(store.products.map((p) => p.catalogItemId).filter(Boolean) as string[])}
+            onAdded={onChange}
           />
         )}
 
@@ -171,60 +124,101 @@ function StoreManager({
   );
 }
 
-function AddProductForm({ onAdded }: { onAdded: () => void }) {
+function CatalogPicker({ alreadyListed, onAdded }: { alreadyListed: Set<string>; onAdded: () => void }) {
   const s = useAppState();
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [price, setPrice] = useState('');
+  const [catalog, setCatalog] = useState<CatalogItem[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [category, setCategory] = useState<ProductCategory | 'all'>('all');
+
+  useEffect(() => {
+    if (!s.token) return;
+    api
+      .listCatalog(s.token)
+      .then(setCatalog)
+      .catch((err) => setError(err instanceof Error ? err.message : 'No se pudo cargar el catálogo.'));
+  }, [s.token]);
+
+  const filtered = useMemo(() => {
+    if (!catalog) return [];
+    const q = search.trim().toLowerCase();
+    return catalog.filter(
+      (c) =>
+        !alreadyListed.has(c.id) &&
+        (category === 'all' || c.category === category) &&
+        (q === '' || c.name.toLowerCase().includes(q)),
+    );
+  }, [catalog, search, category, alreadyListed]);
+
+  return (
+    <Card>
+      <TextField label="Buscar" value={search} onChangeText={setSearch} placeholder="Correa, galletas, pelota…" />
+      <Field label="Categoría">
+        <Segmented
+          options={[
+            { label: 'Todas', value: 'all' },
+            { label: 'Premios', value: 'treat' },
+            { label: 'Juguetes', value: 'toy' },
+            { label: 'Accesorios', value: 'accessory' },
+            { label: 'Extras', value: 'service_addon' },
+            { label: 'Otros', value: 'other' },
+          ]}
+          value={category}
+          onChange={(v) => setCategory(v as ProductCategory | 'all')}
+        />
+      </Field>
+      {error && <CardBody style={{ color: colors.accent }}>{error}</CardBody>}
+      <CardMeta>{filtered.length} disponibles</CardMeta>
+      <View style={{ gap: space.s2, maxHeight: 360 }}>
+        <ScrollView>
+          {filtered.map((c) => (
+            <CatalogRow key={c.id} item={c} onAdded={onAdded} />
+          ))}
+        </ScrollView>
+      </View>
+    </Card>
+  );
+}
+
+function CatalogRow({ item, onAdded }: { item: CatalogItem; onAdded: () => void }) {
+  const s = useAppState();
   const [stock, setStock] = useState('');
-  const [category, setCategory] = useState<ProductCategory>('treat');
-  const [submitting, setSubmitting] = useState(false);
+  const [adding, setAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const priceAmount = Math.round(Number(price.replace(',', '.')) * 100);
-  const canSubmit = name.length >= 2 && priceAmount > 0;
-
-  const handleSubmit = async () => {
+  const handleAdd = async () => {
     if (!s.token) return;
-    setSubmitting(true);
+    setAdding(true);
     setError(null);
     try {
       await api.addProduct(s.token, {
-        name,
-        description: description || undefined,
-        priceAmount,
-        priceCurrency: 'USD',
+        catalogItemId: item.id,
         stockQuantity: stock ? Number(stock) : undefined,
-        category,
       });
       onAdded();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo agregar el producto.');
+      setError(err instanceof Error ? err.message : 'No se pudo agregar.');
     } finally {
-      setSubmitting(false);
+      setAdding(false);
     }
   };
 
   return (
-    <Card>
-      <TextField label="Nombre" value={name} onChangeText={setName} placeholder="Galletas de pollo" />
-      <TextField label="Descripción (opcional)" value={description} onChangeText={setDescription} placeholder="Bolsa de 200g" />
-      <View style={{ flexDirection: 'row', gap: space.s3 }}>
-        <View style={{ flex: 1 }}>
-          <TextField label="Precio (USD)" value={price} onChangeText={setPrice} placeholder="8.50" keyboardType="decimal-pad" />
-        </View>
-        <View style={{ flex: 1 }}>
-          <TextField label="Stock (vacío = ilimitado)" value={stock} onChangeText={setStock} placeholder="20" keyboardType="number-pad" />
-        </View>
+    <View style={styles.catalogRow}>
+      <View style={{ flex: 1 }}>
+        <CardBody style={{ margin: 0 }}>{item.name}</CardBody>
+        <CardMeta>
+          {CATEGORY_LABEL[item.category]} · {money(item.suggestedPrice.amount, item.suggestedPrice.currency)}
+        </CardMeta>
+        {error && <CardMeta style={{ color: colors.accent }}>{error}</CardMeta>}
       </View>
-      <Field label="Categoría">
-        <Segmented options={CATEGORY_OPTIONS} value={category} onChange={(v) => setCategory(v as ProductCategory)} />
-      </Field>
-      {error && <CardBody style={{ color: colors.accent }}>{error}</CardBody>}
-      <Button variant="primary" blueprint block disabled={submitting || !canSubmit} onPress={handleSubmit}>
-        {submitting ? 'Guardando…' : 'Agregar producto'}
+      <View style={{ width: 60 }}>
+        <TextField label="" value={stock} onChangeText={setStock} placeholder="Stock" keyboardType="number-pad" />
+      </View>
+      <Button variant="secondary" disabled={adding} onPress={handleAdd}>
+        {adding ? '…' : '+'}
       </Button>
-    </Card>
+    </View>
   );
 }
 
@@ -270,4 +264,5 @@ const styles = StyleSheet.create({
   h5: { fontFamily: fonts.heading, fontSize: 16, color: colors.text },
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   price: { fontFamily: fonts.heading, fontSize: 15, color: colors.text },
+  catalogRow: { flexDirection: 'row', alignItems: 'flex-end', gap: space.s2, paddingVertical: 6 },
 });
