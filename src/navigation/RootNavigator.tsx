@@ -1,6 +1,8 @@
 import React, { useRef } from 'react';
+import { Platform } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import WelcomeScreen from '../screens/WelcomeScreen';
+import AdminLoginScreen from '../screens/AdminLoginScreen';
 import LoginScreen from '../screens/LoginScreen';
 import SignupScreen from '../screens/SignupScreen';
 import OnboardingScreen from '../screens/OnboardingScreen';
@@ -39,9 +41,18 @@ export type RootStackParamList = {
   Storefront: { providerId: string };
   MyStore: undefined;
   Orders: { mode: 'purchases' | 'sales'; title: string };
+  AdminLogin: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
+
+// True when the browser's URL is (a path ending in) /admin — the GitHub
+// Pages base path (see deploy-pages.yml) puts a repo-name segment in
+// front, so this checks the suffix rather than an exact path.
+function isAdminGatePath(): boolean {
+  if (Platform.OS !== 'web' || typeof window === 'undefined') return false;
+  return /\/admin\/?$/.test(window.location.pathname);
+}
 
 export default function RootNavigator() {
   const s = useAppState();
@@ -49,6 +60,19 @@ export default function RootNavigator() {
   // Auth state loads from AsyncStorage asynchronously (see AppState's
   // mount effect) — App.tsx keeps the splash screen up until this settles.
   if (s.authStatus === 'checking') return null;
+
+  // /admin is a standalone gate that bypasses Welcome/Login entirely —
+  // one password field, checked before the normal guest/authed branching
+  // below so it works on a hard page load, not just in-app navigation.
+  // Once it succeeds, authStatus flips to 'authed' and this stops
+  // matching, falling through to the normal authed stack below.
+  if (s.authStatus !== 'authed' && isAdminGatePath()) {
+    return (
+      <Stack.Navigator key="admin-gate" screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="AdminLogin" component={AdminLoginScreen} />
+      </Stack.Navigator>
+    );
+  }
 
   // React Navigation only reads `initialRouteName` when a Navigator is
   // first constructed — since this component returns the *same*
@@ -73,7 +97,11 @@ export default function RootNavigator() {
   }
 
   if (initialAuthedRoute.current === null) {
-    if (s.roles.includes('owner')) {
+    // Admin accounts skip the forced pet-onboarding flow even if they also
+    // hold the owner role — Onboarding has no back/skip button, so an
+    // admin with zero pets would otherwise be stuck there with no way to
+    // reach the admin panel.
+    if (s.roles.includes('owner') && !s.roles.includes('admin')) {
       // The pets list loads asynchronously right after login/signup — wait
       // for that first fetch to resolve rather than deciding while `pets`
       // still holds its empty initial value (that would send every owner,
@@ -81,7 +109,6 @@ export default function RootNavigator() {
       if (!s.petsChecked) return null;
       initialAuthedRoute.current = s.pets.length === 0 ? 'Onboarding' : 'Home';
     } else {
-      // A provider-only account has no pets to check.
       initialAuthedRoute.current = 'Home';
     }
   }
