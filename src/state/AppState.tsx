@@ -92,35 +92,41 @@ const AppStateContext = createContext<Ctx | null>(null);
 const toggleIn = (list: string[], value: string) =>
   list.includes(value) ? list.filter((x) => x !== value) : [...list, value];
 
+// Also used to wipe the slate on logout — without this, a booking/pet
+// draft typed by one account (name, breed, tip %, payment label, ...)
+// stayed in memory and showed up as if it belonged to the next account
+// signed into in the same browser tab.
+const initialState: State = {
+  petName: '',
+  breed: '',
+  petPhotoUri: null,
+  petPhotoBase64: null,
+  walkerPhotoUri: null,
+  size: 'Mediano',
+  temperament: [],
+  vaccines: [],
+  discoverView: 'lista',
+  days: ['Lun', 'Mié', 'Vie'],
+  time: '8:00 am',
+  tip: 15,
+  payment: 'Tarjeta •• 4482',
+  authStatus: 'checking',
+  accountId: null,
+  token: null,
+  email: null,
+  name: null,
+  roles: [],
+  authError: null,
+  pets: [],
+  petsLoading: false,
+  petsChecked: false,
+  bookingId: null,
+  bookingStatus: 'idle',
+  bookingError: null,
+};
+
 export function AppStateProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<State>({
-    petName: '',
-    breed: '',
-    petPhotoUri: null,
-    petPhotoBase64: null,
-    walkerPhotoUri: null,
-    size: 'Mediano',
-    temperament: [],
-    vaccines: [],
-    discoverView: 'lista',
-    days: ['Lun', 'Mié', 'Vie'],
-    time: '8:00 am',
-    tip: 15,
-    payment: 'Tarjeta •• 4482',
-    authStatus: 'checking',
-    accountId: null,
-    token: null,
-    email: null,
-    name: null,
-    roles: [],
-    authError: null,
-    pets: [],
-    petsLoading: false,
-    petsChecked: false,
-    bookingId: null,
-    bookingStatus: 'idle',
-    bookingError: null,
-  });
+  const [state, setState] = useState<State>(initialState);
 
   // Async actions below await network calls between setState calls, so the
   // `state` closure they started with can go stale mid-flight — this ref
@@ -133,17 +139,21 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     setState((s) => ({ ...s, petsLoading: true }));
     try {
       const pets = await api.listPets(token);
+      const first = pets[0];
       setState((s) => ({
         ...s,
         pets,
         petsLoading: false,
         petsChecked: true,
-        petName: pets[0]?.name ?? s.petName,
-        breed: pets[0]?.breed ?? s.breed,
-        size: pets[0]?.size ?? s.size,
-        temperament: pets[0]?.temperament ?? s.temperament,
-        vaccines: pets[0]?.vaccines ?? s.vaccines,
-        petPhotoUri: pets[0]?.photo ?? s.petPhotoUri,
+        // Authoritative, not a fallback merge — an account with no pets
+        // yet must show a blank Onboarding form, never whatever a
+        // previous account in this same tab had typed.
+        petName: first?.name ?? '',
+        breed: first?.breed ?? '',
+        size: first?.size ?? 'Mediano',
+        temperament: first?.temperament ?? [],
+        vaccines: first?.vaccines ?? [],
+        petPhotoUri: first?.photo ?? null,
       }));
     } catch {
       setState((s) => ({ ...s, petsLoading: false, petsChecked: true }));
@@ -235,19 +245,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
   const logout = useCallback(async () => {
     await AsyncStorage.removeItem(SESSION_KEY);
-    setState((s) => ({
-      ...s,
-      authStatus: 'guest',
-      accountId: null,
-      token: null,
-      email: null,
-      name: null,
-      roles: [],
-      pets: [],
-      petsChecked: false,
-      bookingId: null,
-      bookingStatus: 'idle',
-    }));
+    setState({ ...initialState, authStatus: 'guest' });
   }, []);
 
   const addRole = useCallback(
