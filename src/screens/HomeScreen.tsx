@@ -16,6 +16,12 @@ import { walkers } from '../state/mockData';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
+const MAP_POSITIONS = [
+  { top: 34, left: 28 },
+  { top: 58, left: 52 },
+  { top: 22, left: 66 },
+];
+
 export default function HomeScreen({ navigation }: Props) {
   const s = useAppState();
 
@@ -51,7 +57,17 @@ export default function HomeScreen({ navigation }: Props) {
         />
       </View>
 
-      {s.discoverView === 'mapa' && <MapMock />}
+      {s.discoverView === 'mapa' && (
+        <MapMock
+          pins={walkers.map((w, i) => ({
+            id: w.id,
+            name: w.name.split(' ')[0],
+            top: MAP_POSITIONS[i % MAP_POSITIONS.length].top,
+            left: MAP_POSITIONS[i % MAP_POSITIONS.length].left,
+            onPress: () => navigation.navigate('WalkerProfile', { walkerId: w.id }),
+          }))}
+        />
+      )}
 
       <ScrollView contentContainerStyle={styles.list}>
         {walkers.map((w) => (
