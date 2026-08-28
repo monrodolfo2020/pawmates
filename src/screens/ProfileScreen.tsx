@@ -53,6 +53,21 @@ export default function ProfileScreen({ navigation }: Props) {
         )}
 
         <View style={{ gap: space.s2 }}>
+          {s.roles.includes('owner') && (
+            <Button
+              variant="secondary"
+              blueprint
+              block
+              onPress={() => navigation.navigate('Orders', { mode: 'purchases', title: 'Mis compras' })}
+            >
+              Mis compras
+            </Button>
+          )}
+          {s.roles.includes('provider') && (
+            <Button variant="secondary" blueprint block onPress={() => navigation.navigate('MyStore')}>
+              Mi tienda
+            </Button>
+          )}
           {s.roles.includes('provider') && (
             <Button variant="secondary" blueprint block onPress={() => navigation.navigate('Dashboard')}>
               Modo paseador

@@ -16,11 +16,18 @@ export class ApiError extends Error {
 
 async function request<T>(
   path: string,
-  options: { method?: string; token?: string; idempotencyKey?: string; body?: unknown } = {},
+  options: {
+    method?: string;
+    token?: string;
+    idempotencyKey?: string;
+    activeContext?: 'owner' | 'provider';
+    body?: unknown;
+  } = {},
 ): Promise<T> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (options.token) headers.Authorization = `Bearer ${options.token}`;
   if (options.idempotencyKey) headers['Idempotency-Key'] = options.idempotencyKey;
+  if (options.activeContext) headers['x-active-context'] = options.activeContext;
 
   const res = await fetch(`${API_URL}${path}`, {
     method: options.method ?? 'GET',
@@ -88,6 +95,89 @@ export interface AdminVerification {
   accountId: string;
   status: 'pending' | 'verified' | 'rejected';
   createdAt: string;
+}
+
+export type ProductCategory = 'treat' | 'toy' | 'accessory' | 'service_addon' | 'other';
+
+export interface Product {
+  id: string;
+  storefrontId: string;
+  name: string;
+  description: string | null;
+  price: { amount: number; currency: string };
+  stockQuantity: number | null;
+  category: ProductCategory;
+  isActive: boolean;
+}
+
+export interface Storefront {
+  id: string;
+  providerId: string;
+  name: string;
+  description: string | null;
+  isActive: boolean;
+}
+
+export interface StorefrontListing extends Storefront {
+  productCount: number;
+}
+
+export interface StorefrontDetail extends Storefront {
+  products: Product[];
+}
+
+export type OrderStatus =
+  | 'pending_payment'
+  | 'paid'
+  | 'awaiting_delivery'
+  | 'delivered'
+  | 'refunded';
+
+export interface OrderLine {
+  productId: string;
+  name: string;
+  unitPrice: { amount: number; currency: string };
+  quantity: number;
+  lineTotal: number;
+}
+
+export interface Order {
+  id: string;
+  ownerId: string;
+  storefrontId: string;
+  providerId: string;
+  status: OrderStatus;
+  deliveryBookingId: string | null;
+  deliveryWindowOpenAt: string | null;
+  total: { amount: number; currency: string };
+  lines: OrderLine[];
+  createdAt: string;
+  paidAt: string | null;
+  deliveredAt: string | null;
+  refundedAt: string | null;
+}
+
+export interface AdminStorefront {
+  id: string;
+  providerId: string;
+  providerEmail: string | null;
+  providerName: string | null;
+  name: string;
+  description: string | null;
+  isActive: boolean;
+  productCount: number;
+  createdAt: string;
+}
+
+export interface AdminOrder {
+  id: string;
+  ownerId: string;
+  providerId: string;
+  storefrontId: string;
+  status: OrderStatus;
+  total: { amount: number; currency: string };
+  createdAt: string;
+  deliveredAt: string | null;
 }
 
 /**
@@ -199,5 +289,92 @@ export const api = {
 
   completeTrip(bookingId: string) {
     return request<{ status: string }>(`/v1/trips/${bookingId}/complete`, { method: 'POST' });
+  },
+
+  // --- PawMates Commerce (walker storefronts) ---
+
+  listStorefronts(token: string) {
+    return request<StorefrontListing[]>('/v1/storefronts', { token });
+  },
+
+  getStorefront(token: string, providerId: string) {
+    return request<StorefrontDetail>(`/v1/storefronts/${providerId}`, { token });
+  },
+
+  getMyStorefront(token: string) {
+    return request<StorefrontDetail | null>('/v1/storefronts/me', { token });
+  },
+
+  openStorefront(token: string, params: { name: string; description?: string }) {
+    return request<Storefront>('/v1/storefronts', { method: 'POST', token, body: params });
+  },
+
+  addProduct(
+    token: string,
+    params: {
+      name: string;
+      description?: string;
+      priceAmount: number;
+      priceCurrency: string;
+      stockQuantity?: number;
+      category: ProductCategory;
+    },
+  ) {
+    return request<Product>('/v1/storefronts/me/products', { method: 'POST', token, body: params });
+  },
+
+  updateProduct(
+    token: string,
+    productId: string,
+    params: Partial<{
+      name: string;
+      description: string;
+      priceAmount: number;
+      priceCurrency: string;
+      stockQuantity: number;
+      isActive: boolean;
+    }>,
+  ) {
+    return request<Product>(`/v1/products/${productId}`, { method: 'PATCH', token, body: params });
+  },
+
+  placeOrder(
+    token: string,
+    params: { storefrontId: string; lines: { productId: string; quantity: number }[] },
+  ) {
+    return request<Order>('/v1/orders', {
+      method: 'POST',
+      token,
+      idempotencyKey: uuid(),
+      body: { ...params, paymentMethodId: uuid() },
+    });
+  },
+
+  listOrders(token: string, activeContext: 'owner' | 'provider' = 'owner') {
+    return request<Order[]>('/v1/orders', { token, activeContext });
+  },
+
+  confirmDelivery(token: string, orderId: string) {
+    return request<Order>(`/v1/orders/${orderId}/confirm-delivery`, { method: 'POST', token });
+  },
+
+  cancelOrder(token: string, orderId: string) {
+    return request<Order>(`/v1/orders/${orderId}/cancel`, {
+      method: 'POST',
+      token,
+      idempotencyKey: uuid(),
+    });
+  },
+
+  attachDeliveryBooking(token: string, orderId: string) {
+    return request<Order>(`/v1/orders/${orderId}/attach-delivery-booking`, { method: 'POST', token });
+  },
+
+  adminListStorefronts(token: string) {
+    return request<AdminStorefront[]>('/v1/admin/storefronts', { token });
+  },
+
+  adminListOrders(token: string) {
+    return request<AdminOrder[]>('/v1/admin/orders', { token });
   },
 };
