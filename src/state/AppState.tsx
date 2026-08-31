@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { api, AuthResult, MeResult, Pet, Role } from '../api/client';
+import { api, AuthResult, MeResult, Pet, Role, TripDetail } from '../api/client';
 import { BASE_PRICE } from './mockData';
 
 export type BookingStatus =
@@ -51,6 +51,7 @@ type State = {
   bookingId: string | null;
   bookingStatus: BookingStatus;
   bookingError: string | null;
+  tripDetail: TripDetail | null;
 };
 
 type Ctx = State & {
@@ -85,6 +86,9 @@ type Ctx = State & {
   acceptBooking: () => Promise<void>;
   startTrip: () => Promise<void>;
   completeTrip: () => Promise<void>;
+  refreshTrip: () => Promise<void>;
+  logTripLocation: (lat: number, lng: number) => Promise<void>;
+  logWalkEvent: (params: { type: 'photo' | 'pee' | 'poop'; photoBase64?: string; note?: string }) => Promise<void>;
 };
 
 const AppStateContext = createContext<Ctx | null>(null);
@@ -123,6 +127,7 @@ const initialState: State = {
   bookingId: null,
   bookingStatus: 'idle',
   bookingError: null,
+  tripDetail: null,
 };
 
 export function AppStateProvider({ children }: { children: React.ReactNode }) {
@@ -321,11 +326,11 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const startTrip = useCallback(async () => {
-    const bookingId = stateRef.current.bookingId;
-    if (!bookingId) return;
+    const { token, bookingId } = stateRef.current;
+    if (!token || !bookingId) return;
     setState((s) => ({ ...s, bookingStatus: 'starting', bookingError: null }));
     try {
-      await api.startTrip(bookingId);
+      await api.startTrip(token, bookingId);
       setState((s) => ({ ...s, bookingStatus: 'in_progress' }));
     } catch (err) {
       setState((s) => ({
@@ -338,11 +343,11 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const completeTrip = useCallback(async () => {
-    const bookingId = stateRef.current.bookingId;
-    if (!bookingId) return;
+    const { token, bookingId } = stateRef.current;
+    if (!token || !bookingId) return;
     setState((s) => ({ ...s, bookingStatus: 'completing', bookingError: null }));
     try {
-      await api.completeTrip(bookingId);
+      await api.completeTrip(token, bookingId);
       setState((s) => ({ ...s, bookingStatus: 'completed' }));
     } catch (err) {
       setState((s) => ({
@@ -353,6 +358,41 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       throw err;
     }
   }, []);
+
+  // Polled (owner watching live) and re-fetched after every logWalkEvent
+  // (walker's own log needs to show their new entry right away) — same
+  // endpoint serves both the in-progress map and the finished Report Card.
+  const refreshTrip = useCallback(async () => {
+    const { token, bookingId } = stateRef.current;
+    if (!token || !bookingId) return;
+    try {
+      const detail = await api.getTrip(token, bookingId);
+      setState((s) => ({ ...s, tripDetail: detail }));
+    } catch {
+      // Silent — this runs on a poll timer; a transient failure shouldn't
+      // surface as a blocking error banner mid-walk.
+    }
+  }, []);
+
+  const logTripLocation = useCallback(async (lat: number, lng: number) => {
+    const { token, bookingId } = stateRef.current;
+    if (!token || !bookingId) return;
+    try {
+      await api.logTripLocation(token, bookingId, lat, lng);
+    } catch {
+      // Silent — one dropped GPS ping isn't worth interrupting the walk over.
+    }
+  }, []);
+
+  const logWalkEvent = useCallback(
+    async (params: { type: 'photo' | 'pee' | 'poop'; photoBase64?: string; note?: string }) => {
+      const { token, bookingId } = stateRef.current;
+      if (!token || !bookingId) return;
+      await api.logWalkEvent(token, bookingId, params);
+      await refreshTrip();
+    },
+    [refreshTrip],
+  );
 
   const value = useMemo<Ctx>(() => {
     const tipAmount = BASE_PRICE * (state.tip / 100);
@@ -381,10 +421,27 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       acceptBooking,
       startTrip,
       completeTrip,
+      refreshTrip,
+      logTripLocation,
+      logWalkEvent,
       tipAmount,
       total,
     };
-  }, [state, signup, login, logout, addRole, savePet, createBooking, acceptBooking, startTrip, completeTrip]);
+  }, [
+    state,
+    signup,
+    login,
+    logout,
+    addRole,
+    savePet,
+    createBooking,
+    acceptBooking,
+    startTrip,
+    completeTrip,
+    refreshTrip,
+    logTripLocation,
+    logWalkEvent,
+  ]);
 
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>;
 }

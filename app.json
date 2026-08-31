@@ -28,6 +28,12 @@
           "photosPermission": "PawMates usa tu galería para elegir la foto de tu mascota.",
           "cameraPermission": "PawMates usa la cámara para tomar una foto de tu mascota."
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "PawMates usa tu ubicación para mostrar la ruta del paseo en vivo."
+        }
       ]
     ]
   }

@@ -35,9 +35,4 @@ export const weekDays = ['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((label, i) => ({
   label, count: [2, 3, 1, 2, 2, 1, 1][i],
 }));
 
-export const liveLog = [
-  { time: '14:02', text: 'Rocky tomó agua en el parque.', photo: true },
-  { time: '14:08', text: 'Paseo tranquilo, sin otros perros cerca.', photo: false },
-];
-
 export const BASE_PRICE = 57.2;

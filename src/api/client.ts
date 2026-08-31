@@ -83,6 +83,33 @@ export interface BookingSummary {
   priceBreakdown: { totalAmount: number; currency: string } | null;
 }
 
+export interface TripPoint {
+  lat: number;
+  lng: number;
+  recordedAt: string;
+}
+
+export interface WalkEvent {
+  id: string;
+  type: 'photo' | 'pee' | 'poop';
+  photoBase64: string | null;
+  note: string | null;
+  recordedAt: string;
+}
+
+export interface TripDetail {
+  bookingId: string;
+  status: string;
+  startedAt: string | null;
+  completedAt: string | null;
+  durationSeconds: number | null;
+  distanceMeters: number;
+  route: TripPoint[];
+  events: WalkEvent[];
+  peeCount: number;
+  poopCount: number;
+}
+
 export interface AdminAccount {
   id: string;
   email: string;
@@ -298,12 +325,36 @@ export const api = {
     });
   },
 
-  startTrip(bookingId: string) {
-    return request<{ status: string }>(`/v1/trips/${bookingId}/start`, { method: 'POST' });
+  startTrip(token: string, bookingId: string) {
+    return request<{ status: string }>(`/v1/trips/${bookingId}/start`, { method: 'POST', token });
   },
 
-  completeTrip(bookingId: string) {
-    return request<{ status: string }>(`/v1/trips/${bookingId}/complete`, { method: 'POST' });
+  completeTrip(token: string, bookingId: string) {
+    return request<{ status: string }>(`/v1/trips/${bookingId}/complete`, { method: 'POST', token });
+  },
+
+  logTripLocation(token: string, bookingId: string, lat: number, lng: number) {
+    return request<{ id: string }>(`/v1/trips/${bookingId}/locations`, {
+      method: 'POST',
+      token,
+      body: { lat, lng },
+    });
+  },
+
+  logWalkEvent(
+    token: string,
+    bookingId: string,
+    params: { type: 'photo' | 'pee' | 'poop'; photoBase64?: string; note?: string },
+  ) {
+    return request<{ id: string }>(`/v1/trips/${bookingId}/events`, {
+      method: 'POST',
+      token,
+      body: params,
+    });
+  },
+
+  getTrip(token: string, bookingId: string) {
+    return request<TripDetail>(`/v1/trips/${bookingId}`, { token });
   },
 
   // --- PawMates Commerce (walker storefronts) ---
