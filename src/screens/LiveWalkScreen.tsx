@@ -14,6 +14,7 @@ import Tag from '../components/Tag';
 import { colors, fonts, space } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
 import type { TripPoint } from '../api/client';
+import { mapboxRouteImageUrl } from '../utils/mapboxStaticUrl';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Live'>;
 
@@ -183,6 +184,7 @@ export default function LiveWalkScreen({ navigation }: Props) {
   const points = projectRoute(route);
   const polylinePoints = points.map((p) => `${p.x},${p.y}`).join(' ');
   const events = s.tripDetail?.events ?? [];
+  const mapImageUrl = mapboxRouteImageUrl(route, 600, 420);
 
   return (
     <ScreenContainer>
@@ -196,7 +198,9 @@ export default function LiveWalkScreen({ navigation }: Props) {
       </View>
 
       <View style={styles.map}>
-        {points.length >= 1 ? (
+        {mapImageUrl ? (
+          <Image source={{ uri: mapImageUrl }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+        ) : points.length >= 1 ? (
           <Svg width="100%" height="100%" viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`} style={StyleSheet.absoluteFill}>
             {points.length >= 2 && (
               <Polyline
