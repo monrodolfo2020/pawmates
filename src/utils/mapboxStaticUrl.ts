@@ -45,8 +45,13 @@ export function mapboxRouteImageUrl(
   }
 
   const overlayPath = overlays.join(',');
+  // `padding` is what controls zoom under `auto` framing — it's extra
+  // margin (in px) `auto` leaves around the route/pins' bounding box, so a
+  // bigger value zooms out further, especially noticeable early in a walk
+  // when there are only one or two close-together points and the raw
+  // bounding box is tiny on its own.
   return (
     `https://api.mapbox.com/styles/v1/${STYLE}/static/${overlayPath}/auto/` +
-    `${widthPx}x${heightPx}@2x?padding=30&access_token=${MAPBOX_TOKEN}`
+    `${widthPx}x${heightPx}@2x?padding=120&access_token=${MAPBOX_TOKEN}`
   );
 }
