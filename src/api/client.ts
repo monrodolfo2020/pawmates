@@ -232,7 +232,6 @@ export interface AdminOrder {
 // class-validator's @IsUUID() (no version pinned) requires an actual v4
 // shape — version nibble '4', variant nibble in {8,9,a,b} — not just any
 // 8-4-4-4-12 hex string.
-const DEMO_PROVIDER_SERVICE_ID = '00000000-0000-4000-8000-0000000000b1';
 const DEMO_SERVICE_TYPE_CODE = '00000000-0000-4000-8000-0000000000b3';
 const DEMO_ADDRESS_ID = '00000000-0000-4000-8000-0000000000b4';
 
@@ -292,14 +291,20 @@ export const api = {
 
   /** A single immediate booking (durationValue in minutes) — this demo skips
    * the recurring-schedule endpoint since "Live paseo" only makes sense for
-   * a walk starting now, not one scheduled for a future day. */
-  createBooking(token: string, petId: string, durationValue: number) {
+   * a walk starting now, not one scheduled for a future day.
+   *
+   * providerServiceId is the selected walker's id (see mockData.ts's
+   * walkers) — the backend's FakeMarketplaceAdapter treats it directly as
+   * the provider's account id (no real Marketplace/rate-card lookup yet).
+   * Each walker needs its own id here so two different walkers' schedules
+   * don't collide with each other in the no-double-booking check. */
+  createBooking(token: string, petId: string, providerServiceId: string, durationValue: number) {
     return request<BookingResult>('/v1/bookings', {
       method: 'POST',
       token,
       idempotencyKey: uuid(),
       body: {
-        providerServiceId: DEMO_PROVIDER_SERVICE_ID,
+        providerServiceId,
         lines: [
           {
             petId,

@@ -18,15 +18,16 @@ import { dayOptions, timeOptions } from '../state/mockData';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Booking'>;
 
-export default function BookingScreen({ navigation }: Props) {
+export default function BookingScreen({ navigation, route }: Props) {
   const s = useAppState();
   const [duration, setDuration] = useState('60');
   const submitting = s.bookingStatus === 'creating';
+  const { walkerId } = route.params;
 
   const handleContinue = async () => {
     try {
-      await s.createBooking(Number(duration));
-      navigation.navigate('Checkout', { walkerId: 'w1' });
+      await s.createBooking(Number(duration), walkerId);
+      navigation.navigate('Checkout', { walkerId });
     } catch {
       // s.bookingError is already set for display below; stay on this screen.
     }

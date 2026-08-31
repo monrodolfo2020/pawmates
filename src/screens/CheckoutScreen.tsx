@@ -18,7 +18,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Checkout'>;
 
 const money = (n: number) => `$${n.toFixed(2)}`;
 
-export default function CheckoutScreen({ navigation }: Props) {
+export default function CheckoutScreen({ navigation, route }: Props) {
   const s = useAppState();
   const serviceFee = 3.2;
   const submitting = s.bookingStatus === 'accepting';
@@ -26,7 +26,7 @@ export default function CheckoutScreen({ navigation }: Props) {
   const handleConfirm = async () => {
     try {
       await s.acceptBooking();
-      navigation.navigate('Live', { walkerId: 'w1' });
+      navigation.navigate('Live', { walkerId: route.params.walkerId });
     } catch {
       // s.bookingError is already set for display below; stay on this screen.
     }

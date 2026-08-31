@@ -16,8 +16,10 @@ import { reviews } from '../state/mockData';
 type Props = NativeStackScreenProps<RootStackParamList, 'WalkerProfile'>;
 
 // Mock content matches the design's single featured walker (Camila) — the
-// prototype doesn't vary this screen per walker id.
-export default function WalkerProfileScreen({ navigation }: Props) {
+// prototype doesn't vary this screen per walker id. The id itself does
+// get forwarded correctly below, though (it's the real providerServiceId
+// the booking is made against — see mockData.ts's walkers comment).
+export default function WalkerProfileScreen({ navigation, route }: Props) {
   return (
     <ScreenContainer>
       <View style={styles.header}>
@@ -59,7 +61,7 @@ export default function WalkerProfileScreen({ navigation }: Props) {
           variant="primary"
           blueprint
           style={{ flex: 1 }}
-          onPress={() => navigation.navigate('Booking', { walkerId: 'w1' })}
+          onPress={() => navigation.navigate('Booking', { walkerId: route.params.walkerId })}
         >
           Reservar
         </Button>

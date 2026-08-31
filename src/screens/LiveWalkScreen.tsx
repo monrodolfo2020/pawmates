@@ -66,6 +66,7 @@ export default function LiveWalkScreen({ navigation }: Props) {
   const watchRef = useRef<Location.LocationSubscription | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [loggingType, setLoggingType] = useState<'pee' | 'poop' | 'photo' | null>(null);
+  const [gpsState, setGpsState] = useState<'requesting' | 'active' | 'denied'>('requesting');
 
   useEffect(() => {
     // StrictMode/fast-refresh can mount this screen more than once — only
@@ -86,14 +87,29 @@ export default function LiveWalkScreen({ navigation }: Props) {
 
     (async () => {
       const perm = await Location.requestForegroundPermissionsAsync();
+      if (cancelled) return;
       if (!perm.granted) {
+        setGpsState('denied');
         Alert.alert(
           'Permiso de ubicación',
           'Sin acceso a tu ubicación no se puede mostrar la ruta del paseo en el mapa, pero puedes seguir usando los botones de foto y registro.',
         );
         return;
       }
+      // watchPositionAsync's own first callback can take a while to fire
+      // (varies a lot by platform/browser) — get an immediate fix too so
+      // the map has something to show right away instead of sitting on
+      // "buscando ubicación" for no visible reason.
+      try {
+        const current = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
+        if (!cancelled) void s.logTripLocation(current.coords.latitude, current.coords.longitude);
+      } catch {
+        // Ignored — watchPositionAsync below is the real ongoing source.
+      }
       if (cancelled) return;
+      setGpsState('active');
       watchRef.current = await Location.watchPositionAsync(
         { accuracy: Location.Accuracy.Balanced, timeInterval: 5000, distanceInterval: 10 },
         (loc) => {
@@ -180,15 +196,17 @@ export default function LiveWalkScreen({ navigation }: Props) {
       </View>
 
       <View style={styles.map}>
-        {points.length >= 2 ? (
+        {points.length >= 1 ? (
           <Svg width="100%" height="100%" viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`} style={StyleSheet.absoluteFill}>
-            <Polyline
-              points={polylinePoints}
-              stroke={colors.accent}
-              strokeWidth={2}
-              fill="none"
-              strokeDasharray="5 4"
-            />
+            {points.length >= 2 && (
+              <Polyline
+                points={polylinePoints}
+                stroke={colors.accent}
+                strokeWidth={2}
+                fill="none"
+                strokeDasharray="5 4"
+              />
+            )}
             <Circle cx={points[0].x} cy={points[0].y} r={5} fill={colors.text} />
             <Circle
               cx={points[points.length - 1].x}
@@ -201,7 +219,11 @@ export default function LiveWalkScreen({ navigation }: Props) {
           </Svg>
         ) : (
           <Text style={styles.mapEmpty}>
-            {s.bookingStatus === 'in_progress' ? 'Esperando señal GPS…' : 'Sin datos de ruta'}
+            {gpsState === 'denied'
+              ? 'Sin acceso a tu ubicación'
+              : s.bookingStatus === 'in_progress'
+                ? 'Buscando ubicación…'
+                : 'Sin datos de ruta'}
           </Text>
         )}
       </View>

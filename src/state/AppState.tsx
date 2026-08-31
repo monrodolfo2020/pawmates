@@ -82,7 +82,7 @@ type Ctx = State & {
   addRole: (params: { role: 'owner' | 'provider'; facePhoto?: string; idDocumentPhoto?: string }) => Promise<void>;
   /** Crea (o actualiza la primera) mascota del dueño con los campos del formulario. */
   savePet: () => Promise<void>;
-  createBooking: (durationMinutes: number) => Promise<void>;
+  createBooking: (durationMinutes: number, providerServiceId: string) => Promise<void>;
   acceptBooking: () => Promise<void>;
   startTrip: () => Promise<void>;
   completeTrip: () => Promise<void>;
@@ -288,7 +288,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
-  const createBooking = useCallback(async (durationMinutes: number) => {
+  const createBooking = useCallback(async (durationMinutes: number, providerServiceId: string) => {
     setState((s) => ({ ...s, bookingStatus: 'creating', bookingError: null }));
     try {
       const { token, pets } = stateRef.current;
@@ -296,7 +296,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       if (!token || !petId) {
         throw new Error('Agrega primero los datos de tu mascota.');
       }
-      const booking = await api.createBooking(token, petId, durationMinutes);
+      const booking = await api.createBooking(token, petId, providerServiceId, durationMinutes);
       setState((s) => ({ ...s, bookingId: booking.id, bookingStatus: 'created' }));
     } catch (err) {
       setState((s) => ({
