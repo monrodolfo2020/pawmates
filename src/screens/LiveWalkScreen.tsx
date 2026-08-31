@@ -61,7 +61,7 @@ function formatDuration(seconds: number | null): string {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
-export default function LiveWalkScreen({ navigation }: Props) {
+export default function LiveWalkScreen({ navigation, route }: Props) {
   const s = useAppState();
   const startedRef = useRef(false);
   const watchRef = useRef<Location.LocationSubscription | null>(null);
@@ -180,11 +180,11 @@ export default function LiveWalkScreen({ navigation }: Props) {
     }
   };
 
-  const route = s.tripDetail?.route ?? [];
-  const points = projectRoute(route);
+  const tripRoute = s.tripDetail?.route ?? [];
+  const points = projectRoute(tripRoute);
   const polylinePoints = points.map((p) => `${p.x},${p.y}`).join(' ');
   const events = s.tripDetail?.events ?? [];
-  const mapImageUrl = mapboxRouteImageUrl(route, 600, 420);
+  const mapImageUrl = mapboxRouteImageUrl(tripRoute, 600, 420);
 
   return (
     <ScreenContainer>
@@ -233,7 +233,13 @@ export default function LiveWalkScreen({ navigation }: Props) {
       </View>
 
       <View style={styles.actions}>
-        <Button variant="secondary" blueprint style={{ flex: 1 }} icon={<MessageCircle size={14} strokeWidth={1.5} color={colors.text} />}>
+        <Button
+          variant="secondary"
+          blueprint
+          style={{ flex: 1 }}
+          icon={<MessageCircle size={14} strokeWidth={1.5} color={colors.text} />}
+          onPress={() => navigation.navigate('Chat', { walkerId: route.params.walkerId })}
+        >
           Mensaje
         </Button>
         <Button variant="secondary" blueprint style={{ flex: 1 }} icon={<Phone size={14} strokeWidth={1.5} color={colors.text} />}>

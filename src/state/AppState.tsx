@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { api, AuthResult, MeResult, Pet, Role, TripDetail } from '../api/client';
+import { api, AuthResult, ChatMessage, MeResult, Pet, Role, TripDetail } from '../api/client';
 import { BASE_PRICE } from './mockData';
 
 export type BookingStatus =
@@ -52,6 +52,7 @@ type State = {
   bookingStatus: BookingStatus;
   bookingError: string | null;
   tripDetail: TripDetail | null;
+  messages: ChatMessage[];
 };
 
 type Ctx = State & {
@@ -89,6 +90,8 @@ type Ctx = State & {
   refreshTrip: () => Promise<void>;
   logTripLocation: (lat: number, lng: number) => Promise<void>;
   logWalkEvent: (params: { type: 'photo' | 'pee' | 'poop'; photoBase64?: string; note?: string }) => Promise<void>;
+  sendChatMessage: (text: string) => Promise<void>;
+  refreshMessages: () => Promise<void>;
 };
 
 const AppStateContext = createContext<Ctx | null>(null);
@@ -128,6 +131,7 @@ const initialState: State = {
   bookingStatus: 'idle',
   bookingError: null,
   tripDetail: null,
+  messages: [],
 };
 
 export function AppStateProvider({ children }: { children: React.ReactNode }) {
@@ -394,6 +398,27 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     [refreshTrip],
   );
 
+  const refreshMessages = useCallback(async () => {
+    const { token, bookingId } = stateRef.current;
+    if (!token || !bookingId) return;
+    try {
+      const messages = await api.listMessages(token, bookingId);
+      setState((s) => ({ ...s, messages }));
+    } catch {
+      // Silent — polled on a timer, same reasoning as refreshTrip.
+    }
+  }, []);
+
+  const sendChatMessage = useCallback(
+    async (text: string) => {
+      const { token, bookingId } = stateRef.current;
+      if (!token || !bookingId || !text.trim()) return;
+      await api.sendMessage(token, bookingId, text.trim());
+      await refreshMessages();
+    },
+    [refreshMessages],
+  );
+
   const value = useMemo<Ctx>(() => {
     const tipAmount = BASE_PRICE * (state.tip / 100);
     const total = BASE_PRICE + tipAmount;
@@ -424,6 +449,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       refreshTrip,
       logTripLocation,
       logWalkEvent,
+      sendChatMessage,
+      refreshMessages,
       tipAmount,
       total,
     };
@@ -441,6 +468,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     refreshTrip,
     logTripLocation,
     logWalkEvent,
+    sendChatMessage,
+    refreshMessages,
   ]);
 
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>;

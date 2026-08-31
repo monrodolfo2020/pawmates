@@ -11,6 +11,7 @@ import WalkerProfileScreen from '../screens/WalkerProfileScreen';
 import BookingScreen from '../screens/BookingScreen';
 import CheckoutScreen from '../screens/CheckoutScreen';
 import LiveWalkScreen from '../screens/LiveWalkScreen';
+import ChatScreen from '../screens/ChatScreen';
 import DashboardScreen from '../screens/DashboardScreen';
 import AdminScreen from '../screens/AdminScreen';
 import ProfileScreen from '../screens/ProfileScreen';
@@ -32,6 +33,7 @@ export type RootStackParamList = {
   Booking: { walkerId: string };
   Checkout: { walkerId: string };
   Live: { walkerId: string };
+  Chat: { walkerId: string };
   Dashboard: undefined;
   Admin: undefined;
   Profile: undefined;
@@ -125,6 +127,7 @@ export default function RootNavigator() {
       <Stack.Screen name="Booking" component={BookingScreen} />
       <Stack.Screen name="Checkout" component={CheckoutScreen} />
       <Stack.Screen name="Live" component={LiveWalkScreen} />
+      <Stack.Screen name="Chat" component={ChatScreen} />
       <Stack.Screen name="Dashboard" component={DashboardScreen} />
       <Stack.Screen name="Admin" component={AdminScreen} />
       <Stack.Screen name="Profile" component={ProfileScreen} />

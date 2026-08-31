@@ -110,6 +110,14 @@ export interface TripDetail {
   poopCount: number;
 }
 
+export interface ChatMessage {
+  id: string;
+  senderId: string;
+  senderRole: 'owner' | 'provider';
+  text: string;
+  sentAt: string;
+}
+
 export interface AdminAccount {
   id: string;
   email: string;
@@ -360,6 +368,18 @@ export const api = {
 
   getTrip(token: string, bookingId: string) {
     return request<TripDetail>(`/v1/trips/${bookingId}`, { token });
+  },
+
+  sendMessage(token: string, bookingId: string, text: string) {
+    return request<ChatMessage>(`/v1/bookings/${bookingId}/messages`, {
+      method: 'POST',
+      token,
+      body: { text },
+    });
+  },
+
+  listMessages(token: string, bookingId: string) {
+    return request<ChatMessage[]>(`/v1/bookings/${bookingId}/messages`, { token });
   },
 
   // --- PawMates Commerce (walker storefronts) ---
