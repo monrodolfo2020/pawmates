@@ -45,13 +45,27 @@ export function mapboxRouteImageUrl(
   }
 
   const overlayPath = overlays.join(',');
-  // `padding` is what controls zoom under `auto` framing — it's extra
-  // margin (in px) `auto` leaves around the route/pins' bounding box, so a
-  // bigger value zooms out further, especially noticeable early in a walk
-  // when there are only one or two close-together points and the raw
-  // bounding box is tiny on its own.
+
+  // `auto` framing fits the pins/path's own bounding box, plus `padding`
+  // (px) of margin around it. That works well once a walk has covered
+  // real ground — but early on (a single point, or a GPS-jitter cluster
+  // a few meters wide) the bounding box itself is close to zero-sized, and
+  // `auto` falls back to one fixed per-point zoom that padding can't pull
+  // back from (confirmed: bumping padding alone did nothing for this
+  // case). Below a minimum real-world span, use an explicit center+zoom
+  // instead of `auto` so there's always a real lever on how "zoomed out"
+  // this looks, regardless of how tight the actual points are.
+  const MIN_SPAN_DEGREES = 0.004; // ~400m at the equator — plenty for "zoomed out enough"
+  const lats = sampled.map((p) => p.lat);
+  const lngs = sampled.map((p) => p.lng);
+  const span = Math.max(Math.max(...lats) - Math.min(...lats), Math.max(...lngs) - Math.min(...lngs));
+
+  const position =
+    span < MIN_SPAN_DEGREES ? `${current.lng},${current.lat},15` : 'auto';
+  const padding = position === 'auto' ? '&padding=120' : '';
+
   return (
-    `https://api.mapbox.com/styles/v1/${STYLE}/static/${overlayPath}/auto/` +
-    `${widthPx}x${heightPx}@2x?padding=120&access_token=${MAPBOX_TOKEN}`
+    `https://api.mapbox.com/styles/v1/${STYLE}/static/${overlayPath}/${position}/` +
+    `${widthPx}x${heightPx}@2x?access_token=${MAPBOX_TOKEN}${padding}`
   );
 }
