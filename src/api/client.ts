@@ -1,9 +1,10 @@
 import { uuid } from './uuid';
 
-// Points at the deployed pawmates-backend (see that repo's README/DEPLOY.md).
+// Points at the deployed pawmates-backend (see that repo's README/DEPLOY.md
+// — now a Vercel serverless function; Render's deployment was retired).
 // Override with EXPO_PUBLIC_API_URL for local development against
 // `npm run start:pawmates-api:dev` there.
-const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'https://pawmates-api.onrender.com';
+const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'https://pawmates-backend-black.vercel.app';
 
 export class ApiError extends Error {
   constructor(
