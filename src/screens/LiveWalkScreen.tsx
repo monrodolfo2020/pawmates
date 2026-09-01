@@ -15,6 +15,7 @@ import { colors, fonts, space } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
 import type { TripPoint } from '../api/client';
 import { mapboxRouteImageUrl } from '../utils/mapboxStaticUrl';
+import { resizeImagePhoto } from '../utils/resizeImagePhoto';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Live'>;
 
@@ -163,16 +164,14 @@ export default function LiveWalkScreen({ navigation, route }: Props) {
     }
     const result =
       Platform.OS === 'web'
-        ? await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.6, base64: true })
-        : await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.6, base64: true });
-    if (result.canceled || !result.assets[0]?.base64) return;
-    const asset = result.assets[0];
+        ? await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.6 })
+        : await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.6 });
+    if (result.canceled || !result.assets[0]) return;
+    const photo = await resizeImagePhoto(result.assets[0]);
+    if (!photo.base64) return;
     setLoggingType('photo');
     try {
-      await s.logWalkEvent({
-        type: 'photo',
-        photoBase64: `data:${asset.mimeType ?? 'image/jpeg'};base64,${asset.base64}`,
-      });
+      await s.logWalkEvent({ type: 'photo', photoBase64: photo.base64 });
     } catch {
       Alert.alert('No se pudo subir la foto', 'Inténtalo de nuevo.');
     } finally {

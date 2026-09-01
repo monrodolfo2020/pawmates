@@ -3,6 +3,7 @@ import { View, Text, Image, Pressable, StyleSheet, StyleProp, ViewStyle, Alert, 
 import * as ImagePicker from 'expo-image-picker';
 import { Camera, Pencil } from 'lucide-react-native';
 import { colors, fonts } from '../theme/tokens';
+import { resizeImagePhoto } from '../utils/resizeImagePhoto';
 import CornerMarks from './CornerMarks';
 
 export type PhotoResult = { uri: string; base64: string | null };
@@ -15,13 +16,6 @@ type Props = {
   alertTitle?: string;
 };
 
-function toResult(asset: ImagePicker.ImagePickerAsset): PhotoResult {
-  return {
-    uri: asset.uri,
-    base64: asset.base64 ? `data:${asset.mimeType ?? 'image/jpeg'};base64,${asset.base64}` : null,
-  };
-}
-
 async function pickFromLibrary(onChange: (result: PhotoResult) => void) {
   const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
   if (!perm.granted) {
@@ -33,9 +27,8 @@ async function pickFromLibrary(onChange: (result: PhotoResult) => void) {
     allowsEditing: true,
     aspect: [1, 1],
     quality: 0.8,
-    base64: true,
   });
-  if (!result.canceled && result.assets[0]) onChange(toResult(result.assets[0]));
+  if (!result.canceled && result.assets[0]) onChange(await resizeImagePhoto(result.assets[0]));
 }
 
 async function pickFromCamera(onChange: (result: PhotoResult) => void) {
@@ -49,9 +42,8 @@ async function pickFromCamera(onChange: (result: PhotoResult) => void) {
     allowsEditing: true,
     aspect: [1, 1],
     quality: 0.8,
-    base64: true,
   });
-  if (!result.canceled && result.assets[0]) onChange(toResult(result.assets[0]));
+  if (!result.canceled && result.assets[0]) onChange(await resizeImagePhoto(result.assets[0]));
 }
 
 // Mirrors the design's <image-slot> (e.g. "Foto" on Onboarding, the owner/
