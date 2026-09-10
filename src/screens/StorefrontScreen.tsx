@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, Image, ScrollView, StyleSheet } from 'react-native';
 import { ChevronLeft, Minus, Plus } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
@@ -104,6 +104,13 @@ export default function StorefrontScreen({ navigation, route }: Props) {
 
         {store?.products.map((p) => (
           <Card key={p.id}>
+            {p.photos.length > 0 && (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.photoStrip}>
+                {p.photos.map((uri, i) => (
+                  <Image key={i} source={{ uri }} style={styles.photoStripImage} resizeMode="cover" />
+                ))}
+              </ScrollView>
+            )}
             <View style={styles.row}>
               <CardTitle style={{ fontSize: 15 }}>{p.name}</CardTitle>
               <Tag variant="outline">{CATEGORY_LABEL[p.category] ?? p.category}</Tag>
@@ -146,6 +153,8 @@ const styles = StyleSheet.create({
   title: { fontFamily: fonts.heading, fontSize: 20, color: colors.text },
   body: { paddingHorizontal: space.s4, gap: space.s3, paddingBottom: space.s4 },
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  photoStrip: { marginBottom: space.s2 },
+  photoStripImage: { width: 96, height: 96, marginRight: 6, backgroundColor: colors.accent100 },
   price: { fontFamily: fonts.heading, fontSize: 16, color: colors.text },
   stepper: { flexDirection: 'row', alignItems: 'center', gap: space.s2 },
   qty: { fontFamily: fonts.bodyMedium, fontSize: 15, color: colors.text, minWidth: 20, textAlign: 'center' },

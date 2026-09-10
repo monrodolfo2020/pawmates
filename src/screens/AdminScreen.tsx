@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
+import { View, Text, Image, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { ChevronLeft, Store } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
@@ -10,6 +10,7 @@ import TextField from '../components/TextField';
 import Field from '../components/Field';
 import Segmented from '../components/Segmented';
 import PhotoPicker from '../components/PhotoPicker';
+import ProductPhotosPicker, { MIN_PRODUCT_PHOTOS } from '../components/ProductPhotosPicker';
 import Card from '../components/Card';
 import { CardKicker, CardTitle, CardBody, CardMeta } from '../components/CardText';
 import Tag from '../components/Tag';
@@ -337,18 +338,25 @@ function StoreCatalogPicker({ alreadyListed, onAdded }: { alreadyListed: Set<str
 
 function StoreCatalogRow({ item, onAdded }: { item: CatalogItem; onAdded: () => void }) {
   const s = useAppState();
+  const [expanded, setExpanded] = useState(false);
   const [stock, setStock] = useState('');
+  const [photos, setPhotos] = useState<string[]>([]);
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleAdd = async () => {
     if (!s.token) return;
+    if (photos.length < MIN_PRODUCT_PHOTOS) {
+      setError(`Agrega al menos ${MIN_PRODUCT_PHOTOS} fotos.`);
+      return;
+    }
     setAdding(true);
     setError(null);
     try {
       await api.addProduct(s.token, {
         catalogItemId: item.id,
         stockQuantity: stock ? Number(stock) : undefined,
+        photos,
       });
       onAdded();
     } catch (err) {
@@ -358,28 +366,59 @@ function StoreCatalogRow({ item, onAdded }: { item: CatalogItem; onAdded: () => 
     }
   };
 
+  if (!expanded) {
+    return (
+      <View style={styles.catalogRow}>
+        <View style={{ flex: 1 }}>
+          <CardBody style={{ margin: 0 }}>{item.name}</CardBody>
+          <CardMeta>
+            {CATEGORY_LABEL[item.category]} · {money(item.suggestedPrice.amount, item.suggestedPrice.currency)}
+          </CardMeta>
+        </View>
+        <Button variant="secondary" onPress={() => setExpanded(true)}>+</Button>
+      </View>
+    );
+  }
+
   return (
-    <View style={styles.catalogRow}>
-      <View style={{ flex: 1 }}>
-        <CardBody style={{ margin: 0 }}>{item.name}</CardBody>
-        <CardMeta>
-          {CATEGORY_LABEL[item.category]} · {money(item.suggestedPrice.amount, item.suggestedPrice.currency)}
-        </CardMeta>
-        {error && <CardMeta style={{ color: colors.accent }}>{error}</CardMeta>}
+    <Card>
+      <CardBody style={{ margin: 0 }}>{item.name}</CardBody>
+      <CardMeta>
+        {CATEGORY_LABEL[item.category]} · {money(item.suggestedPrice.amount, item.suggestedPrice.currency)}
+      </CardMeta>
+      <ProductPhotosPicker photos={photos} onChange={setPhotos} />
+      <TextField
+        label="Stock (vacío = ilimitado)"
+        value={stock}
+        onChangeText={setStock}
+        placeholder="Stock"
+        keyboardType="number-pad"
+      />
+      {error && <CardMeta style={{ color: colors.accent }}>{error}</CardMeta>}
+      <View style={{ flexDirection: 'row', gap: space.s2 }}>
+        <Button variant="secondary" style={{ flex: 1 }} onPress={() => setExpanded(false)}>
+          Cancelar
+        </Button>
+        <Button
+          variant="primary"
+          blueprint
+          style={{ flex: 1 }}
+          disabled={adding || photos.length < MIN_PRODUCT_PHOTOS}
+          onPress={handleAdd}
+        >
+          {adding ? 'Agregando…' : 'Agregar a la tienda'}
+        </Button>
       </View>
-      <View style={{ width: 60 }}>
-        <TextField label="" value={stock} onChangeText={setStock} placeholder="Stock" keyboardType="number-pad" />
-      </View>
-      <Button variant="secondary" disabled={adding} onPress={handleAdd}>
-        {adding ? '…' : '+'}
-      </Button>
-    </View>
+    </Card>
   );
 }
 
 function StoreProductRow({ product, onChange }: { product: Product; onChange: () => void }) {
   const s = useAppState();
   const [busy, setBusy] = useState(false);
+  const [editingPhotos, setEditingPhotos] = useState(false);
+  const [photos, setPhotos] = useState<string[]>(product.photos);
+  const [error, setError] = useState<string | null>(null);
 
   const toggleActive = async () => {
     if (!s.token) return;
@@ -387,6 +426,31 @@ function StoreProductRow({ product, onChange }: { product: Product; onChange: ()
     try {
       await api.updateProduct(s.token, product.id, { isActive: !product.isActive });
       onChange();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const startEditingPhotos = () => {
+    setPhotos(product.photos);
+    setError(null);
+    setEditingPhotos(true);
+  };
+
+  const savePhotos = async () => {
+    if (!s.token) return;
+    if (photos.length < MIN_PRODUCT_PHOTOS) {
+      setError(`Se requieren al menos ${MIN_PRODUCT_PHOTOS} fotos.`);
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      await api.updateProduct(s.token, product.id, { photos });
+      setEditingPhotos(false);
+      onChange();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudieron guardar las fotos.');
     } finally {
       setBusy(false);
     }
@@ -402,9 +466,47 @@ function StoreProductRow({ product, onChange }: { product: Product; onChange: ()
         <CardBody style={{ margin: 0 }}>{money(product.price.amount, product.price.currency)}</CardBody>
         <CardMeta>{product.stockQuantity === null ? 'Ilimitado' : `${product.stockQuantity} en stock`}</CardMeta>
       </View>
-      <Button variant="secondary" disabled={busy} onPress={toggleActive}>
-        {product.isActive ? 'Desactivar' : 'Activar'}
-      </Button>
+
+      {!editingPhotos && (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s2 }}>
+          <View style={{ flexDirection: 'row', gap: 4 }}>
+            {product.photos.slice(0, 3).map((uri, i) => (
+              <Image key={i} source={{ uri }} style={styles.thumb} />
+            ))}
+          </View>
+          <CardMeta style={product.photos.length < MIN_PRODUCT_PHOTOS ? { color: colors.accent } : undefined}>
+            {product.photos.length === 0 ? 'Sin fotos todavía' : `${product.photos.length} fotos`}
+          </CardMeta>
+        </View>
+      )}
+
+      {editingPhotos && (
+        <>
+          <ProductPhotosPicker photos={photos} onChange={setPhotos} />
+          {error && <CardMeta style={{ color: colors.accent }}>{error}</CardMeta>}
+        </>
+      )}
+
+      <View style={{ flexDirection: 'row', gap: space.s2 }}>
+        <Button variant="secondary" style={{ flex: 1 }} disabled={busy} onPress={toggleActive}>
+          {product.isActive ? 'Desactivar' : 'Activar'}
+        </Button>
+        {!editingPhotos ? (
+          <Button variant="secondary" style={{ flex: 1 }} onPress={startEditingPhotos}>
+            Editar fotos
+          </Button>
+        ) : (
+          <Button
+            variant="primary"
+            blueprint
+            style={{ flex: 1 }}
+            disabled={busy || photos.length < MIN_PRODUCT_PHOTOS}
+            onPress={savePhotos}
+          >
+            {busy ? 'Guardando…' : 'Guardar fotos'}
+          </Button>
+        )}
+      </View>
     </Card>
   );
 }
@@ -503,4 +605,5 @@ const styles = StyleSheet.create({
   wrapRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   catalogPhoto: { width: 56, height: 56, marginRight: space.s3 },
   catalogRow: { flexDirection: 'row', alignItems: 'flex-end', gap: space.s2, paddingVertical: 6 },
+  thumb: { width: 36, height: 36, borderRadius: 0, backgroundColor: colors.accent100 },
 });

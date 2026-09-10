@@ -145,6 +145,7 @@ export interface Product {
   stockQuantity: number | null;
   category: ProductCategory;
   isActive: boolean;
+  photos: string[];
 }
 
 export interface CatalogItem {
@@ -406,14 +407,22 @@ export const api = {
   },
 
   /** Lists a product from the catalog — price/stock are the provider's to
-   * set, but name/description/category always come from the catalog item. */
+   * set, but name/description/category always come from the catalog item.
+   * photos: 3-6 base64 data URLs, required. */
   addProduct(
     token: string,
-    params: { catalogItemId: string; priceAmount?: number; priceCurrency?: string; stockQuantity?: number },
+    params: {
+      catalogItemId: string;
+      priceAmount?: number;
+      priceCurrency?: string;
+      stockQuantity?: number;
+      photos: string[];
+    },
   ) {
     return request<Product>('/v1/storefronts/me/products', { method: 'POST', token, body: params });
   },
 
+  /** photos, if included, replaces the whole gallery and must be 3-6 images. */
   updateProduct(
     token: string,
     productId: string,
@@ -424,6 +433,7 @@ export const api = {
       priceCurrency: string;
       stockQuantity: number;
       isActive: boolean;
+      photos: string[];
     }>,
   ) {
     return request<Product>(`/v1/products/${productId}`, { method: 'PATCH', token, body: params });
