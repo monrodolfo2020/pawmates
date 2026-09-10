@@ -396,8 +396,8 @@ export const api = {
     return request<StorefrontDetail | null>('/v1/storefronts/me', { token });
   },
 
-  /** Admin-only: opens a storefront on a provider's behalf. */
-  openStorefront(token: string, params: { providerId: string; name: string; description?: string }) {
+  /** Admin-only: creates the one platform store if it doesn't exist yet. */
+  openStorefront(token: string, params: { name: string; description?: string }) {
     return request<Storefront>('/v1/storefronts', { method: 'POST', token, body: params });
   },
 

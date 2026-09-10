@@ -19,7 +19,6 @@ import BookingsScreen from '../screens/BookingsScreen';
 import ComingSoonScreen from '../screens/ComingSoonScreen';
 import StoresScreen from '../screens/StoresScreen';
 import StorefrontScreen from '../screens/StorefrontScreen';
-import MyStoreScreen from '../screens/MyStoreScreen';
 import OrdersScreen from '../screens/OrdersScreen';
 import { useAppState } from '../state/AppState';
 
@@ -41,7 +40,6 @@ export type RootStackParamList = {
   ComingSoon: { title: string };
   Stores: undefined;
   Storefront: { providerId: string };
-  MyStore: undefined;
   Orders: { mode: 'purchases' | 'sales'; title: string };
   AdminLogin: undefined;
 };
@@ -135,7 +133,6 @@ export default function RootNavigator() {
       <Stack.Screen name="ComingSoon" component={ComingSoonScreen} />
       <Stack.Screen name="Stores" component={StoresScreen} />
       <Stack.Screen name="Storefront" component={StorefrontScreen} />
-      <Stack.Screen name="MyStore" component={MyStoreScreen} />
       <Stack.Screen name="Orders" component={OrdersScreen} />
     </Stack.Navigator>
   );

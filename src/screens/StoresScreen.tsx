@@ -31,7 +31,7 @@ export default function StoresScreen({ navigation }: Props) {
     <ScreenContainer>
       <View style={styles.header}>
         <Text style={styles.kicker}>PawMates Commerce</Text>
-        <Text style={styles.title}>Tiendas de paseadores</Text>
+        <Text style={styles.title}>Tienda PawMates</Text>
       </View>
       <ScrollView contentContainerStyle={styles.list}>
         {error && (
@@ -40,7 +40,7 @@ export default function StoresScreen({ navigation }: Props) {
           </Card>
         )}
         {stores?.length === 0 && (
-          <CardMeta>Todavía no hay tiendas abiertas. Vuelve más tarde.</CardMeta>
+          <CardMeta>La tienda todavía no está abierta. Vuelve más tarde.</CardMeta>
         )}
         {stores?.map((store) => (
           <Card

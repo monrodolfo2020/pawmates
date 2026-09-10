@@ -64,8 +64,13 @@ export default function ProfileScreen({ navigation }: Props) {
             </Button>
           )}
           {s.roles.includes('provider') && (
-            <Button variant="secondary" blueprint block onPress={() => navigation.navigate('MyStore')}>
-              Mi tienda
+            <Button
+              variant="secondary"
+              blueprint
+              block
+              onPress={() => navigation.navigate('Orders', { mode: 'sales', title: 'Pedidos por entregar' })}
+            >
+              Pedidos por entregar
             </Button>
           )}
           {s.roles.includes('provider') && (

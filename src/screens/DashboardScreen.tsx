@@ -89,7 +89,7 @@ export default function DashboardScreen({ navigation }: Props) {
         items={[
           { label: 'Panel', onPress: () => navigation.navigate('Dashboard') },
           { label: 'Solicitudes', onPress: () => navigation.navigate('ComingSoon', { title: 'Solicitudes' }) },
-          { label: 'Mi Tienda', onPress: () => navigation.navigate('MyStore') },
+          { label: 'Tienda', onPress: () => navigation.navigate('Stores') },
           { label: 'Perfil', onPress: () => navigation.navigate('Profile') },
         ]}
         activeIndex={0}

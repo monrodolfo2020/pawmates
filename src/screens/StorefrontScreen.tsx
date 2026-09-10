@@ -94,7 +94,7 @@ export default function StorefrontScreen({ navigation, route }: Props) {
         {orderResult === 'ok' && (
           <Card>
             <CardBody style={{ color: colors.accent800 }}>
-              ¡Compra realizada! Se entregará en tu próximo paseo confirmado con este paseador.
+              ¡Compra realizada! Se entregará en tu próximo paseo confirmado.
               Revisa "Mis compras" en tu perfil para ver el estado.
             </CardBody>
           </Card>
