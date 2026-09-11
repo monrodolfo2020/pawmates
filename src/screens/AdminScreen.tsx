@@ -98,7 +98,7 @@ export default function AdminScreen({ navigation }: Props) {
           options={[
             { label: 'Cuentas', value: 'cuentas' },
             { label: 'Verif.', value: 'verificaciones' },
-            { label: 'Tiendas', value: 'tiendas' },
+            { label: 'Tienda', value: 'tiendas' },
             { label: 'Pedidos', value: 'pedidos' },
             { label: 'Catálogo', value: 'catalogo' },
           ]}

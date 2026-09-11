@@ -98,7 +98,7 @@ export default function HomeScreen({ navigation }: Props) {
         items={[
           { label: 'Inicio', onPress: () => navigation.navigate('Home') },
           { label: 'Reservas', onPress: () => navigation.navigate('Bookings') },
-          { label: 'Tiendas', onPress: () => navigation.navigate('Stores') },
+          { label: 'Tienda', onPress: () => navigation.navigate('Stores') },
           { label: 'Perfil', onPress: () => navigation.navigate('Profile') },
         ]}
         activeIndex={0}
