@@ -416,7 +416,11 @@ function StoreCatalogRow({ item, onAdded }: { item: CatalogItem; onAdded: () => 
 function StoreProductRow({ product, onChange }: { product: Product; onChange: () => void }) {
   const s = useAppState();
   const [busy, setBusy] = useState(false);
-  const [editingPhotos, setEditingPhotos] = useState(false);
+  // Open by default when the gallery is still incomplete (e.g. every
+  // product from the initial catalog seed) — an admin should see the
+  // upload slots right away, not a "Sin fotos" label they have to tap
+  // past first.
+  const [editingPhotos, setEditingPhotos] = useState(product.photos.length < MIN_PRODUCT_PHOTOS);
   const [photos, setPhotos] = useState<string[]>(product.photos);
   const [error, setError] = useState<string | null>(null);
 

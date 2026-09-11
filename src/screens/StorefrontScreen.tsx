@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Image, ScrollView, StyleSheet } from 'react-native';
-import { ChevronLeft, Minus, Plus } from 'lucide-react-native';
+import { Camera, ChevronLeft, Minus, Plus } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
@@ -104,12 +104,17 @@ export default function StorefrontScreen({ navigation, route }: Props) {
 
         {store?.products.map((p) => (
           <Card key={p.id}>
-            {p.photos.length > 0 && (
+            {p.photos.length > 0 ? (
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.photoStrip}>
                 {p.photos.map((uri, i) => (
                   <Image key={i} source={{ uri }} style={styles.photoStripImage} resizeMode="cover" />
                 ))}
               </ScrollView>
+            ) : (
+              <View style={[styles.photoStripImage, styles.photoPlaceholder]}>
+                <Camera size={22} strokeWidth={1.5} color={colors.text} style={{ opacity: 0.35 }} />
+                <CardMeta style={{ margin: 0 }}>Sin fotos aún</CardMeta>
+              </View>
             )}
             <View style={styles.row}>
               <CardTitle style={{ fontSize: 15 }}>{p.name}</CardTitle>
@@ -155,6 +160,10 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   photoStrip: { marginBottom: space.s2 },
   photoStripImage: { width: 96, height: 96, marginRight: 6, backgroundColor: colors.accent100 },
+  photoPlaceholder: {
+    width: '100%', height: 96, marginBottom: space.s2,
+    alignItems: 'center', justifyContent: 'center', gap: 4,
+  },
   price: { fontFamily: fonts.heading, fontSize: 16, color: colors.text },
   stepper: { flexDirection: 'row', alignItems: 'center', gap: space.s2 },
   qty: { fontFamily: fonts.bodyMedium, fontSize: 15, color: colors.text, minWidth: 20, textAlign: 'center' },
