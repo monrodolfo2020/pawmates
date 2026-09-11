@@ -53,7 +53,7 @@ export default function StorefrontScreen({ navigation, route }: Props) {
   const total = store
     ? store.products.reduce((sum, p) => sum + (cart[p.id] ?? 0) * p.price.amount, 0)
     : 0;
-  const currency = store?.products[0]?.price.currency ?? 'USD';
+  const currency = store?.products[0]?.price.currency ?? 'MXN';
   const itemCount = Object.values(cart).reduce((a, b) => a + b, 0);
 
   const handleBuy = async () => {

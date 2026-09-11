@@ -22,9 +22,9 @@ export type Walker = {
 // these three — but each needs a genuinely distinct, validly-shaped id
 // so their schedules don't collide with each other's bookings).
 export const walkers: Walker[] = [
-  { id: '143abd6b-2d8c-4578-ac4b-e0708b283adb', name: 'Camila Rodríguez', distance: '1.2 km', price: '$18/paseo', rating: '4.9', badge: 'Seguro incluido' },
-  { id: '8446e6fc-5914-40e9-970a-175893843a29', name: 'Diego Martínez', distance: '2.0 km', price: '$15/paseo', rating: '4.8', badge: 'Cert. primeros auxilios' },
-  { id: 'e91e60a3-59b3-4074-93da-22ea72a30843', name: 'Ana Torres', distance: '2.4 km', price: '$20/paseo', rating: '5.0', badge: 'Identidad verificada' },
+  { id: '143abd6b-2d8c-4578-ac4b-e0708b283adb', name: 'Camila Rodríguez', distance: '1.2 km', price: '$306/paseo', rating: '4.9', badge: 'Seguro incluido' },
+  { id: '8446e6fc-5914-40e9-970a-175893843a29', name: 'Diego Martínez', distance: '2.0 km', price: '$255/paseo', rating: '4.8', badge: 'Cert. primeros auxilios' },
+  { id: 'e91e60a3-59b3-4074-93da-22ea72a30843', name: 'Ana Torres', distance: '2.4 km', price: '$340/paseo', rating: '5.0', badge: 'Identidad verificada' },
 ];
 
 export const reviews = [
@@ -41,4 +41,5 @@ export const weekDays = ['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((label, i) => ({
   label, count: [2, 3, 1, 2, 2, 1, 1][i],
 }));
 
-export const BASE_PRICE = 57.2;
+// MXN (converted from the original $57.20 USD demo figure at ~17 MXN/USD).
+export const BASE_PRICE = 972.4;

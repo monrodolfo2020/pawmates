@@ -20,7 +20,7 @@ const money = (n: number) => `$${n.toFixed(2)}`;
 
 export default function CheckoutScreen({ navigation, route }: Props) {
   const s = useAppState();
-  const serviceFee = 3.2;
+  const serviceFee = 54.4; // MXN (converted from $3.20 USD at ~17 MXN/USD)
   const submitting = s.bookingStatus === 'accepting';
 
   const handleConfirm = async () => {
@@ -43,7 +43,7 @@ export default function CheckoutScreen({ navigation, route }: Props) {
       <ScrollView contentContainerStyle={styles.scroll}>
         <Card>
           <View style={styles.row}>
-            <Text style={styles.rowText}>Tarifa (3 paseos/sem × $18)</Text>
+            <Text style={styles.rowText}>Tarifa (3 paseos/sem × $306)</Text>
             <Text style={styles.rowText}>{money(BASE_PRICE)}</Text>
           </View>
           <View style={styles.row}>

@@ -51,7 +51,7 @@ export default function DashboardScreen({ navigation }: Props) {
       <ScrollView contentContainerStyle={styles.scroll}>
         <Card elevation="sm">
           <CardKicker>Ingresos esta semana</CardKicker>
-          <Text style={styles.earnings}>$412.50</Text>
+          <Text style={styles.earnings}>$7,012.50</Text>
           <CardMeta>12 paseos completados</CardMeta>
         </Card>
 
