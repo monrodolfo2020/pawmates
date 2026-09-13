@@ -19,17 +19,14 @@ export default function WelcomeScreen({ navigation }: Props) {
           Encuentra paseadores de confianza para tu mascota, o regístrate como paseador y ofrece
           tus servicios.
         </Text>
-        <Pressable
-          style={styles.storeCard}
-          onPress={() => navigation.navigate('Signup', { role: 'owner' })}
-        >
+        <Pressable style={styles.storeCard} onPress={() => navigation.navigate('Stores')}>
           <View style={styles.storeIcon}>
             <ShoppingBag size={22} strokeWidth={1.5} color={colors.accent} />
           </View>
           <View style={styles.storeText}>
             <Text style={styles.storeTitle}>Tienda PawMates</Text>
             <Text style={styles.storeSubtitle}>
-              Comida, juguetes y accesorios para tu mascota — regístrate para comprar
+              Comida, juguetes y accesorios — mira el catálogo, sin necesidad de cuenta
             </Text>
           </View>
           <ChevronRight size={20} strokeWidth={1.5} color={colors.textMuted70} />

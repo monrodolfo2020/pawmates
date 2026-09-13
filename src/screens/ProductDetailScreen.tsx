@@ -35,7 +35,6 @@ export default function ProductDetailScreen({ navigation, route }: Props) {
   const [qty, setQty] = useState(1);
 
   useEffect(() => {
-    if (!s.token) return;
     api
       .getStorefront(s.token, providerId)
       .then(setStore)

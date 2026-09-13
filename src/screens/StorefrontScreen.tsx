@@ -38,7 +38,6 @@ export default function StorefrontScreen({ navigation, route }: Props) {
   const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!s.token) return;
     api
       .getStorefront(s.token, providerId)
       .then(setStore)
@@ -163,10 +162,10 @@ export default function StorefrontScreen({ navigation, route }: Props) {
 
         <BottomTabBar
           items={[
-            { label: 'Inicio', onPress: () => navigation.navigate('Home') },
-            { label: 'Reservas', onPress: () => navigation.navigate('Bookings') },
+            { label: 'Inicio', onPress: () => navigation.navigate(s.authStatus === 'authed' ? 'Home' : 'Login') },
+            { label: 'Reservas', onPress: () => navigation.navigate(s.authStatus === 'authed' ? 'Bookings' : 'Login') },
             { label: 'Tienda', onPress: () => navigation.navigate('Stores') },
-            { label: 'Perfil', onPress: () => navigation.navigate('Profile') },
+            { label: 'Perfil', onPress: () => navigation.navigate(s.authStatus === 'authed' ? 'Profile' : 'Login') },
           ]}
           activeIndex={2}
         />

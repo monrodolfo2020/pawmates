@@ -21,7 +21,6 @@ export default function CartScreen({ navigation, route }: Props) {
   const [orderPlaced, setOrderPlaced] = useState(false);
 
   useEffect(() => {
-    if (!s.token) return;
     api
       .getStorefront(s.token, providerId)
       .then(setStore)
@@ -38,7 +37,11 @@ export default function CartScreen({ navigation, route }: Props) {
   const itemCount = lines.reduce((sum, l) => sum + l.qty, 0);
 
   const handleCheckout = async () => {
-    if (!s.token || !store) return;
+    if (!store) return;
+    if (!s.token) {
+      navigation.navigate('Login');
+      return;
+    }
     setError(null);
     setBuying(true);
     try {

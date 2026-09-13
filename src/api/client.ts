@@ -385,12 +385,14 @@ export const api = {
 
   // --- PawMates Commerce (walker storefronts) ---
 
-  listStorefronts(token: string) {
-    return request<StorefrontListing[]>('/v1/storefronts', { token });
+  /** Public — works for a signed-out guest too (token is optional). */
+  listStorefronts(token?: string | null) {
+    return request<StorefrontListing[]>('/v1/storefronts', { token: token ?? undefined });
   },
 
-  getStorefront(token: string, providerId: string) {
-    return request<StorefrontDetail>(`/v1/storefronts/${providerId}`, { token });
+  /** Public — works for a signed-out guest too (token is optional). */
+  getStorefront(token: string | null | undefined, providerId: string) {
+    return request<StorefrontDetail>(`/v1/storefronts/${providerId}`, { token: token ?? undefined });
   },
 
   getMyStorefront(token: string) {
