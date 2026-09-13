@@ -408,7 +408,7 @@ export const api = {
 
   /** Lists a product from the catalog — price/stock are the provider's to
    * set, but name/description/category always come from the catalog item.
-   * photos: 3-6 base64 data URLs, required. */
+   * photos: 1-6 base64 data URLs, required. */
   addProduct(
     token: string,
     params: {
@@ -422,7 +422,7 @@ export const api = {
     return request<Product>('/v1/storefronts/me/products', { method: 'POST', token, body: params });
   },
 
-  /** photos, if included, replaces the whole gallery and must be 3-6 images. */
+  /** photos, if included, replaces the whole gallery and must be 1-6 images. */
   updateProduct(
     token: string,
     productId: string,

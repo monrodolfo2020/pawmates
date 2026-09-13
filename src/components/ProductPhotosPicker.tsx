@@ -3,7 +3,7 @@ import { View, Pressable, Text, ScrollView, StyleSheet } from 'react-native';
 import PhotoPicker, { PhotoResult } from './PhotoPicker';
 import { colors, fonts } from '../theme/tokens';
 
-export const MIN_PRODUCT_PHOTOS = 3;
+export const MIN_PRODUCT_PHOTOS = 1;
 export const MAX_PRODUCT_PHOTOS = 6;
 
 type Props = {
@@ -12,11 +12,10 @@ type Props = {
 };
 
 // One slot per existing photo (tap to replace, "Quitar" to drop), plus
-// enough empty "add" slots to reach the minimum up front — showing only
-// one empty slot at a time made the 3-photo minimum invisible until the
-// first photo was already in. All slots sit in one horizontal slide so
-// they don't wrap into a cramped multi-row grid — mirrors the backend's
-// Product gallery rule (3-6 photos, see product.entity.ts).
+// one empty "add" slot while under the max. All slots sit in one
+// horizontal slide so they don't wrap into a cramped multi-row grid —
+// mirrors the backend's Product gallery rule (1-6 photos, see
+// product.entity.ts).
 export default function ProductPhotosPicker({ photos, onChange }: Props) {
   const replaceAt = (index: number, result: PhotoResult) => {
     if (!result.base64) return;
