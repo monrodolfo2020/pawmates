@@ -1,264 +1,258 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, Image, ScrollView, StyleSheet, Pressable } from 'react-native';
-import { Camera, ChevronLeft, Minus, Plus, Search, ShoppingBag, Store } from 'lucide-react-native';
+import { View, Text, Image, TextInput, ScrollView, StyleSheet, Pressable } from 'react-native';
+import { ShoppingBag, Search } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
-import { IconButton } from '../components/Button';
-import Button from '../components/Button';
-import Card from '../components/Card';
-import TextField from '../components/TextField';
-import Segmented from '../components/Segmented';
-import { CardKicker, CardMeta, CardBody } from '../components/CardText';
-import Tag from '../components/Tag';
+import BottomTabBar from '../components/BottomTabBar';
 import { api, Product, ProductCategory, StorefrontDetail } from '../api/client';
-import { colors, fonts, space } from '../theme/tokens';
+import { commerceColors as c, commerceFonts as f, commerceRadius as r, tintFor } from '../theme/commerceTokens';
 import { useAppState } from '../state/AppState';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Storefront'>;
 
-const money = (cents: number, currency: string) => `$${(cents / 100).toFixed(2)} ${currency}`;
+const money = (cents: number, currency: string) => '$' + (cents / 100).toFixed(2).replace(/\.00$/, '') + ' ' + currency;
 
 const CATEGORY_LABEL: Record<ProductCategory, string> = {
-  treat: 'Premio',
-  toy: 'Juguete',
-  accessory: 'Accesorio',
-  service_addon: 'Extra',
-  other: 'Otro',
+  treat: 'Premios',
+  toy: 'Juguetes',
+  accessory: 'Accesorios',
+  service_addon: 'Extras',
+  other: 'Otros',
+};
+const CATEGORY_BLURB: Record<ProductCategory, string> = {
+  treat: 'Galletas, snacks',
+  toy: 'Mordederas, pelotas',
+  accessory: 'Correas, camas, aseo',
+  service_addon: 'Extras del paseo',
+  other: 'Suplementos, salud',
 };
 
 export default function StorefrontScreen({ navigation, route }: Props) {
   const s = useAppState();
+  const { providerId } = route.params;
   const [store, setStore] = useState<StorefrontDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [cart, setCart] = useState<Record<string, number>>({});
-  const [buying, setBuying] = useState(false);
-  const [orderResult, setOrderResult] = useState<'ok' | null>(null);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState<ProductCategory | 'all'>('all');
+  const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
     if (!s.token) return;
     api
-      .getStorefront(s.token, route.params.providerId)
+      .getStorefront(s.token, providerId)
       .then(setStore)
       .catch((err) => setError(err instanceof Error ? err.message : 'No se pudo cargar la tienda.'));
-  }, [s.token, route.params.providerId]);
-
-  const setQty = (productId: string, qty: number) => {
-    setCart((c) => {
-      const next = { ...c };
-      if (qty <= 0) delete next[productId];
-      else next[productId] = qty;
-      return next;
-    });
-  };
+  }, [s.token, providerId]);
 
   const products = store?.products ?? [];
+  const cartCount = Object.values(s.cart).reduce((a, b) => a + b, 0);
+
+  const categoryCounts = useMemo(() => {
+    const counts: Partial<Record<ProductCategory, number>> = {};
+    for (const p of products) counts[p.category] = (counts[p.category] ?? 0) + 1;
+    return counts;
+  }, [products]);
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return products.filter(
-      (p) =>
-        (category === 'all' || p.category === category) &&
-        (q === '' || p.name.toLowerCase().includes(q)),
+      (p) => (category === 'all' || p.category === category) && (q === '' || p.name.toLowerCase().includes(q)),
     );
   }, [products, search, category]);
 
-  const total = products.reduce((sum, p) => sum + (cart[p.id] ?? 0) * p.price.amount, 0);
-  const currency = products[0]?.price.currency ?? 'MXN';
-  const itemCount = Object.values(cart).reduce((a, b) => a + b, 0);
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2200);
+  };
 
-  const handleBuy = async () => {
-    if (!s.token || !store) return;
-    setError(null);
-    setBuying(true);
-    try {
-      await api.placeOrder(s.token, {
-        storefrontId: store.id,
-        lines: Object.entries(cart).map(([productId, quantity]) => ({ productId, quantity })),
-      });
-      setOrderResult('ok');
-      setCart({});
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo completar la compra.');
-    } finally {
-      setBuying(false);
-    }
+  const addOne = (p: Product) => {
+    s.setCartQty(p.id, (s.cart[p.id] ?? 0) + 1);
+    showToast(p.name + ' agregado');
   };
 
   return (
     <ScreenContainer>
-      <View style={styles.header}>
-        <IconButton onPress={() => navigation.goBack()}>
-          <ChevronLeft size={18} strokeWidth={1.5} color={colors.text} />
-        </IconButton>
-        <Text style={styles.headerTitle}>{store?.name ?? 'Tienda'}</Text>
-      </View>
-
-      <ScrollView contentContainerStyle={styles.body}>
-        <View style={styles.hero}>
-          <View style={styles.heroIcon}>
-            <Store size={26} strokeWidth={1.5} color={colors.accent} />
+      <View style={styles.root}>
+        <ScrollView contentContainerStyle={styles.body} style={styles.scroll}>
+          <View style={styles.header}>
+            <View>
+              <Text style={styles.kicker}>PawMates Commerce</Text>
+              <Text style={styles.title}>{store?.name ?? 'Tienda'}</Text>
+            </View>
+            <Pressable style={styles.cartBtn} onPress={() => navigation.navigate('Cart', { providerId })}>
+              <ShoppingBag size={19} strokeWidth={1.6} color={c.ink} />
+              {cartCount > 0 && (
+                <View style={styles.cartBadge}>
+                  <Text style={styles.cartBadgeText}>{cartCount}</Text>
+                </View>
+              )}
+            </Pressable>
           </View>
-          <View style={{ flex: 1, gap: 2 }}>
-            <CardKicker style={{ margin: 0 }}>PawMates Commerce</CardKicker>
-            <Text style={styles.heroTitle}>{store?.name ?? 'Tienda'}</Text>
-            {store?.description && <CardBody style={{ margin: 0 }}>{store.description}</CardBody>}
-            <CardMeta>
-              {products.length} {products.length === 1 ? 'producto disponible' : 'productos disponibles'}
-            </CardMeta>
-          </View>
-        </View>
 
-        {error && (
-          <Card>
-            <CardBody style={{ color: colors.accent }}>{error}</CardBody>
-          </Card>
-        )}
-
-        {orderResult === 'ok' && (
-          <Card>
-            <CardBody style={{ color: colors.accent800 }}>
-              ¡Compra realizada! Se entregará en tu próximo paseo confirmado.
-              Revisa "Mis compras" en tu perfil para ver el estado.
-            </CardBody>
-          </Card>
-        )}
-
-        <View style={styles.searchRow}>
-          <View style={{ flex: 1 }}>
-            <TextField
-              label=""
+          <View style={styles.searchBox}>
+            <Search size={16} strokeWidth={2} color={c.muted2} />
+            <TextInput
               value={search}
               onChangeText={setSearch}
-              placeholder="Buscar productos…"
+              placeholder="Buscar comida, juguetes, extras"
+              placeholderTextColor={c.muted2}
+              style={styles.searchInput}
             />
           </View>
-          <View style={styles.searchIcon}>
-            <Search size={16} strokeWidth={1.5} color={colors.textMuted70} />
-          </View>
-        </View>
 
-        <Segmented
-          options={[
-            { label: 'Todas', value: 'all' },
-            { label: 'Premios', value: 'treat' },
-            { label: 'Juguetes', value: 'toy' },
-            { label: 'Accesorios', value: 'accessory' },
-            { label: 'Extras', value: 'service_addon' },
-            { label: 'Otros', value: 'other' },
-          ]}
-          value={category}
-          onChange={(v) => setCategory(v as ProductCategory | 'all')}
-        />
+          {error && <Text style={styles.error}>{error}</Text>}
 
-        {products.length === 0 ? (
-          <CardMeta>Esta tienda todavía no tiene productos.</CardMeta>
-        ) : filtered.length === 0 ? (
-          <CardMeta>Ningún producto coincide con tu búsqueda.</CardMeta>
-        ) : (
-          <View style={styles.grid}>
-            {filtered.map((p) => (
-              <ProductCard
-                key={p.id}
-                product={p}
-                qty={cart[p.id] ?? 0}
-                onQtyChange={(qty) => setQty(p.id, qty)}
-              />
+          {store?.description && <Text style={styles.description}>{store.description}</Text>}
+
+          <Text style={styles.sectionTitle}>Comprar por categoría</Text>
+          <View style={styles.categoryGrid}>
+            <Pressable
+              style={[styles.categoryTile, category === 'all' && styles.categoryTileActive]}
+              onPress={() => setCategory('all')}
+            >
+              <Text style={styles.categoryLabel}>Todas</Text>
+              <Text style={styles.categoryCount}>{products.length} productos</Text>
+            </Pressable>
+            {(Object.keys(CATEGORY_LABEL) as ProductCategory[]).map((cat) => (
+              <Pressable
+                key={cat}
+                style={[styles.categoryTile, category === cat && styles.categoryTileActive]}
+                onPress={() => setCategory(cat)}
+              >
+                <Text style={styles.categoryLabel}>{CATEGORY_LABEL[cat]}</Text>
+                <Text style={styles.categoryCount}>{categoryCounts[cat] ?? 0} · {CATEGORY_BLURB[cat]}</Text>
+              </Pressable>
             ))}
           </View>
-        )}
-      </ScrollView>
 
-      {itemCount > 0 && (
-        <View style={styles.footer}>
-          <Button variant="primary" block blueprint disabled={buying} onPress={handleBuy} icon={<ShoppingBag size={16} strokeWidth={1.5} color={colors.bg} />}>
-            {buying ? 'Procesando…' : `Comprar (${itemCount}) · ${money(total, currency)}`}
-          </Button>
-        </View>
-      )}
+          <View style={styles.rowBetween}>
+            <Text style={styles.sectionTitle}>
+              {category === 'all' ? 'Todo el catálogo' : CATEGORY_LABEL[category]}
+            </Text>
+            <Text style={styles.mutedSmall}>{filtered.length} productos</Text>
+          </View>
+
+          {products.length === 0 ? (
+            <Text style={styles.mutedBody}>Esta tienda todavía no tiene productos.</Text>
+          ) : filtered.length === 0 ? (
+            <Text style={styles.mutedBody}>Ningún producto coincide con tu búsqueda.</Text>
+          ) : (
+            <View style={styles.grid}>
+              {filtered.map((p) => (
+                <ProductTile
+                  key={p.id}
+                  product={p}
+                  onOpen={() => navigation.navigate('ProductDetail', { providerId, productId: p.id })}
+                  onAdd={() => addOne(p)}
+                />
+              ))}
+            </View>
+          )}
+        </ScrollView>
+
+        {toast && (
+          <View style={styles.toast}>
+            <View style={styles.toastDot} />
+            <Text style={styles.toastText}>{toast}</Text>
+            <Pressable onPress={() => navigation.navigate('Cart', { providerId })}>
+              <Text style={styles.toastAction}>Ver carrito</Text>
+            </Pressable>
+          </View>
+        )}
+
+        <BottomTabBar
+          items={[
+            { label: 'Inicio', onPress: () => navigation.navigate('Home') },
+            { label: 'Reservas', onPress: () => navigation.navigate('Bookings') },
+            { label: 'Tienda', onPress: () => navigation.navigate('Stores') },
+            { label: 'Perfil', onPress: () => navigation.navigate('Profile') },
+          ]}
+          activeIndex={2}
+        />
+      </View>
     </ScreenContainer>
   );
 }
 
-function ProductCard({
-  product, qty, onQtyChange,
-}: { product: Product; qty: number; onQtyChange: (qty: number) => void }) {
+function ProductTile({ product, onOpen, onAdd }: { product: Product; onOpen: () => void; onAdd: () => void }) {
   const photo = product.photos[0] ?? null;
-
+  const tint = tintFor(product.id);
   return (
-    <Card style={styles.productCard}>
-      {photo ? (
-        <Image source={{ uri: photo }} style={styles.productImage} resizeMode="cover" />
-      ) : (
-        <View style={[styles.productImage, styles.productImagePlaceholder]}>
-          <Camera size={20} strokeWidth={1.5} color={colors.text} style={{ opacity: 0.3 }} />
+    <View style={styles.tile}>
+      <Pressable onPress={onOpen}>
+        {photo ? (
+          <Image source={{ uri: photo }} style={styles.tileImage} resizeMode="cover" />
+        ) : (
+          <View style={[styles.tileImage, { backgroundColor: tint, alignItems: 'center', justifyContent: 'center' }]}>
+            <Text style={styles.tileInitial}>{product.name[0]}</Text>
+          </View>
+        )}
+      </Pressable>
+      <View style={styles.tileBody}>
+        <Text style={styles.tileBrand}>{CATEGORY_LABEL[product.category]}</Text>
+        <Text style={styles.tileName} numberOfLines={2}>{product.name}</Text>
+        <View style={styles.rowBetween}>
+          <Text style={styles.tilePrice}>{money(product.price.amount, product.price.currency)}</Text>
+          <Pressable style={styles.addBtn} onPress={onAdd}>
+            <Text style={styles.addBtnText}>+</Text>
+          </Pressable>
         </View>
-      )}
-      <Tag variant="outline" style={styles.productCategoryTag}>
-        {CATEGORY_LABEL[product.category] ?? product.category}
-      </Tag>
-      <Text style={styles.productName} numberOfLines={2}>
-        {product.name}
-      </Text>
-      <View style={styles.productMetaRow}>
-        <Text style={styles.productPrice}>{money(product.price.amount, product.price.currency)}</Text>
-        <CardMeta style={{ margin: 0 }}>
-          {product.stockQuantity === null ? 'Disponible' : `${product.stockQuantity} en stock`}
-        </CardMeta>
       </View>
-
-      {qty === 0 ? (
-        <Button variant="primary" blueprint block onPress={() => onQtyChange(1)}>
-          Agregar
-        </Button>
-      ) : (
-        <View style={styles.productStepper}>
-          <Pressable style={styles.stepperBtn} onPress={() => onQtyChange(qty - 1)}>
-            <Minus size={15} strokeWidth={1.5} color={colors.text} />
-          </Pressable>
-          <Text style={styles.qty}>{qty}</Text>
-          <Pressable style={styles.stepperBtn} onPress={() => onQtyChange(qty + 1)}>
-            <Plus size={15} strokeWidth={1.5} color={colors.text} />
-          </Pressable>
-        </View>
-      )}
-    </Card>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
-    paddingHorizontal: space.s3, paddingVertical: space.s2,
-    flexDirection: 'row', alignItems: 'center', gap: space.s3,
+  root: { flex: 1, backgroundColor: c.bg },
+  scroll: { flex: 1, backgroundColor: c.bg },
+  body: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 24, gap: 4 },
+  header: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 },
+  kicker: { fontFamily: f.bodySemiBold, fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: c.muted2 },
+  title: { fontFamily: f.serif, fontSize: 32, color: c.ink, marginTop: 4 },
+  cartBtn: {
+    width: 42, height: 42, borderRadius: r.pill, borderWidth: 1, borderColor: c.line,
+    backgroundColor: c.surface, alignItems: 'center', justifyContent: 'center', marginTop: 4,
   },
-  headerTitle: { fontFamily: fonts.heading, fontSize: 18, color: colors.text },
-  body: { paddingHorizontal: space.s4, gap: space.s3, paddingBottom: space.s6 },
-  hero: {
-    flexDirection: 'row', gap: space.s3, alignItems: 'flex-start',
-    backgroundColor: colors.accent100, borderWidth: 1, borderColor: colors.divider,
-    padding: space.s4,
+  cartBadge: {
+    position: 'absolute', top: -3, right: -3, minWidth: 19, height: 19, borderRadius: r.pill,
+    backgroundColor: c.clay, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 5,
+    borderWidth: 2, borderColor: c.bg,
   },
-  heroIcon: {
-    width: 52, height: 52, alignItems: 'center', justifyContent: 'center',
-    backgroundColor: colors.bg, borderWidth: 1, borderColor: colors.divider,
+  cartBadgeText: { fontFamily: f.bodyBold, fontSize: 11, color: '#fff' },
+  searchBox: {
+    flexDirection: 'row', alignItems: 'center', gap: 9, padding: 13,
+    borderRadius: r.md, borderWidth: 1, borderColor: c.line, backgroundColor: c.surface, marginBottom: 20,
   },
-  heroTitle: { fontFamily: fonts.heading, fontSize: 22, color: colors.text },
-  searchRow: { flexDirection: 'row', alignItems: 'flex-end', gap: space.s2 },
-  searchIcon: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s3 },
-  productCard: { width: '47%', gap: space.s2 },
-  productImage: { width: '100%', aspectRatio: 1, backgroundColor: colors.accent100 },
-  productImagePlaceholder: { alignItems: 'center', justifyContent: 'center' },
-  productCategoryTag: { alignSelf: 'flex-start' },
-  productName: { fontFamily: fonts.heading, fontSize: 14, lineHeight: 17, color: colors.text, minHeight: 34 },
-  productMetaRow: { gap: 1 },
-  productPrice: { fontFamily: fonts.heading, fontSize: 16, color: colors.text },
-  productStepper: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    borderWidth: 1, borderColor: colors.divider, height: 36,
+  searchInput: { flex: 1, fontFamily: f.body, fontSize: 15, color: c.ink, padding: 0 },
+  error: { fontFamily: f.body, fontSize: 13, color: c.clay, marginBottom: 12 },
+  description: { fontFamily: f.body, fontSize: 13.5, color: c.mute, marginBottom: 20, lineHeight: 19 },
+  sectionTitle: { fontFamily: f.serif, fontSize: 21, color: c.ink, marginBottom: 10 },
+  categoryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 22 },
+  categoryTile: {
+    width: '47.5%', padding: 14, borderRadius: r.md, borderWidth: 1, borderColor: c.line, backgroundColor: c.surface,
   },
-  stepperBtn: { flex: 1, alignItems: 'center', justifyContent: 'center', height: '100%' },
-  qty: { fontFamily: fonts.bodyMedium, fontSize: 14, color: colors.text, minWidth: 20, textAlign: 'center' },
-  footer: { padding: space.s4 },
+  categoryTileActive: { borderColor: c.moss, backgroundColor: c.tintGreen },
+  categoryLabel: { fontFamily: f.bodySemiBold, fontSize: 14.5, color: c.ink },
+  categoryCount: { fontFamily: f.body, fontSize: 11.5, color: c.mute, marginTop: 3 },
+  rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  mutedSmall: { fontFamily: f.body, fontSize: 12, color: c.muted2 },
+  mutedBody: { fontFamily: f.body, fontSize: 13.5, color: c.mute },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 13 },
+  tile: { width: '47%', backgroundColor: c.surface, borderWidth: 1, borderColor: c.line, borderRadius: r.lg, overflow: 'hidden' },
+  tileImage: { width: '100%', aspectRatio: 1.1 },
+  tileInitial: { fontFamily: f.serif, fontSize: 44, color: 'rgba(23,26,21,0.22)' },
+  tileBody: { padding: 12, gap: 3 },
+  tileBrand: { fontFamily: f.bodySemiBold, fontSize: 10.5, letterSpacing: 0.5, textTransform: 'uppercase', color: c.muted2 },
+  tileName: { fontFamily: f.bodySemiBold, fontSize: 13.5, lineHeight: 17, color: c.ink, minHeight: 34 },
+  tilePrice: { fontFamily: f.serif, fontSize: 19, color: c.ink },
+  addBtn: { width: 28, height: 28, borderRadius: r.pill, backgroundColor: c.moss, alignItems: 'center', justifyContent: 'center' },
+  addBtnText: { color: '#fff', fontSize: 17, lineHeight: 17, fontFamily: f.body },
+  toast: {
+    position: 'absolute', left: 16, right: 16, bottom: 96, padding: 14, borderRadius: r.md,
+    backgroundColor: c.ink, flexDirection: 'row', alignItems: 'center', gap: 11,
+  },
+  toastDot: { width: 7, height: 7, borderRadius: r.pill, backgroundColor: c.clay },
+  toastText: { flex: 1, fontFamily: f.bodyMedium, fontSize: 13.5, color: c.bg },
+  toastAction: { fontFamily: f.bodyBold, fontSize: 13.5, color: c.clay },
 });

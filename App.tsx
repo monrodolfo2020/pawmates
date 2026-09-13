@@ -9,6 +9,13 @@ import {
   BarlowCondensed_400Regular,
   BarlowCondensed_600SemiBold,
 } from '@expo-google-fonts/barlow-condensed';
+import {
+  Figtree_400Regular,
+  Figtree_500Medium,
+  Figtree_600SemiBold,
+  Figtree_700Bold,
+} from '@expo-google-fonts/figtree';
+import { InstrumentSerif_400Regular } from '@expo-google-fonts/instrument-serif';
 import RootNavigator from './src/navigation/RootNavigator';
 import { AppStateProvider, useAppState } from './src/state/AppState';
 import { colors } from './src/theme/tokens';
@@ -42,6 +49,11 @@ export default function App() {
     Barlow_700Bold,
     BarlowCondensed_400Regular,
     BarlowCondensed_600SemiBold,
+    Figtree_400Regular,
+    Figtree_500Medium,
+    Figtree_600SemiBold,
+    Figtree_700Bold,
+    InstrumentSerif_400Regular,
   });
 
   return (
