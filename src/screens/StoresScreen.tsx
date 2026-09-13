@@ -27,6 +27,16 @@ export default function StoresScreen({ navigation }: Props) {
       .catch((err) => setError(err instanceof Error ? err.message : 'No se pudieron cargar las tiendas.'));
   }, [s.token]);
 
+  // There's only ever one store (see backend's Storefront comment) — go
+  // straight into its catalog instead of making the shopper pick it from
+  // a list of one. `replace`, not `navigate`, so the back button from the
+  // catalog returns to wherever the user actually came from, not here.
+  useEffect(() => {
+    if (stores?.length === 1) {
+      navigation.replace('Storefront', { providerId: stores[0].providerId });
+    }
+  }, [stores, navigation]);
+
   return (
     <ScreenContainer>
       <View style={styles.header}>
