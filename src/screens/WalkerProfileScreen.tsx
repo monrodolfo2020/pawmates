@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, Image, ScrollView, StyleSheet, Platform } from 'react-native';
 import { ChevronLeft } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
@@ -103,7 +103,14 @@ export default function WalkerProfileScreen({ navigation, route }: Props) {
 const styles = StyleSheet.create({
   header: { paddingHorizontal: space.s3, paddingVertical: space.s2 },
   scroll: { paddingHorizontal: space.s4, gap: space.s4, paddingBottom: space.s4 },
-  hero: { width: '100%', height: 150 },
+  hero: {
+    width: '100%',
+    height: 150,
+    // A face photo in a short wide banner needs the crop anchored near the
+    // top, not dead-center — center-cropping a portrait shot here tends to
+    // cut off the eyes and show mostly chin/mouth.
+    ...(Platform.OS === 'web' ? ({ objectPosition: 'top' } as object) : null),
+  },
   name: { fontFamily: fonts.heading, fontSize: 22, color: colors.text },
   badges: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   bio: { fontFamily: fonts.body, fontSize: 13, color: colors.text, opacity: 0.85 },
