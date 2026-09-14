@@ -23,6 +23,7 @@ import ProductDetailScreen from '../screens/ProductDetailScreen';
 import CartScreen from '../screens/CartScreen';
 import OrdersScreen from '../screens/OrdersScreen';
 import ProviderProfileEditScreen from '../screens/ProviderProfileEditScreen';
+import VerifyEmailScreen from '../screens/VerifyEmailScreen';
 import { useAppState } from '../state/AppState';
 
 export type RootStackParamList = {
@@ -48,6 +49,7 @@ export type RootStackParamList = {
   Orders: { mode: 'purchases' | 'sales'; title: string };
   AdminLogin: undefined;
   ProviderProfileEdit: undefined;
+  VerifyEmail: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -89,7 +91,7 @@ export default function RootNavigator() {
   // one transition, and this ref freezes the decision made at that moment
   // (a provider-only account should never later get bounced to Onboarding
   // just because an owner role got added afterwards).
-  const initialAuthedRoute = useRef<'Onboarding' | 'Home' | 'Dashboard' | null>(null);
+  const initialAuthedRoute = useRef<'Onboarding' | 'Home' | 'Dashboard' | 'VerifyEmail' | null>(null);
 
   if (s.authStatus !== 'authed') {
     initialAuthedRoute.current = null;
@@ -125,7 +127,10 @@ export default function RootNavigator() {
       // landed by default (the else-branch below). A provider who'd just
       // signed up saw their own (empty) discovery list as if they were a
       // customer looking for themselves.
-      initialAuthedRoute.current = 'Dashboard';
+      // An unverified email additionally routes through VerifyEmail first
+      // (see that screen's comment on why it's a nudge, not a hard gate —
+      // "Omitir por ahora" always works).
+      initialAuthedRoute.current = s.emailVerified ? 'Dashboard' : 'VerifyEmail';
     } else {
       initialAuthedRoute.current = 'Home';
     }
@@ -146,6 +151,7 @@ export default function RootNavigator() {
       <Stack.Screen name="Chat" component={ChatScreen} />
       <Stack.Screen name="Dashboard" component={DashboardScreen} />
       <Stack.Screen name="ProviderProfileEdit" component={ProviderProfileEditScreen} />
+      <Stack.Screen name="VerifyEmail" component={VerifyEmailScreen} />
       <Stack.Screen name="Admin" component={AdminScreen} />
       <Stack.Screen name="Profile" component={ProfileScreen} />
       <Stack.Screen name="Bookings" component={BookingsScreen} />

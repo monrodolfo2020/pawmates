@@ -41,6 +41,7 @@ type State = {
   email: string | null;
   name: string | null;
   roles: Role[];
+  emailVerified: boolean;
   authError: string | null;
   pets: Pet[];
   petsLoading: boolean;
@@ -86,6 +87,8 @@ type Ctx = State & {
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   addRole: (params: { role: 'owner' | 'provider'; facePhoto?: string; idDocumentPhoto?: string }) => Promise<void>;
+  sendVerificationEmail: () => Promise<void>;
+  verifyEmail: (code: string) => Promise<void>;
   /** Crea (o actualiza la primera) mascota del dueño con los campos del formulario. */
   savePet: () => Promise<void>;
   createBooking: (durationMinutes: number, providerServiceId: string) => Promise<void>;
@@ -128,6 +131,7 @@ const initialState: State = {
   email: null,
   name: null,
   roles: [],
+  emailVerified: false,
   authError: null,
   pets: [],
   petsLoading: false,
@@ -176,7 +180,10 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const applyAuth = useCallback(
-    async (session: { accountId: string; token: string; roles: Role[] }, me?: Pick<MeResult, 'email' | 'name'>) => {
+    async (
+      session: { accountId: string; token: string; roles: Role[] },
+      me?: Pick<MeResult, 'email' | 'name' | 'emailVerified'>,
+    ) => {
       setState((s) => ({
         ...s,
         authStatus: 'authed',
@@ -185,6 +192,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         roles: session.roles,
         email: me?.email ?? s.email,
         name: me?.name ?? s.name,
+        emailVerified: me?.emailVerified ?? s.emailVerified,
         authError: null,
       }));
       await AsyncStorage.setItem(
@@ -228,7 +236,16 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       try {
         const result: AuthResult = await api.signup(params);
         await applyAuth(result);
-        setState((s) => ({ ...s, email: params.email.toLowerCase(), name: params.name ?? s.name }));
+        // A brand-new account is never verified yet — applyAuth's `me`
+        // param is omitted here (signup's response doesn't include it),
+        // so set this explicitly rather than carrying over a stale
+        // leftover value from whatever the state held before.
+        setState((s) => ({
+          ...s,
+          email: params.email.toLowerCase(),
+          name: params.name ?? s.name,
+          emailVerified: false,
+        }));
       } catch (err) {
         setState((s) => ({
           ...s,
@@ -282,6 +299,19 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     },
     [loadPets],
   );
+
+  const sendVerificationEmail = useCallback(async () => {
+    const token = stateRef.current.token;
+    if (!token) return;
+    await api.sendVerificationEmail(token);
+  }, []);
+
+  const verifyEmail = useCallback(async (code: string) => {
+    const token = stateRef.current.token;
+    if (!token) return;
+    await api.verifyEmail(token, code);
+    setState((s) => ({ ...s, emailVerified: true }));
+  }, []);
 
   const savePet = useCallback(async () => {
     const { token, pets, petName, breed, size, temperament, vaccines, petPhotoBase64 } = stateRef.current;
@@ -455,6 +485,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       login,
       logout,
       addRole,
+      sendVerificationEmail,
+      verifyEmail,
       savePet,
       createBooking,
       acceptBooking,
@@ -474,6 +506,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     login,
     logout,
     addRole,
+    sendVerificationEmail,
+    verifyEmail,
     savePet,
     createBooking,
     acceptBooking,

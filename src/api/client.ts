@@ -59,6 +59,7 @@ export interface MeResult {
   email: string;
   name: string | null;
   roles: Role[];
+  emailVerified: boolean;
 }
 
 export interface Pet {
@@ -188,6 +189,7 @@ export interface ProviderListing {
   price: { amount: number; currency: string } | null;
   plansOffered: string | null;
   walkingSpots: string | null;
+  emailVerified: boolean;
 }
 
 export interface ProviderDetail extends ProviderListing {
@@ -306,6 +308,18 @@ export const api = {
 
   me(token: string) {
     return request<MeResult>('/v1/me', { token });
+  },
+
+  sendVerificationEmail(token: string) {
+    return request<{ sent: boolean }>('/v1/auth/send-verification-email', { method: 'POST', token });
+  },
+
+  verifyEmail(token: string, code: string) {
+    return request<{ verified: boolean }>('/v1/auth/verify-email', {
+      method: 'POST',
+      token,
+      body: { code },
+    });
   },
 
   listPets(token: string) {

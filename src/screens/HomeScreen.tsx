@@ -102,7 +102,14 @@ export default function HomeScreen({ navigation }: Props) {
               <ImagePlaceholder label="Foto" style={styles.walkerPhoto} />
             )}
             <View style={{ flex: 1, gap: 2 }}>
-              <CardTitle style={{ fontSize: 15 }}>{p.name}</CardTitle>
+              <View style={styles.nameRow}>
+                <CardTitle style={{ fontSize: 15 }}>{p.name}</CardTitle>
+                {p.emailVerified && (
+                  <Tag variant="accent" style={{ paddingVertical: 1, paddingHorizontal: 6 }}>
+                    Verificado ✓
+                  </Tag>
+                )}
+              </View>
               <CardBody style={{ margin: 0 }}>
                 {p.serviceArea ?? 'Zona sin especificar'}
                 {p.price ? ` · ${money(p.price.amount, p.price.currency)}/paseo` : ''}

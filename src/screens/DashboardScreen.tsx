@@ -48,7 +48,13 @@ export default function DashboardScreen({ navigation }: Props) {
         </View>
       </View>
 
-      <View style={{ paddingHorizontal: space.s4, paddingBottom: space.s2 }}>
+      <View style={{ paddingHorizontal: space.s4, paddingBottom: space.s2, gap: space.s2 }}>
+        {!s.emailVerified && (
+          <Card elevation="sm" onPress={() => navigation.navigate('VerifyEmail')}>
+            <CardTitle style={{ fontSize: 14 }}>Verifica tu correo</CardTitle>
+            <CardBody>Dale más confianza a los dueños confirmando que tu correo es real. Toca para verificarlo.</CardBody>
+          </Card>
+        )}
         <Button variant="secondary" block blueprint onPress={() => navigation.navigate('ProviderProfileEdit')}>
           Editar mi página pública
         </Button>
