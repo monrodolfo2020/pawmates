@@ -21,12 +21,13 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Booking'>;
 export default function BookingScreen({ navigation, route }: Props) {
   const s = useAppState();
   const [duration, setDuration] = useState('60');
+  const [petId, setPetId] = useState(s.pets[0]?.id ?? '');
   const submitting = s.bookingStatus === 'creating';
   const { walkerId } = route.params;
 
   const handleContinue = async () => {
     try {
-      await s.createBooking(Number(duration), walkerId);
+      await s.createBooking(Number(duration), walkerId, petId || undefined);
       navigation.navigate('Checkout', { walkerId });
     } catch {
       // s.bookingError is already set for display below; stay on this screen.
@@ -42,6 +43,21 @@ export default function BookingScreen({ navigation, route }: Props) {
         <Text style={styles.title}>Paseo recurrente</Text>
       </View>
       <ScrollView contentContainerStyle={styles.scroll}>
+        {s.pets.length > 1 && (
+          <Field label="¿Para cuál mascota?">
+            <View>
+              {s.pets.map((pet) => (
+                <RadioRow
+                  key={pet.id}
+                  label={`${pet.name} · ${pet.breed}`}
+                  selected={petId === pet.id}
+                  onPress={() => setPetId(pet.id)}
+                />
+              ))}
+            </View>
+          </Field>
+        )}
+
         <Field label="Días de la semana">
           <View style={styles.dayRow}>
             {dayOptions.map((d) => (

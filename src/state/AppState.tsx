@@ -99,7 +99,10 @@ type Ctx = State & {
   /** Creates a new pet, or updates the one loadPetDraft() last pointed
    * at (editingPetId) — see that field's comment. */
   savePet: () => Promise<void>;
-  createBooking: (durationMinutes: number, providerServiceId: string) => Promise<void>;
+  /** petId defaults to the owner's first pet when omitted — every
+   * existing caller before the pet selector (BookingScreen) relied on
+   * that, and it's still a sane fallback for a single-pet owner. */
+  createBooking: (durationMinutes: number, providerServiceId: string, petId?: string) => Promise<void>;
   acceptBooking: () => Promise<void>;
   startTrip: () => Promise<void>;
   completeTrip: () => Promise<void>;
@@ -342,15 +345,15 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
-  const createBooking = useCallback(async (durationMinutes: number, providerServiceId: string) => {
+  const createBooking = useCallback(async (durationMinutes: number, providerServiceId: string, petId?: string) => {
     setState((s) => ({ ...s, bookingStatus: 'creating', bookingError: null }));
     try {
       const { token, pets } = stateRef.current;
-      const petId = pets[0]?.id;
-      if (!token || !petId) {
+      const resolvedPetId = petId ?? pets[0]?.id;
+      if (!token || !resolvedPetId) {
         throw new Error('Agrega primero los datos de tu mascota.');
       }
-      const booking = await api.createBooking(token, petId, providerServiceId, durationMinutes);
+      const booking = await api.createBooking(token, resolvedPetId, providerServiceId, durationMinutes);
       setState((s) => ({ ...s, bookingId: booking.id, bookingStatus: 'created' }));
     } catch (err) {
       setState((s) => ({
