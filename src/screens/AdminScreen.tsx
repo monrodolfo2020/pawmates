@@ -194,6 +194,9 @@ function VerificationRow({ verification: v, onChange }: { verification: AdminVer
         <Tag variant={VERIFICATION_VARIANT[v.status] ?? 'outline'}>{v.status}</Tag>
       </View>
       <CardMeta>Enviada {new Date(v.createdAt).toLocaleString()}</CardMeta>
+      <Tag variant={v.profilePublished ? 'accent' : 'outline'}>
+        {v.profilePublished ? 'Página publicada ✓' : 'Página sin publicar todavía'}
+      </Tag>
       <View style={styles.photoRow}>
         <View style={{ flex: 1, gap: 4 }}>
           <CardMeta>Rostro</CardMeta>

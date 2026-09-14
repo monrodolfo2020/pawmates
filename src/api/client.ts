@@ -133,6 +133,11 @@ export interface AdminVerification {
   status: 'pending' | 'verified' | 'rejected';
   facePhoto: string;
   idDocumentPhoto: string;
+  /** Independent from `status` — this reflects whether the paseador has
+   * finished their own page (bio + price, see ProviderProfile), which is
+   * what actually makes them show up in the shopper-facing directory.
+   * An admin can approve identity and this can still be false. */
+  profilePublished: boolean;
   createdAt: string;
 }
 
