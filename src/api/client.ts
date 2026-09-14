@@ -131,6 +131,8 @@ export interface AdminVerification {
   id: string;
   accountId: string;
   status: 'pending' | 'verified' | 'rejected';
+  facePhoto: string;
+  idDocumentPhoto: string;
   createdAt: string;
 }
 
@@ -190,6 +192,7 @@ export interface ProviderListing {
   plansOffered: string | null;
   walkingSpots: string | null;
   emailVerified: boolean;
+  identityVerified: boolean;
 }
 
 export interface ProviderDetail extends ProviderListing {
@@ -347,6 +350,15 @@ export const api = {
 
   adminListVerifications(token: string) {
     return request<AdminVerification[]>('/v1/admin/provider-verifications', { token });
+  },
+
+  /** Response omits the face/ID photos (unlike adminListVerifications) —
+   * the backend doesn't re-send them on a status update. */
+  adminUpdateVerification(token: string, id: string, status: 'verified' | 'rejected') {
+    return request<Pick<AdminVerification, 'id' | 'accountId' | 'status' | 'createdAt'>>(
+      `/v1/admin/provider-verifications/${id}`,
+      { method: 'PATCH', token, body: { status } },
+    );
   },
 
   /** A single immediate booking (durationValue in minutes) — this demo skips

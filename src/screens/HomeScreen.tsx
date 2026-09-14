@@ -104,7 +104,7 @@ export default function HomeScreen({ navigation }: Props) {
             <View style={{ flex: 1, gap: 2 }}>
               <View style={styles.nameRow}>
                 <CardTitle style={{ fontSize: 15 }}>{p.name}</CardTitle>
-                {p.emailVerified && (
+                {(p.emailVerified || p.identityVerified) && (
                   <Tag variant="accent" style={{ paddingVertical: 1, paddingHorizontal: 6 }}>
                     Verificado ✓
                   </Tag>

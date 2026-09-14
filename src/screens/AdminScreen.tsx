@@ -135,13 +135,7 @@ export default function AdminScreen({ navigation }: Props) {
             <Text style={styles.h5}>Verificaciones de paseadores</Text>
             {verifications?.length === 0 && <CardMeta>No hay verificaciones registradas.</CardMeta>}
             {verifications?.map((v) => (
-              <Card key={v.id}>
-                <View style={styles.row}>
-                  <CardKicker style={{ margin: 0 }}>Cuenta {v.accountId.slice(0, 8)}…</CardKicker>
-                  <Tag variant={VERIFICATION_VARIANT[v.status] ?? 'outline'}>{v.status}</Tag>
-                </View>
-                <CardMeta>Enviada {new Date(v.createdAt).toLocaleString()}</CardMeta>
-              </Card>
+              <VerificationRow key={v.id} verification={v} onChange={load} />
             ))}
           </View>
         )}
@@ -167,6 +161,70 @@ export default function AdminScreen({ navigation }: Props) {
         {section === 'catalogo' && catalog && <CatalogoSection catalog={catalog} onChange={load} />}
       </ScrollView>
     </ScreenContainer>
+  );
+}
+
+/** Shows both photos an admin needs to actually make the call, plus
+ * Aprobar/Rechazar — the decision PATCH /v1/admin/provider-verifications/:id
+ * turns into the "Identidad verificada" badge shoppers see on that
+ * paseador's public page (see WalkerProfileScreen). */
+function VerificationRow({ verification: v, onChange }: { verification: AdminVerification; onChange: () => void }) {
+  const s = useAppState();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const decide = async (status: 'verified' | 'rejected') => {
+    if (!s.token) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await api.adminUpdateVerification(s.token, v.id, status);
+      onChange();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo guardar la decisión.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Card>
+      <View style={styles.row}>
+        <CardKicker style={{ margin: 0 }}>Cuenta {v.accountId.slice(0, 8)}…</CardKicker>
+        <Tag variant={VERIFICATION_VARIANT[v.status] ?? 'outline'}>{v.status}</Tag>
+      </View>
+      <CardMeta>Enviada {new Date(v.createdAt).toLocaleString()}</CardMeta>
+      <View style={styles.photoRow}>
+        <View style={{ flex: 1, gap: 4 }}>
+          <CardMeta>Rostro</CardMeta>
+          <Image source={{ uri: v.facePhoto }} style={styles.verificationPhoto} resizeMode="cover" />
+        </View>
+        <View style={{ flex: 1, gap: 4 }}>
+          <CardMeta>Documento</CardMeta>
+          <Image source={{ uri: v.idDocumentPhoto }} style={styles.verificationPhoto} resizeMode="cover" />
+        </View>
+      </View>
+      {error && <CardMeta style={{ color: colors.accent }}>{error}</CardMeta>}
+      <View style={{ flexDirection: 'row', gap: space.s2 }}>
+        <Button
+          variant="secondary"
+          style={{ flex: 1 }}
+          disabled={busy || v.status === 'rejected'}
+          onPress={() => decide('rejected')}
+        >
+          Rechazar
+        </Button>
+        <Button
+          variant="primary"
+          blueprint
+          style={{ flex: 1 }}
+          disabled={busy || v.status === 'verified'}
+          onPress={() => decide('verified')}
+        >
+          {busy ? 'Guardando…' : 'Aprobar'}
+        </Button>
+      </View>
+    </Card>
   );
 }
 
@@ -610,4 +668,6 @@ const styles = StyleSheet.create({
   catalogPhoto: { width: 56, height: 56, marginRight: space.s3 },
   catalogRow: { flexDirection: 'row', alignItems: 'flex-end', gap: space.s2, paddingVertical: 6 },
   thumb: { width: 36, height: 36, borderRadius: 0, backgroundColor: colors.accent100 },
+  photoRow: { flexDirection: 'row', gap: space.s2 },
+  verificationPhoto: { width: '100%', aspectRatio: 1, backgroundColor: colors.accent100 },
 });

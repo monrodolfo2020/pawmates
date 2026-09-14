@@ -60,6 +60,7 @@ export default function WalkerProfileScreen({ navigation, route }: Props) {
               {provider.serviceArea && <CardMeta style={{ fontSize: 13, marginTop: 2 }}>{provider.serviceArea}</CardMeta>}
             </View>
             <View style={styles.badges}>
+              {provider.identityVerified && <Tag variant="accent">Identidad verificada ✓</Tag>}
               {provider.emailVerified && <Tag variant="accent">Correo verificado ✓</Tag>}
               {provider.specialty && <Tag variant="accent">{provider.specialty}</Tag>}
               {provider.price && (
