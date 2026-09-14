@@ -39,7 +39,7 @@ export default function WelcomeScreen({ navigation }: Props) {
           blueprint
           onPress={() => navigation.navigate('Signup', { role: 'owner' })}
         >
-          Soy dueño de mascota
+          Soy dueño de mascota — Registrarse
         </Button>
         <Button
           variant="secondary"
