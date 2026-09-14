@@ -44,6 +44,10 @@ type State = {
   emailVerified: boolean;
   authError: string | null;
   pets: Pet[];
+  /** id of the Pet the draft fields above (petName, breed, ...) currently
+   * represent — null means "a new pet, not saved yet". Set by
+   * loadPetDraft(), read by savePet() to decide create vs update. */
+  editingPetId: string | null;
   petsLoading: boolean;
   /** True once the first /v1/pets fetch after login/signup has resolved —
    * lets RootNavigator wait for the real answer instead of picking
@@ -89,7 +93,11 @@ type Ctx = State & {
   addRole: (params: { role: 'owner' | 'provider'; facePhoto?: string; idDocumentPhoto?: string }) => Promise<void>;
   sendVerificationEmail: () => Promise<void>;
   verifyEmail: (code: string) => Promise<void>;
-  /** Crea (o actualiza la primera) mascota del dueño con los campos del formulario. */
+  /** Seeds the pet-form draft fields — pass a Pet to edit it, or null to
+   * start a new one. Always call before navigating to the pet form. */
+  loadPetDraft: (pet: Pet | null) => void;
+  /** Creates a new pet, or updates the one loadPetDraft() last pointed
+   * at (editingPetId) — see that field's comment. */
   savePet: () => Promise<void>;
   createBooking: (durationMinutes: number, providerServiceId: string) => Promise<void>;
   acceptBooking: () => Promise<void>;
@@ -134,6 +142,7 @@ const initialState: State = {
   emailVerified: false,
   authError: null,
   pets: [],
+  editingPetId: null,
   petsLoading: false,
   petsChecked: false,
   bookingId: null,
@@ -158,22 +167,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     setState((s) => ({ ...s, petsLoading: true }));
     try {
       const pets = await api.listPets(token);
-      const first = pets[0];
-      setState((s) => ({
-        ...s,
-        pets,
-        petsLoading: false,
-        petsChecked: true,
-        // Authoritative, not a fallback merge — an account with no pets
-        // yet must show a blank Onboarding form, never whatever a
-        // previous account in this same tab had typed.
-        petName: first?.name ?? '',
-        breed: first?.breed ?? '',
-        size: first?.size ?? 'Mediano',
-        temperament: first?.temperament ?? [],
-        vaccines: first?.vaccines ?? [],
-        petPhotoUri: first?.photo ?? null,
-      }));
+      setState((s) => ({ ...s, pets, petsLoading: false, petsChecked: true }));
     } catch {
       setState((s) => ({ ...s, petsLoading: false, petsChecked: true }));
     }
@@ -313,10 +307,29 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     setState((s) => ({ ...s, emailVerified: true }));
   }, []);
 
+  /** Seeds the draft fields from a specific pet (editing it) or resets
+   * them to blank (`pet: null` — starting a new one). Always call this
+   * before showing the pet form; savePet() below trusts editingPetId
+   * completely, it doesn't re-derive "which pet" from anything else. */
+  const loadPetDraft = useCallback((pet: Pet | null) => {
+    setState((s) => ({
+      ...s,
+      editingPetId: pet?.id ?? null,
+      petName: pet?.name ?? '',
+      breed: pet?.breed ?? '',
+      size: pet?.size ?? 'Mediano',
+      temperament: pet?.temperament ?? [],
+      vaccines: pet?.vaccines ?? [],
+      petPhotoUri: pet?.photo ?? null,
+      petPhotoBase64: null,
+    }));
+  }, []);
+
   const savePet = useCallback(async () => {
-    const { token, pets, petName, breed, size, temperament, vaccines, petPhotoBase64 } = stateRef.current;
+    const { token, pets, editingPetId, petName, breed, size, temperament, vaccines, petPhotoBase64 } =
+      stateRef.current;
     if (!token) return;
-    const existing = pets[0];
+    const existing = editingPetId ? pets.find((p) => p.id === editingPetId) : undefined;
     const photo = petPhotoBase64 ?? existing?.photo ?? null;
     const saved = existing
       ? await api.updatePet(token, existing.id, { name: petName, breed, size, temperament, vaccines, photo })
@@ -324,6 +337,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     setState((s) => ({
       ...s,
       pets: existing ? s.pets.map((p) => (p.id === saved.id ? saved : p)) : [saved, ...s.pets],
+      editingPetId: saved.id,
       petPhotoBase64: null,
     }));
   }, []);
@@ -487,6 +501,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       addRole,
       sendVerificationEmail,
       verifyEmail,
+      loadPetDraft,
       savePet,
       createBooking,
       acceptBooking,
@@ -508,6 +523,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     addRole,
     sendVerificationEmail,
     verifyEmail,
+    loadPetDraft,
     savePet,
     createBooking,
     acceptBooking,

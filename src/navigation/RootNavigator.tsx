@@ -30,7 +30,7 @@ export type RootStackParamList = {
   Welcome: undefined;
   Login: undefined;
   Signup: { role?: 'owner' | 'provider' } | undefined;
-  Onboarding: undefined;
+  Onboarding: { petId?: string } | undefined;
   Home: undefined;
   WalkerProfile: { walkerId: string };
   Booking: { walkerId: string };

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { ArrowRight, ChevronLeft } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -19,24 +19,41 @@ import { sizeOptions, temperamentOptions, vaccineOptions } from '../state/mockDa
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Onboarding'>;
 
-// Doubles as the "editar mascota" screen once an owner already has one —
-// loadPets (AppState) already seeds the draft fields (petName,
-// petPhotoUri, etc.) from the existing pet on every login, and savePet()
-// already does create-or-update, so the only thing missing for editing
-// was a way back here and copy that doesn't say "Paso 1 de 1" once
-// there's nothing left to onboard.
-export default function OnboardingScreen({ navigation }: Props) {
+// Three modes, one form — an owner can have any number of pets (see
+// PetsController: no one-per-owner constraint), so this screen needs to
+// tell apart "the forced first pet" from "editing pet X" from "adding
+// another one":
+//   - no petId + zero pets yet: the original forced flow (no back
+//     button — Onboarding has always been the one screen a brand-new
+//     owner can't skip, see RootNavigator's comment on why admin
+//     accounts bypass it).
+//   - petId given: editing that specific pet.
+//   - no petId + at least one pet already: adding a new one.
+// loadPetDraft() (AppState) seeds/resets the shared draft fields
+// (petName, breed, ...) for whichever of these it is; savePet() then
+// trusts editingPetId completely rather than re-guessing "which pet".
+export default function OnboardingScreen({ navigation, route }: Props) {
   const s = useAppState();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const isEditing = s.pets.length > 0;
+  const petId = route.params?.petId;
+  const isForcedFirstTime = !petId && s.pets.length === 0;
+  const isEditingExisting = !!petId;
+
+  useEffect(() => {
+    const pet = petId ? s.pets.find((p) => p.id === petId) ?? null : null;
+    s.loadPetDraft(pet);
+    // Only re-seed when navigating to a different pet (or fresh) — not on
+    // every keystroke, which would also live in `s`.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [petId]);
 
   const handleSave = async () => {
     setError(null);
     setSaving(true);
     try {
       await s.savePet();
-      if (isEditing && navigation.canGoBack()) navigation.goBack();
+      if (!isForcedFirstTime && navigation.canGoBack()) navigation.goBack();
       else navigation.replace('Home');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo guardar a tu mascota.');
@@ -45,19 +62,22 @@ export default function OnboardingScreen({ navigation }: Props) {
     }
   };
 
+  const title = isEditingExisting ? 'Tu mascota' : isForcedFirstTime ? 'Cuéntanos de tu perro' : 'Agregar mascota';
+  const saveLabel = isEditingExisting ? 'Guardar cambios' : isForcedFirstTime ? 'Guardar y continuar' : 'Agregar mascota';
+
   return (
     <ScreenContainer>
       <View style={styles.header}>
-        {isEditing ? (
+        {isForcedFirstTime ? (
+          <Text style={styles.kicker}>Paso 1 de 1</Text>
+        ) : (
           <IconButton onPress={() => (navigation.canGoBack() ? navigation.goBack() : navigation.navigate('Home'))}>
             <ChevronLeft size={18} strokeWidth={1.5} color={colors.text} />
           </IconButton>
-        ) : (
-          <Text style={styles.kicker}>Paso 1 de 1</Text>
         )}
       </View>
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Text style={styles.title}>{isEditing ? 'Tu mascota' : 'Cuéntanos de tu perro'}</Text>
+        <Text style={styles.title}>{title}</Text>
         <Text style={styles.subtitle}>
           Con esto encontramos paseadores que encajen con su tamaño y temperamento.
         </Text>
@@ -126,7 +146,7 @@ export default function OnboardingScreen({ navigation }: Props) {
           icon={<ArrowRight size={14} strokeWidth={1.5} color={colors.bg} />}
           onPress={handleSave}
         >
-          {saving ? 'Guardando…' : isEditing ? 'Guardar cambios' : 'Guardar y continuar'}
+          {saving ? 'Guardando…' : saveLabel}
         </Button>
       </View>
     </ScreenContainer>

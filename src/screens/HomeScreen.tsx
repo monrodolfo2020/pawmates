@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Image, ScrollView, StyleSheet, Pressable } from 'react-native';
+import { Plus } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
@@ -63,9 +64,13 @@ export default function HomeScreen({ navigation }: Props) {
       {s.pets.length > 0 && (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.petsRow} contentContainerStyle={styles.petsRowContent}>
           {s.pets.map((pet) => (
-            // 'Onboarding' also serves as the edit form once a pet
-            // already exists — see that screen's comment.
-            <Pressable key={pet.id} style={styles.petItem} onPress={() => navigation.navigate('Onboarding')}>
+            // 'Onboarding' also serves as the per-pet edit form — see
+            // that screen's comment on its three modes.
+            <Pressable
+              key={pet.id}
+              style={styles.petItem}
+              onPress={() => navigation.navigate('Onboarding', { petId: pet.id })}
+            >
               {pet.photo ? (
                 <Image source={{ uri: pet.photo }} style={styles.petPhoto} resizeMode="cover" />
               ) : (
@@ -74,6 +79,12 @@ export default function HomeScreen({ navigation }: Props) {
               <Text style={styles.petName} numberOfLines={1}>{pet.name}</Text>
             </Pressable>
           ))}
+          <Pressable style={styles.petItem} onPress={() => navigation.navigate('Onboarding')}>
+            <View style={styles.addPetPhoto}>
+              <Plus size={20} strokeWidth={1.5} color={colors.accent} />
+            </View>
+            <Text style={styles.petName} numberOfLines={1}>Agregar</Text>
+          </Pressable>
         </ScrollView>
       )}
 
@@ -166,6 +177,10 @@ const styles = StyleSheet.create({
   petsRowContent: { paddingHorizontal: space.s4, gap: space.s3, paddingBottom: space.s2 },
   petItem: { alignItems: 'center', gap: 4, width: 56 },
   petPhoto: { width: 48, height: 48, borderWidth: 1, borderColor: colors.divider },
+  addPetPhoto: {
+    width: 48, height: 48, borderWidth: 1, borderColor: colors.accent, borderStyle: 'dashed',
+    alignItems: 'center', justifyContent: 'center',
+  },
   petName: { fontFamily: fonts.body, fontSize: 11, color: colors.text, opacity: 0.8 },
   segRow: { paddingHorizontal: space.s4, paddingBottom: space.s2 },
   list: { paddingHorizontal: space.s4, gap: space.s3, paddingBottom: space.s4 },

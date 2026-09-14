@@ -43,14 +43,19 @@ export default function ProfileScreen({ navigation }: Props) {
           </View>
         </Card>
 
-        {s.roles.includes('owner') && s.pets.length > 0 && (
+        {s.roles.includes('owner') && (
           <Card>
             <CardKicker>Tus mascotas</CardKicker>
             {s.pets.map((p) => (
-              <CardMeta key={p.id}>{p.name} · {p.breed} · {p.size}</CardMeta>
+              <View key={p.id} style={styles.petRow}>
+                <CardMeta style={{ flex: 1 }}>{p.name} · {p.breed} · {p.size}</CardMeta>
+                <Button variant="ghost" onPress={() => navigation.navigate('Onboarding', { petId: p.id })}>
+                  Editar
+                </Button>
+              </View>
             ))}
             <Button variant="ghost" onPress={() => navigation.navigate('Onboarding')}>
-              Editar
+              {s.pets.length > 0 ? '+ Agregar otra mascota' : '+ Agregar una mascota'}
             </Button>
           </Card>
         )}
@@ -103,4 +108,5 @@ const styles = StyleSheet.create({
   title: { fontFamily: fonts.heading, fontSize: 20, color: colors.text },
   body: { paddingHorizontal: space.s4, gap: space.s4, paddingBottom: space.s4 },
   wrapRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  petRow: { flexDirection: 'row', alignItems: 'center', gap: space.s2 },
 });
