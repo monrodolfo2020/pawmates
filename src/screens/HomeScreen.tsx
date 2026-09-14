@@ -60,6 +60,21 @@ export default function HomeScreen({ navigation }: Props) {
         </View>
       </View>
 
+      {s.pets.length > 0 && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.petsRow} contentContainerStyle={styles.petsRowContent}>
+          {s.pets.map((pet) => (
+            <Pressable key={pet.id} style={styles.petItem} onPress={() => navigation.navigate('Profile')}>
+              {pet.photo ? (
+                <Image source={{ uri: pet.photo }} style={styles.petPhoto} resizeMode="cover" />
+              ) : (
+                <ImagePlaceholder label="Foto" style={styles.petPhoto} />
+              )}
+              <Text style={styles.petName} numberOfLines={1}>{pet.name}</Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+      )}
+
       <View style={styles.segRow}>
         <Segmented
           options={[{ label: 'Lista', value: 'lista' }, { label: 'Mapa', value: 'mapa' }]}
@@ -145,6 +160,11 @@ const styles = StyleSheet.create({
   kicker: { fontFamily: fonts.body, fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', color: colors.accent },
   title: { fontFamily: fonts.heading, fontSize: 22, color: colors.text },
   avatar: { width: 40, height: 40 },
+  petsRow: { flexGrow: 0 },
+  petsRowContent: { paddingHorizontal: space.s4, gap: space.s3, paddingBottom: space.s2 },
+  petItem: { alignItems: 'center', gap: 4, width: 56 },
+  petPhoto: { width: 48, height: 48, borderWidth: 1, borderColor: colors.divider },
+  petName: { fontFamily: fonts.body, fontSize: 11, color: colors.text, opacity: 0.8 },
   segRow: { paddingHorizontal: space.s4, paddingBottom: space.s2 },
   list: { paddingHorizontal: space.s4, gap: space.s3, paddingBottom: space.s4 },
   walkerPhoto: { width: 56, height: 56, marginRight: space.s3 },
