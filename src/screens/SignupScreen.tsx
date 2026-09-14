@@ -8,9 +8,9 @@ import { IconButton } from '../components/Button';
 import Button from '../components/Button';
 import TextField from '../components/TextField';
 import Field from '../components/Field';
-import Segmented from '../components/Segmented';
 import PhotoPicker, { PhotoResult } from '../components/PhotoPicker';
 import Card from '../components/Card';
+import Tag from '../components/Tag';
 import { CardBody } from '../components/CardText';
 import { colors, fonts, space } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
@@ -19,7 +19,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Signup'>;
 
 export default function SignupScreen({ navigation, route }: Props) {
   const s = useAppState();
-  const [role, setRole] = useState<'owner' | 'provider'>(route.params?.role ?? 'owner');
+  const role: 'owner' | 'provider' = route.params?.role ?? 'owner';
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -58,14 +58,7 @@ export default function SignupScreen({ navigation, route }: Props) {
       </View>
       <ScrollView contentContainerStyle={styles.body}>
         <Field label="Tipo de cuenta">
-          <Segmented
-            options={[
-              { label: 'Dueño', value: 'owner' },
-              { label: 'Paseador', value: 'provider' },
-            ]}
-            value={role}
-            onChange={(v) => setRole(v as 'owner' | 'provider')}
-          />
+          <Tag variant="accent">{role === 'provider' ? 'Paseador' : 'Dueño de mascota'}</Tag>
         </Field>
 
         <TextField label="Nombre" value={name} onChangeText={setName} placeholder="Tu nombre" autoCapitalize="words" />
