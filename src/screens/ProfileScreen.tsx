@@ -49,6 +49,9 @@ export default function ProfileScreen({ navigation }: Props) {
             {s.pets.map((p) => (
               <CardMeta key={p.id}>{p.name} · {p.breed} · {p.size}</CardMeta>
             ))}
+            <Button variant="ghost" onPress={() => navigation.navigate('Onboarding')}>
+              Editar
+            </Button>
           </Card>
         )}
 

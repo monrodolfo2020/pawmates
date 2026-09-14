@@ -63,7 +63,9 @@ export default function HomeScreen({ navigation }: Props) {
       {s.pets.length > 0 && (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.petsRow} contentContainerStyle={styles.petsRowContent}>
           {s.pets.map((pet) => (
-            <Pressable key={pet.id} style={styles.petItem} onPress={() => navigation.navigate('Profile')}>
+            // 'Onboarding' also serves as the edit form once a pet
+            // already exists — see that screen's comment.
+            <Pressable key={pet.id} style={styles.petItem} onPress={() => navigation.navigate('Onboarding')}>
               {pet.photo ? (
                 <Image source={{ uri: pet.photo }} style={styles.petPhoto} resizeMode="cover" />
               ) : (

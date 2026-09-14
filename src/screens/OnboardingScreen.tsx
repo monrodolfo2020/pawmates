@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
-import { ArrowRight } from 'lucide-react-native';
+import { ArrowRight, ChevronLeft } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
@@ -10,7 +10,7 @@ import PhotoPicker from '../components/PhotoPicker';
 import Segmented from '../components/Segmented';
 import Tag from '../components/Tag';
 import RadioRow from '../components/RadioRow';
-import Button from '../components/Button';
+import Button, { IconButton } from '../components/Button';
 import Card from '../components/Card';
 import { CardBody } from '../components/CardText';
 import { colors, fonts, space } from '../theme/tokens';
@@ -19,17 +19,25 @@ import { sizeOptions, temperamentOptions, vaccineOptions } from '../state/mockDa
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Onboarding'>;
 
+// Doubles as the "editar mascota" screen once an owner already has one —
+// loadPets (AppState) already seeds the draft fields (petName,
+// petPhotoUri, etc.) from the existing pet on every login, and savePet()
+// already does create-or-update, so the only thing missing for editing
+// was a way back here and copy that doesn't say "Paso 1 de 1" once
+// there's nothing left to onboard.
 export default function OnboardingScreen({ navigation }: Props) {
   const s = useAppState();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const isEditing = s.pets.length > 0;
 
   const handleSave = async () => {
     setError(null);
     setSaving(true);
     try {
       await s.savePet();
-      navigation.replace('Home');
+      if (isEditing && navigation.canGoBack()) navigation.goBack();
+      else navigation.replace('Home');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo guardar a tu mascota.');
     } finally {
@@ -40,10 +48,16 @@ export default function OnboardingScreen({ navigation }: Props) {
   return (
     <ScreenContainer>
       <View style={styles.header}>
-        <Text style={styles.kicker}>Paso 1 de 1</Text>
+        {isEditing ? (
+          <IconButton onPress={() => (navigation.canGoBack() ? navigation.goBack() : navigation.navigate('Home'))}>
+            <ChevronLeft size={18} strokeWidth={1.5} color={colors.text} />
+          </IconButton>
+        ) : (
+          <Text style={styles.kicker}>Paso 1 de 1</Text>
+        )}
       </View>
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Text style={styles.title}>Cuéntanos de tu perro</Text>
+        <Text style={styles.title}>{isEditing ? 'Tu mascota' : 'Cuéntanos de tu perro'}</Text>
         <Text style={styles.subtitle}>
           Con esto encontramos paseadores que encajen con su tamaño y temperamento.
         </Text>
@@ -112,7 +126,7 @@ export default function OnboardingScreen({ navigation }: Props) {
           icon={<ArrowRight size={14} strokeWidth={1.5} color={colors.bg} />}
           onPress={handleSave}
         >
-          {saving ? 'Guardando…' : 'Guardar y continuar'}
+          {saving ? 'Guardando…' : isEditing ? 'Guardar cambios' : 'Guardar y continuar'}
         </Button>
       </View>
     </ScreenContainer>
