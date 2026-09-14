@@ -66,6 +66,18 @@ export default function WalkerProfileScreen({ navigation, route }: Props) {
               )}
             </View>
             {provider.bio && <Text style={styles.bio}>{provider.bio}</Text>}
+            {provider.plansOffered && (
+              <View style={{ gap: space.s2 }}>
+                <Text style={styles.h5}>Planes y servicios</Text>
+                <Text style={styles.bio}>{provider.plansOffered}</Text>
+              </View>
+            )}
+            {provider.walkingSpots && (
+              <View style={{ gap: space.s2 }}>
+                <Text style={styles.h5}>Parques y sitios donde pasea</Text>
+                <Text style={styles.bio}>{provider.walkingSpots}</Text>
+              </View>
+            )}
             <View style={styles.hr} />
             <View style={{ gap: space.s2 }}>
               <Text style={styles.h5}>Reseñas</Text>

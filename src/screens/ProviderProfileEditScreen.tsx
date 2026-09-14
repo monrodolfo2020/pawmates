@@ -26,6 +26,12 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
   const [serviceArea, setServiceArea] = useState('');
   const [specialty, setSpecialty] = useState('');
   const [priceMxn, setPriceMxn] = useState('');
+  const [plansOffered, setPlansOffered] = useState('');
+  const [walkingSpots, setWalkingSpots] = useState('');
+  const [address, setAddress] = useState('');
+  const [idNumber, setIdNumber] = useState('');
+  const [age, setAge] = useState('');
+  const [phone, setPhone] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -41,6 +47,12 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
           setServiceArea(profile.serviceArea ?? '');
           setSpecialty(profile.specialty ?? '');
           setPriceMxn(profile.price ? String(profile.price.amount / 100) : '');
+          setPlansOffered(profile.plansOffered ?? '');
+          setWalkingSpots(profile.walkingSpots ?? '');
+          setAddress(profile.address ?? '');
+          setIdNumber(profile.idNumber ?? '');
+          setAge(profile.age !== null ? String(profile.age) : '');
+          setPhone(profile.phone ?? '');
         }
         setLoaded(true);
       })
@@ -56,6 +68,7 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
     setSaving(true);
     try {
       const priceAmount = priceMxn.trim() ? Math.round(Number(priceMxn) * 100) : undefined;
+      const ageValue = age.trim() ? Number(age) : undefined;
       const saved = await api.saveMyProviderProfile(s.token, {
         bio: bio.trim(),
         serviceArea: serviceArea.trim(),
@@ -63,6 +76,12 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
         photo: photo?.base64 ?? undefined,
         priceAmount,
         priceCurrency: priceAmount !== undefined ? 'MXN' : undefined,
+        plansOffered: plansOffered.trim(),
+        walkingSpots: walkingSpots.trim(),
+        address: address.trim(),
+        idNumber: idNumber.trim(),
+        age: ageValue,
+        phone: phone.trim(),
       });
       setIsPublished(saved.isPublished);
       if (saved.photo) setExistingPhotoUrl(saved.photo);
@@ -132,6 +151,48 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
           placeholder="Ej. 850"
           keyboardType="numeric"
         />
+        <TextField
+          label="Planes y servicios"
+          value={plansOffered}
+          onChangeText={setPlansOffered}
+          placeholder="Ej. Paseo individual 30 min, plan semanal 3x"
+          multiline
+          numberOfLines={2}
+        />
+        <TextField
+          label="Parques o sitios donde paseas"
+          value={walkingSpots}
+          onChangeText={setWalkingSpots}
+          placeholder="Ej. Parque México, Bosque de Chapultepec"
+        />
+
+        <View style={{ gap: 4, marginTop: space.s2 }}>
+          <Text style={styles.sectionTitle}>Verificación (privado)</Text>
+          <Text style={styles.sectionNote}>
+            Esta información no se muestra en tu página pública — solo la ven nuestro equipo de
+            verificación y tú, para dar más confianza a los dueños que reservan contigo.
+          </Text>
+        </View>
+        <TextField
+          label="Dirección"
+          value={address}
+          onChangeText={setAddress}
+          placeholder="Tu dirección actual"
+        />
+        <TextField
+          label="Número de identidad (INE, cédula, etc.)"
+          value={idNumber}
+          onChangeText={setIdNumber}
+          placeholder="Ej. INE1234567890"
+        />
+        <TextField label="Edad" value={age} onChangeText={setAge} placeholder="Ej. 29" keyboardType="numeric" />
+        <TextField
+          label="Teléfono"
+          value={phone}
+          onChangeText={setPhone}
+          placeholder="Ej. 5511223344"
+          keyboardType="phone-pad"
+        />
 
         <Button variant="primary" block blueprint onPress={handleSave} disabled={saving}>
           {saving ? 'Guardando…' : 'Guardar'}
@@ -149,4 +210,6 @@ const styles = StyleSheet.create({
   title: { fontFamily: fonts.heading, fontSize: 18, color: colors.text },
   body: { paddingHorizontal: space.s4, paddingBottom: space.s4, gap: space.s3 },
   photo: { width: 88, height: 88 },
+  sectionTitle: { fontFamily: fonts.heading, fontSize: 15, color: colors.text },
+  sectionNote: { fontFamily: fonts.body, fontSize: 12, color: colors.textMuted70 },
 });

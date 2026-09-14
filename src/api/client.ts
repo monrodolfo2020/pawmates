@@ -186,12 +186,18 @@ export interface ProviderListing {
   serviceArea: string | null;
   specialty: string | null;
   price: { amount: number; currency: string } | null;
+  plansOffered: string | null;
+  walkingSpots: string | null;
 }
 
 export interface ProviderDetail extends ProviderListing {
   bio: string | null;
 }
 
+// Private fields (address/idNumber/age/phone) only ever come back on this
+// shape — the provider looking at their own page — never on
+// ProviderListing/ProviderDetail (the backend never serializes them into
+// a public response; see ProvidersController's comment).
 export interface MyProviderProfile {
   accountId: string;
   bio: string | null;
@@ -199,6 +205,12 @@ export interface MyProviderProfile {
   serviceArea: string | null;
   specialty: string | null;
   price: { amount: number; currency: string } | null;
+  plansOffered: string | null;
+  walkingSpots: string | null;
+  address: string | null;
+  idNumber: string | null;
+  age: number | null;
+  phone: string | null;
   isPublished: boolean;
 }
 
@@ -525,6 +537,12 @@ export const api = {
       photo: string;
       priceAmount: number;
       priceCurrency: string;
+      plansOffered: string;
+      walkingSpots: string;
+      address: string;
+      idNumber: string;
+      age: number;
+      phone: string;
     }>,
   ) {
     return request<MyProviderProfile>('/v1/providers/me', { method: 'PATCH', token, body: params });

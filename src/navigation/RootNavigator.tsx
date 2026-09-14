@@ -89,7 +89,7 @@ export default function RootNavigator() {
   // one transition, and this ref freezes the decision made at that moment
   // (a provider-only account should never later get bounced to Onboarding
   // just because an owner role got added afterwards).
-  const initialAuthedRoute = useRef<'Onboarding' | 'Home' | null>(null);
+  const initialAuthedRoute = useRef<'Onboarding' | 'Home' | 'Dashboard' | null>(null);
 
   if (s.authStatus !== 'authed') {
     initialAuthedRoute.current = null;
@@ -119,6 +119,13 @@ export default function RootNavigator() {
       // including ones with existing pets, to Onboarding on every login).
       if (!s.petsChecked) return null;
       initialAuthedRoute.current = s.pets.length === 0 ? 'Onboarding' : 'Home';
+    } else if (s.roles.includes('provider') && !s.roles.includes('admin')) {
+      // A provider-only account has no reason to land on Home — that's the
+      // owner's "find a walker" screen, and used to be where every account
+      // landed by default (the else-branch below). A provider who'd just
+      // signed up saw their own (empty) discovery list as if they were a
+      // customer looking for themselves.
+      initialAuthedRoute.current = 'Dashboard';
     } else {
       initialAuthedRoute.current = 'Home';
     }
