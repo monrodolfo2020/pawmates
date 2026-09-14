@@ -299,6 +299,7 @@ export const api = {
     name?: string;
     facePhoto?: string;
     idDocumentPhoto?: string;
+    profilePhoto?: string;
   }) {
     return request<AuthResult>('/v1/auth/signup', { method: 'POST', body: params });
   },
@@ -309,7 +310,12 @@ export const api = {
 
   addRole(
     token: string,
-    params: { role: 'owner' | 'provider'; facePhoto?: string; idDocumentPhoto?: string },
+    params: {
+      role: 'owner' | 'provider';
+      facePhoto?: string;
+      idDocumentPhoto?: string;
+      profilePhoto?: string;
+    },
   ) {
     return request<AuthResult>('/v1/auth/roles', { method: 'POST', token, body: params });
   },

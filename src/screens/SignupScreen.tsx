@@ -25,6 +25,7 @@ export default function SignupScreen({ navigation, route }: Props) {
   const [password, setPassword] = useState('');
   const [facePhoto, setFacePhoto] = useState<PhotoResult | null>(null);
   const [idPhoto, setIdPhoto] = useState<PhotoResult | null>(null);
+  const [profilePhoto, setProfilePhoto] = useState<PhotoResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const missingProviderPhotos = role === 'provider' && (!facePhoto?.base64 || !idPhoto?.base64);
@@ -40,6 +41,7 @@ export default function SignupScreen({ navigation, route }: Props) {
         name: name.trim() || undefined,
         facePhoto: facePhoto?.base64 ?? undefined,
         idDocumentPhoto: idPhoto?.base64 ?? undefined,
+        profilePhoto: profilePhoto?.base64 ?? undefined,
       });
     } catch {
       // s.authError is already set for display below.
@@ -104,6 +106,34 @@ export default function SignupScreen({ navigation, route }: Props) {
                     alertTitle="Foto de tu documento"
                   />
                 </Field>
+              </View>
+            </View>
+
+            <View style={{ gap: space.s2 }}>
+              <Text style={styles.note}>
+                Los dueños verán esta otra foto en tu página pública — puedes usar la misma de tu
+                cara o subir una distinta, y siempre podrás cambiarla después desde tu página.
+              </Text>
+              <View style={styles.photoRow}>
+                <View style={{ flex: 1 }}>
+                  <Field label="Foto de tu página pública">
+                    <PhotoPicker
+                      uri={profilePhoto?.uri ?? null}
+                      onChange={setProfilePhoto}
+                      style={styles.photoBox}
+                      alertTitle="Foto de tu página pública"
+                    />
+                  </Field>
+                </View>
+                <View style={{ flex: 1, justifyContent: 'flex-end' }}>
+                  <Button
+                    variant="secondary"
+                    disabled={!facePhoto?.base64}
+                    onPress={() => facePhoto && setProfilePhoto(facePhoto)}
+                  >
+                    Usar esta fotografía
+                  </Button>
+                </View>
               </View>
             </View>
           </View>

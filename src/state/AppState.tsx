@@ -87,10 +87,16 @@ type Ctx = State & {
     name?: string;
     facePhoto?: string;
     idDocumentPhoto?: string;
+    profilePhoto?: string;
   }) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  addRole: (params: { role: 'owner' | 'provider'; facePhoto?: string; idDocumentPhoto?: string }) => Promise<void>;
+  addRole: (params: {
+    role: 'owner' | 'provider';
+    facePhoto?: string;
+    idDocumentPhoto?: string;
+    profilePhoto?: string;
+  }) => Promise<void>;
   sendVerificationEmail: () => Promise<void>;
   verifyEmail: (code: string) => Promise<void>;
   /** Seeds the pet-form draft fields — pass a Pet to edit it, or null to
@@ -228,6 +234,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       name?: string;
       facePhoto?: string;
       idDocumentPhoto?: string;
+      profilePhoto?: string;
     }) => {
       setState((s) => ({ ...s, authError: null }));
       try {
@@ -278,7 +285,12 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const addRole = useCallback(
-    async (params: { role: 'owner' | 'provider'; facePhoto?: string; idDocumentPhoto?: string }) => {
+    async (params: {
+      role: 'owner' | 'provider';
+      facePhoto?: string;
+      idDocumentPhoto?: string;
+      profilePhoto?: string;
+    }) => {
       const token = stateRef.current.token;
       if (!token) return;
       setState((s) => ({ ...s, authError: null }));
