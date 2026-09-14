@@ -47,7 +47,7 @@ export default function WelcomeScreen({ navigation }: Props) {
           blueprint
           onPress={() => navigation.navigate('Signup', { role: 'provider' })}
         >
-          Quiero ser paseador
+          Quiero ser paseador — Registrarse
         </Button>
         <Button variant="ghost" block onPress={() => navigation.navigate('Login')}>
           Ya tengo cuenta — iniciar sesión
