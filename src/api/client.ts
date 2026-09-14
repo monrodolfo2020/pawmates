@@ -177,6 +177,31 @@ export interface StorefrontDetail extends Storefront {
   products: Product[];
 }
 
+// --- PawMates Providers (real paseador directory/profile) ---
+
+export interface ProviderListing {
+  accountId: string;
+  name: string;
+  photo: string | null;
+  serviceArea: string | null;
+  specialty: string | null;
+  price: { amount: number; currency: string } | null;
+}
+
+export interface ProviderDetail extends ProviderListing {
+  bio: string | null;
+}
+
+export interface MyProviderProfile {
+  accountId: string;
+  bio: string | null;
+  photo: string | null;
+  serviceArea: string | null;
+  specialty: string | null;
+  price: { amount: number; currency: string } | null;
+  isPublished: boolean;
+}
+
 export type OrderStatus =
   | 'pending_payment'
   | 'paid'
@@ -471,6 +496,38 @@ export const api = {
 
   attachDeliveryBooking(token: string, orderId: string) {
     return request<Order>(`/v1/orders/${orderId}/attach-delivery-booking`, { method: 'POST', token });
+  },
+
+  // --- PawMates Providers (real paseador directory/profile) ---
+
+  /** Public — works for a signed-out guest too (token is optional). */
+  listProviders(token?: string | null) {
+    return request<ProviderListing[]>('/v1/providers', { token: token ?? undefined });
+  },
+
+  /** Public — works for a signed-out guest too (token is optional). */
+  getProvider(token: string | null | undefined, accountId: string) {
+    return request<ProviderDetail>(`/v1/providers/${accountId}`, { token: token ?? undefined });
+  },
+
+  getMyProviderProfile(token: string) {
+    return request<MyProviderProfile | null>('/v1/providers/me', { token });
+  },
+
+  /** Partial update — every field optional, '' clears a field back to
+   * unset. Publishes automatically once bio + price are both set. */
+  saveMyProviderProfile(
+    token: string,
+    params: Partial<{
+      bio: string;
+      serviceArea: string;
+      specialty: string;
+      photo: string;
+      priceAmount: number;
+      priceCurrency: string;
+    }>,
+  ) {
+    return request<MyProviderProfile>('/v1/providers/me', { method: 'PATCH', token, body: params });
   },
 
   adminListStorefronts(token: string) {

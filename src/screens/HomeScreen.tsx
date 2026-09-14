@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, Image, ScrollView, StyleSheet, Pressable } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
@@ -10,9 +10,9 @@ import Tag from '../components/Tag';
 import ImagePlaceholder from '../components/ImagePlaceholder';
 import BottomTabBar from '../components/BottomTabBar';
 import MapMock from '../components/MapMock';
+import { api, ProviderListing } from '../api/client';
 import { colors, fonts, space } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
-import { walkers } from '../state/mockData';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
@@ -22,8 +22,19 @@ const MAP_POSITIONS = [
   { top: 22, left: 66 },
 ];
 
+const money = (cents: number, currency: string) => '$' + (cents / 100).toFixed(0) + ' ' + currency;
+
 export default function HomeScreen({ navigation }: Props) {
   const s = useAppState();
+  const [providers, setProviders] = useState<ProviderListing[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    api
+      .listProviders(s.token)
+      .then(setProviders)
+      .catch((err) => setError(err instanceof Error ? err.message : 'No se pudieron cargar los paseadores.'));
+  }, [s.token]);
 
   return (
     <ScreenContainer>
@@ -57,38 +68,50 @@ export default function HomeScreen({ navigation }: Props) {
         />
       </View>
 
-      {s.discoverView === 'mapa' && (
+      {s.discoverView === 'mapa' && providers && providers.length > 0 && (
         <MapMock
-          pins={walkers.map((w, i) => ({
-            id: w.id,
-            name: w.name.split(' ')[0],
+          pins={providers.map((p, i) => ({
+            id: p.accountId,
+            name: p.name.split(' ')[0],
             top: MAP_POSITIONS[i % MAP_POSITIONS.length].top,
             left: MAP_POSITIONS[i % MAP_POSITIONS.length].left,
-            onPress: () => navigation.navigate('WalkerProfile', { walkerId: w.id }),
+            onPress: () => navigation.navigate('WalkerProfile', { walkerId: p.accountId }),
           }))}
         />
       )}
 
       <ScrollView contentContainerStyle={styles.list}>
-        {walkers.map((w) => (
+        {error && (
+          <Card>
+            <CardBody style={{ color: colors.accent }}>{error}</CardBody>
+          </Card>
+        )}
+        {providers?.length === 0 && (
+          <CardBody>Todavía no hay paseadores publicados por aquí. Vuelve pronto.</CardBody>
+        )}
+        {providers?.map((p) => (
           <Card
-            key={w.id}
+            key={p.accountId}
             row
             elevation="sm"
-            onPress={() => navigation.navigate('WalkerProfile', { walkerId: w.id })}
+            onPress={() => navigation.navigate('WalkerProfile', { walkerId: p.accountId })}
           >
-            <ImagePlaceholder label="Foto" style={styles.walkerPhoto} />
+            {p.photo ? (
+              <Image source={{ uri: p.photo }} style={styles.walkerPhoto} resizeMode="cover" />
+            ) : (
+              <ImagePlaceholder label="Foto" style={styles.walkerPhoto} />
+            )}
             <View style={{ flex: 1, gap: 2 }}>
-              <View style={styles.nameRow}>
-                <CardTitle style={{ fontSize: 15 }}>{w.name}</CardTitle>
-                <Tag variant="accent" style={{ paddingVertical: 1, paddingHorizontal: 6 }}>
-                  {w.rating} ★
+              <CardTitle style={{ fontSize: 15 }}>{p.name}</CardTitle>
+              <CardBody style={{ margin: 0 }}>
+                {p.serviceArea ?? 'Zona sin especificar'}
+                {p.price ? ` · ${money(p.price.amount, p.price.currency)}/paseo` : ''}
+              </CardBody>
+              {p.specialty && (
+                <Tag variant="outline" style={{ paddingVertical: 1, paddingHorizontal: 6 }}>
+                  {p.specialty}
                 </Tag>
-              </View>
-              <CardBody style={{ margin: 0 }}>{w.distance} · {w.price}</CardBody>
-              <Tag variant="outline" style={{ paddingVertical: 1, paddingHorizontal: 6 }}>
-                {w.badge}
-              </Tag>
+              )}
             </View>
           </Card>
         ))}

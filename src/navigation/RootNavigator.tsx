@@ -22,6 +22,7 @@ import StorefrontScreen from '../screens/StorefrontScreen';
 import ProductDetailScreen from '../screens/ProductDetailScreen';
 import CartScreen from '../screens/CartScreen';
 import OrdersScreen from '../screens/OrdersScreen';
+import ProviderProfileEditScreen from '../screens/ProviderProfileEditScreen';
 import { useAppState } from '../state/AppState';
 
 export type RootStackParamList = {
@@ -46,6 +47,7 @@ export type RootStackParamList = {
   Cart: { providerId: string };
   Orders: { mode: 'purchases' | 'sales'; title: string };
   AdminLogin: undefined;
+  ProviderProfileEdit: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -100,6 +102,7 @@ export default function RootNavigator() {
         <Stack.Screen name="Storefront" component={StorefrontScreen} />
         <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
         <Stack.Screen name="Cart" component={CartScreen} />
+        <Stack.Screen name="WalkerProfile" component={WalkerProfileScreen} />
       </Stack.Navigator>
     );
   }
@@ -135,6 +138,7 @@ export default function RootNavigator() {
       <Stack.Screen name="Live" component={LiveWalkScreen} />
       <Stack.Screen name="Chat" component={ChatScreen} />
       <Stack.Screen name="Dashboard" component={DashboardScreen} />
+      <Stack.Screen name="ProviderProfileEdit" component={ProviderProfileEditScreen} />
       <Stack.Screen name="Admin" component={AdminScreen} />
       <Stack.Screen name="Profile" component={ProfileScreen} />
       <Stack.Screen name="Bookings" component={BookingsScreen} />

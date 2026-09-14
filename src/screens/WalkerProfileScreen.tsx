@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, Image, ScrollView, StyleSheet } from 'react-native';
 import { ChevronLeft } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
@@ -8,18 +8,36 @@ import { IconButton } from '../components/Button';
 import Button from '../components/Button';
 import ImagePlaceholder from '../components/ImagePlaceholder';
 import Tag from '../components/Tag';
-import Card from '../components/Card';
-import { CardMeta, CardBody } from '../components/CardText';
+import { CardMeta } from '../components/CardText';
 import { colors, fonts, space } from '../theme/tokens';
-import { reviews } from '../state/mockData';
+import { api, ProviderDetail } from '../api/client';
+import { useAppState } from '../state/AppState';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'WalkerProfile'>;
 
-// Mock content matches the design's single featured walker (Camila) — the
-// prototype doesn't vary this screen per walker id. The id itself does
-// get forwarded correctly below, though (it's the real providerServiceId
-// the booking is made against — see mockData.ts's walkers comment).
+const money = (cents: number, currency: string) => '$' + (cents / 100).toFixed(0) + ' ' + currency;
+
 export default function WalkerProfileScreen({ navigation, route }: Props) {
+  const s = useAppState();
+  const { walkerId } = route.params;
+  const [provider, setProvider] = useState<ProviderDetail | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    api
+      .getProvider(s.token, walkerId)
+      .then(setProvider)
+      .catch((err) => setError(err instanceof Error ? err.message : 'No se pudo cargar este paseador.'));
+  }, [s.token, walkerId]);
+
+  const handleReservar = () => {
+    if (s.authStatus !== 'authed') {
+      navigation.navigate('Login');
+      return;
+    }
+    navigation.navigate('Booking', { walkerId });
+  };
+
   return (
     <ScreenContainer>
       <View style={styles.header}>
@@ -28,41 +46,39 @@ export default function WalkerProfileScreen({ navigation, route }: Props) {
         </IconButton>
       </View>
       <ScrollView contentContainerStyle={styles.scroll}>
-        <ImagePlaceholder label="Video de presentación" style={styles.hero} />
-        <View>
-          <Text style={styles.name}>Camila Rodríguez</Text>
-          <CardMeta style={{ fontSize: 13, marginTop: 2 }}>4.9 ★ · 128 reseñas · a 1.2 km</CardMeta>
-        </View>
-        <View style={styles.badges}>
-          <Tag variant="accent">Identidad verificada</Tag>
-          <Tag variant="accent">Seguro incluido</Tag>
-          <Tag variant="outline">Primeros auxilios</Tag>
-        </View>
-        <Text style={styles.bio}>
-          Paseadora de tiempo completo hace 3 años, especializada en perros grandes y energéticos.
-          Paseos de 30/60 min, GPS y fotos incluidas.
-        </Text>
-        <View style={styles.hr} />
-        <View style={{ gap: space.s2 }}>
-          <Text style={styles.h5}>Reseñas verificadas</Text>
-          {reviews.map((rv) => (
-            <Card key={rv.name}>
-              <CardMeta>{rv.name} · {rv.rating} ★</CardMeta>
-              <CardBody>{rv.text}</CardBody>
-            </Card>
-          ))}
-        </View>
+        {error && <CardMeta style={{ color: colors.accent }}>{error}</CardMeta>}
+        {!error && !provider && <CardMeta>Cargando…</CardMeta>}
+        {provider && (
+          <>
+            {provider.photo ? (
+              <Image source={{ uri: provider.photo }} style={styles.hero} resizeMode="cover" />
+            ) : (
+              <ImagePlaceholder label="Foto de perfil" style={styles.hero} />
+            )}
+            <View>
+              <Text style={styles.name}>{provider.name}</Text>
+              {provider.serviceArea && <CardMeta style={{ fontSize: 13, marginTop: 2 }}>{provider.serviceArea}</CardMeta>}
+            </View>
+            <View style={styles.badges}>
+              {provider.specialty && <Tag variant="accent">{provider.specialty}</Tag>}
+              {provider.price && (
+                <Tag variant="outline">{money(provider.price.amount, provider.price.currency)}/paseo</Tag>
+              )}
+            </View>
+            {provider.bio && <Text style={styles.bio}>{provider.bio}</Text>}
+            <View style={styles.hr} />
+            <View style={{ gap: space.s2 }}>
+              <Text style={styles.h5}>Reseñas</Text>
+              <CardMeta>Este paseador todavía no tiene reseñas.</CardMeta>
+            </View>
+          </>
+        )}
       </ScrollView>
       <View style={styles.footer}>
         <Button variant="secondary" blueprint style={{ flex: 1 }}>
           Meet &amp; Greet
         </Button>
-        <Button
-          variant="primary"
-          blueprint
-          style={{ flex: 1 }}
-          onPress={() => navigation.navigate('Booking', { walkerId: route.params.walkerId })}
-        >
+        <Button variant="primary" blueprint style={{ flex: 1 }} onPress={handleReservar}>
           Reservar
         </Button>
       </View>

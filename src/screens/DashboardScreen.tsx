@@ -48,6 +48,12 @@ export default function DashboardScreen({ navigation }: Props) {
         </View>
       </View>
 
+      <View style={{ paddingHorizontal: space.s4, paddingBottom: space.s2 }}>
+        <Button variant="secondary" block blueprint onPress={() => navigation.navigate('ProviderProfileEdit')}>
+          Editar mi página pública
+        </Button>
+      </View>
+
       <ScrollView contentContainerStyle={styles.scroll}>
         <Card elevation="sm">
           <CardKicker>Ingresos esta semana</CardKicker>
