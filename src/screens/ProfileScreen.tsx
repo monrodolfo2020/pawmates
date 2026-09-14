@@ -78,11 +78,6 @@ export default function ProfileScreen({ navigation }: Props) {
               Modo paseador
             </Button>
           )}
-          {s.roles.includes('owner') && (
-            <Button variant="secondary" blueprint block onPress={() => navigation.navigate('Home')}>
-              Modo dueño
-            </Button>
-          )}
           {s.roles.includes('admin') && (
             <Button variant="secondary" blueprint block onPress={() => navigation.navigate('Admin')}>
               Panel de administrador
