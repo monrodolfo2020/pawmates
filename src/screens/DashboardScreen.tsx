@@ -1,5 +1,6 @@
-import React from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { View, Text, Image, ScrollView, StyleSheet, Pressable } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
@@ -8,27 +9,43 @@ import { CardKicker, CardTitle, CardMeta, CardBody } from '../components/CardTex
 import Tag from '../components/Tag';
 import Button from '../components/Button';
 import BottomTabBar from '../components/BottomTabBar';
-import PhotoPicker from '../components/PhotoPicker';
+import ImagePlaceholder from '../components/ImagePlaceholder';
 import { colors, fonts, space } from '../theme/tokens';
 import { weekDays, requests } from '../state/mockData';
+import { api } from '../api/client';
 import { useAppState } from '../state/AppState';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Dashboard'>;
 
 export default function DashboardScreen({ navigation }: Props) {
   const s = useAppState();
+  const [photo, setPhoto] = useState<string | null>(null);
+
+  // Refetches every time this screen regains focus (not just on mount) so
+  // coming back from "Editar mi página pública" shows a just-changed photo
+  // — the same real ProviderProfile.photoBase64 a shopper sees on this
+  // paseador's public page, not the old disconnected mock avatar.
+  useFocusEffect(
+    useCallback(() => {
+      if (!s.token) return;
+      api
+        .getMyProviderProfile(s.token)
+        .then((profile) => setPhoto(profile?.photo ?? null))
+        .catch(() => {});
+    }, [s.token]),
+  );
 
   return (
     <ScreenContainer>
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <PhotoPicker
-            uri={s.walkerPhotoUri}
-            onChange={(v) => s.setWalkerPhotoUri(v.uri)}
-            style={styles.avatar}
-            label="Tú"
-            alertTitle="Foto de perfil"
-          />
+          <Pressable onPress={() => navigation.navigate('ProviderProfileEdit')}>
+            {photo ? (
+              <Image source={{ uri: photo }} style={styles.avatar} resizeMode="cover" />
+            ) : (
+              <ImagePlaceholder label="Tú" style={styles.avatar} />
+            )}
+          </Pressable>
           <View>
             <Text style={styles.kicker}>Modo paseador</Text>
             <Text style={styles.title}>Hola, {s.name ?? s.email ?? 'paseador'}</Text>

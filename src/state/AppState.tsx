@@ -25,7 +25,6 @@ type State = {
   breed: string;
   petPhotoUri: string | null;
   petPhotoBase64: string | null;
-  walkerPhotoUri: string | null;
   size: string;
   temperament: string[];
   vaccines: string[];
@@ -65,7 +64,6 @@ type State = {
 
 type Ctx = State & {
   setPetPhoto: (v: { uri: string; base64: string | null } | null) => void;
-  setWalkerPhotoUri: (v: string | null) => void;
   setPetName: (v: string) => void;
   setBreed: (v: string) => void;
   setSize: (v: string) => void;
@@ -133,7 +131,6 @@ const initialState: State = {
   breed: '',
   petPhotoUri: null,
   petPhotoBase64: null,
-  walkerPhotoUri: null,
   size: 'Mediano',
   temperament: [],
   vaccines: [],
@@ -491,7 +488,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       ...state,
       setPetPhoto: (v) =>
         setState((s) => ({ ...s, petPhotoUri: v?.uri ?? null, petPhotoBase64: v?.base64 ?? s.petPhotoBase64 })),
-      setWalkerPhotoUri: (v) => setState((s) => ({ ...s, walkerPhotoUri: v })),
       setPetName: (v) => setState((s) => ({ ...s, petName: v })),
       setBreed: (v) => setState((s) => ({ ...s, breed: v })),
       setSize: (v) => setState((s) => ({ ...s, size: v })),
