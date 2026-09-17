@@ -11,15 +11,20 @@ import Button from '../components/Button';
 import BottomTabBar from '../components/BottomTabBar';
 import ImagePlaceholder from '../components/ImagePlaceholder';
 import { colors, fonts, space } from '../theme/tokens';
-import { weekDays, requests } from '../state/mockData';
-import { api } from '../api/client';
+import { weekDays } from '../state/mockData';
+import { api, BookingSummary } from '../api/client';
 import { useAppState } from '../state/AppState';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Dashboard'>;
 
+const requestTimeLabel = (iso: string) =>
+  new Date(iso).toLocaleString('es', { weekday: 'short', hour: 'numeric', minute: '2-digit' });
+
 export default function DashboardScreen({ navigation }: Props) {
   const s = useAppState();
   const [photo, setPhoto] = useState<string | null>(null);
+  const [requests, setRequests] = useState<BookingSummary[] | null>(null);
+  const [actingOn, setActingOn] = useState<string | null>(null);
 
   // Refetches every time this screen regains focus (not just on mount) so
   // coming back from "Editar mi página pública" shows a just-changed photo
@@ -34,6 +39,34 @@ export default function DashboardScreen({ navigation }: Props) {
         .catch(() => {});
     }, [s.token]),
   );
+
+  // Real booking requests addressed to this paseador — 'requested' is the
+  // status a booking starts at and stays at until this screen's own
+  // Aceptar/Rechazar (or the owner cancelling first) moves it on; see
+  // BookingController's list()/accept()/reject() on the backend.
+  useFocusEffect(
+    useCallback(() => {
+      if (!s.token) return;
+      api
+        .listBookings(s.token, { activeContext: 'provider', status: 'requested' })
+        .then(setRequests)
+        .catch(() => setRequests([]));
+    }, [s.token]),
+  );
+
+  const respond = async (bookingId: string, action: 'accept' | 'reject') => {
+    if (!s.token) return;
+    setActingOn(bookingId);
+    try {
+      if (action === 'accept') await api.acceptBooking(s.token, bookingId);
+      else await api.rejectBooking(s.token, bookingId);
+      setRequests((rs) => rs?.filter((r) => r.id !== bookingId) ?? rs);
+    } catch {
+      // Leave it in the list — the paseador can just try again.
+    } finally {
+      setActingOn(null);
+    }
+  };
 
   return (
     <ScreenContainer>
@@ -98,19 +131,44 @@ export default function DashboardScreen({ navigation }: Props) {
 
         <View style={{ gap: space.s2 }}>
           <Text style={styles.h5}>Solicitudes nuevas</Text>
-          {requests.map((r) => (
-            <Card key={r.pet}>
-              <View style={styles.reqHeader}>
-                <CardTitle style={{ fontSize: 15 }}>{r.pet}</CardTitle>
-                <Tag variant="outline">{r.time}</Tag>
-              </View>
-              <CardBody>{r.detail}</CardBody>
-              <View style={styles.reqActions}>
-                <Button variant="secondary" style={{ flex: 1 }}>Rechazar</Button>
-                <Button variant="primary" blueprint style={{ flex: 1 }}>Aceptar</Button>
-              </View>
-            </Card>
-          ))}
+          {requests === null && <CardMeta>Cargando…</CardMeta>}
+          {requests?.length === 0 && <CardMeta>No tienes solicitudes nuevas por ahora.</CardMeta>}
+          {requests?.map((r) => {
+            const petLabel = r.lines.map((l) => l.petName).filter(Boolean).join(', ') || 'Mascota';
+            const firstLine = r.lines[0];
+            const busy = actingOn === r.id;
+            return (
+              <Card key={r.id}>
+                <View style={styles.reqHeader}>
+                  <CardTitle style={{ fontSize: 15 }}>{petLabel}</CardTitle>
+                  <Tag variant="outline">{requestTimeLabel(r.scheduledAt)}</Tag>
+                </View>
+                <CardBody>
+                  {firstLine ? `Paseo de ${firstLine.durationValue} min` : 'Paseo'}
+                  {r.ownerName ? ` · Dueño: ${r.ownerName}` : ''}
+                </CardBody>
+                <View style={styles.reqActions}>
+                  <Button
+                    variant="secondary"
+                    style={{ flex: 1 }}
+                    disabled={busy}
+                    onPress={() => void respond(r.id, 'reject')}
+                  >
+                    Rechazar
+                  </Button>
+                  <Button
+                    variant="primary"
+                    blueprint
+                    style={{ flex: 1 }}
+                    disabled={busy}
+                    onPress={() => void respond(r.id, 'accept')}
+                  >
+                    Aceptar
+                  </Button>
+                </View>
+              </Card>
+            );
+          })}
         </View>
       </ScrollView>
 

@@ -79,8 +79,11 @@ export interface BookingResult {
 
 export interface BookingSummary {
   id: string;
+  ownerId: string;
+  ownerName: string | null;
   status: string;
   scheduledAt: string;
+  lines: { petId: string; petName: string | null; durationValue: number; durationUnit: string }[];
   priceBreakdown: { totalAmount: number; currency: string } | null;
 }
 
@@ -401,8 +404,19 @@ export const api = {
     });
   },
 
-  listBookings(token: string) {
-    return request<BookingSummary[]>('/v1/bookings', { token });
+  listBookings(
+    token: string,
+    params?: { activeContext?: 'owner' | 'provider'; status?: string },
+  ) {
+    const query = params?.status ? `?status=${encodeURIComponent(params.status)}` : '';
+    return request<BookingSummary[]>(`/v1/bookings${query}`, {
+      token,
+      activeContext: params?.activeContext,
+    });
+  },
+
+  getBooking(token: string, bookingId: string) {
+    return request<BookingSummary>(`/v1/bookings/${bookingId}`, { token });
   },
 
   acceptBooking(token: string, bookingId: string) {
@@ -410,6 +424,14 @@ export const api = {
       method: 'POST',
       token,
       body: { paymentMethodId: uuid() },
+    });
+  },
+
+  rejectBooking(token: string, bookingId: string, reason?: string) {
+    return request<BookingResult>(`/v1/bookings/${bookingId}/reject`, {
+      method: 'POST',
+      token,
+      body: { reason },
     });
   },
 

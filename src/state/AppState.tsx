@@ -7,8 +7,6 @@ export type BookingStatus =
   | 'idle'
   | 'creating'
   | 'created'
-  | 'accepting'
-  | 'confirmed'
   | 'starting'
   | 'in_progress'
   | 'completing'
@@ -107,7 +105,6 @@ type Ctx = State & {
    * existing caller before the pet selector (BookingScreen) relied on
    * that, and it's still a sane fallback for a single-pet owner. */
   createBooking: (durationMinutes: number, providerServiceId: string, petId?: string) => Promise<void>;
-  acceptBooking: () => Promise<void>;
   startTrip: () => Promise<void>;
   completeTrip: () => Promise<void>;
   refreshTrip: () => Promise<void>;
@@ -374,23 +371,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const acceptBooking = useCallback(async () => {
-    const { token, bookingId } = stateRef.current;
-    if (!token || !bookingId) return;
-    setState((s) => ({ ...s, bookingStatus: 'accepting', bookingError: null }));
-    try {
-      await api.acceptBooking(token, bookingId);
-      setState((s) => ({ ...s, bookingStatus: 'confirmed' }));
-    } catch (err) {
-      setState((s) => ({
-        ...s,
-        bookingStatus: 'error',
-        bookingError: err instanceof Error ? err.message : 'No se pudo confirmar el pago.',
-      }));
-      throw err;
-    }
-  }, []);
-
   const startTrip = useCallback(async () => {
     const { token, bookingId } = stateRef.current;
     if (!token || !bookingId) return;
@@ -515,7 +495,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       loadPetDraft,
       savePet,
       createBooking,
-      acceptBooking,
       startTrip,
       completeTrip,
       refreshTrip,
@@ -537,7 +516,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     loadPetDraft,
     savePet,
     createBooking,
-    acceptBooking,
     startTrip,
     completeTrip,
     refreshTrip,
