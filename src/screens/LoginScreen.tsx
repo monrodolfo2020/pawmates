@@ -59,17 +59,17 @@ export default function LoginScreen({ navigation }: Props) {
             <CardBody style={{ color: colors.accent }}>{s.authError}</CardBody>
           </Card>
         )}
-      </View>
-      <View style={styles.footer}>
-        <Button
-          variant="primary"
-          block
-          blueprint
-          disabled={submitting || !email || !password}
-          onPress={handleSubmit}
-        >
-          {submitting ? 'Entrando…' : 'Entrar'}
-        </Button>
+        <View style={styles.footer}>
+          <Button
+            variant="primary"
+            block
+            blueprint
+            disabled={submitting || !email || !password}
+            onPress={handleSubmit}
+          >
+            {submitting ? 'Entrando…' : 'Entrar'}
+          </Button>
+        </View>
       </View>
     </ScreenContainer>
   );
@@ -81,6 +81,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: space.s3,
   },
   title: { fontFamily: fonts.heading, fontSize: 20, color: colors.text },
-  body: { paddingHorizontal: space.s4, gap: space.s4, flex: 1 },
-  footer: { padding: space.s4 },
+  body: { paddingHorizontal: space.s4, gap: space.s4 },
+  footer: { marginTop: space.s2 },
 });
