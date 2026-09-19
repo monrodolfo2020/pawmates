@@ -31,27 +31,28 @@ export default function WelcomeScreen({ navigation }: Props) {
           </View>
           <ChevronRight size={20} strokeWidth={1.5} color={colors.textMuted70} />
         </Pressable>
-      </View>
-      <View style={styles.footer}>
-        <Button
-          variant="primary"
-          block
-          blueprint
-          onPress={() => navigation.navigate('Signup', { role: 'owner' })}
-        >
-          Soy dueño de mascota — Registrarse
-        </Button>
-        <Button
-          variant="secondary"
-          block
-          blueprint
-          onPress={() => navigation.navigate('Signup', { role: 'provider' })}
-        >
-          Quiero ser paseador — Registrarse
-        </Button>
-        <Button variant="ghost" block onPress={() => navigation.navigate('Login')}>
-          Ya tengo cuenta — iniciar sesión
-        </Button>
+
+        <View style={styles.footer}>
+          <Button
+            variant="primary"
+            block
+            blueprint
+            onPress={() => navigation.navigate('Signup', { role: 'owner' })}
+          >
+            Soy dueño de mascota — Registrarse
+          </Button>
+          <Button
+            variant="secondary"
+            block
+            blueprint
+            onPress={() => navigation.navigate('Signup', { role: 'provider' })}
+          >
+            Quiero ser paseador — Registrarse
+          </Button>
+          <Button variant="ghost" block onPress={() => navigation.navigate('Login')}>
+            Ya tengo cuenta — iniciar sesión
+          </Button>
+        </View>
       </View>
     </ScreenContainer>
   );
@@ -83,5 +84,5 @@ const styles = StyleSheet.create({
   storeText: { flex: 1, gap: 2 },
   storeTitle: { fontFamily: fonts.heading, fontSize: 15, color: colors.text },
   storeSubtitle: { fontFamily: fonts.body, fontSize: 12, color: colors.textMuted70 },
-  footer: { padding: space.s4, gap: space.s2 },
+  footer: { width: '100%', marginTop: space.s6, gap: space.s2 },
 });
