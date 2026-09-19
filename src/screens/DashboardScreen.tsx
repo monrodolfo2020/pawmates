@@ -11,8 +11,7 @@ import Button from '../components/Button';
 import BottomTabBar from '../components/BottomTabBar';
 import ImagePlaceholder from '../components/ImagePlaceholder';
 import { colors, fonts, space } from '../theme/tokens';
-import { weekDays } from '../state/mockData';
-import { api, BookingSummary } from '../api/client';
+import { api, BookingSummary, BookingWeekSummary } from '../api/client';
 import { useAppState } from '../state/AppState';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Dashboard'>;
@@ -20,11 +19,21 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Dashboard'>;
 const requestTimeLabel = (iso: string) =>
   new Date(iso).toLocaleString('es', { weekday: 'short', hour: 'numeric', minute: '2-digit' });
 
+const money = (cents: number, currency: string) => '$' + (cents / 100).toFixed(2) + ' ' + currency;
+
 export default function DashboardScreen({ navigation }: Props) {
   const s = useAppState();
   const [photo, setPhoto] = useState<string | null>(null);
   const [requests, setRequests] = useState<BookingSummary[] | null>(null);
   const [actingOn, setActingOn] = useState<string | null>(null);
+  const [summary, setSummary] = useState<BookingWeekSummary | null>(null);
+
+  const loadSummary = useCallback(() => {
+    if (!s.token) return;
+    api.getBookingWeekSummary(s.token).then(setSummary).catch(() => {});
+  }, [s.token]);
+
+  useFocusEffect(loadSummary);
 
   // Refetches every time this screen regains focus (not just on mount) so
   // coming back from "Editar mi página pública" shows a just-changed photo
@@ -58,8 +67,12 @@ export default function DashboardScreen({ navigation }: Props) {
     if (!s.token) return;
     setActingOn(bookingId);
     try {
-      if (action === 'accept') await api.acceptBooking(s.token, bookingId);
-      else await api.rejectBooking(s.token, bookingId);
+      if (action === 'accept') {
+        await api.acceptBooking(s.token, bookingId);
+        loadSummary(); // accepting adds this walk to "Esta semana" right away
+      } else {
+        await api.rejectBooking(s.token, bookingId);
+      }
       setRequests((rs) => rs?.filter((r) => r.id !== bookingId) ?? rs);
     } catch {
       // Leave it in the list — the paseador can just try again.
@@ -113,14 +126,20 @@ export default function DashboardScreen({ navigation }: Props) {
       <ScrollView contentContainerStyle={styles.scroll}>
         <Card elevation="sm">
           <CardKicker>Ingresos esta semana</CardKicker>
-          <Text style={styles.earnings}>$7,012.50</Text>
-          <CardMeta>12 paseos completados</CardMeta>
+          <Text style={styles.earnings}>
+            {summary ? money(summary.earnings.amount, summary.earnings.currency) : '—'}
+          </Text>
+          <CardMeta>
+            {summary
+              ? `${summary.completedThisWeek} paseo${summary.completedThisWeek === 1 ? '' : 's'} completado${summary.completedThisWeek === 1 ? '' : 's'}`
+              : 'Cargando…'}
+          </CardMeta>
         </Card>
 
         <View>
           <Text style={styles.label}>Esta semana</Text>
           <View style={styles.weekRow}>
-            {weekDays.map((wd, i) => (
+            {(summary?.days ?? []).map((wd, i) => (
               <Card key={i} style={styles.weekCell}>
                 <CardKicker style={{ margin: 0 }}>{wd.label}</CardKicker>
                 <Text style={styles.weekCount}>{wd.count}</Text>

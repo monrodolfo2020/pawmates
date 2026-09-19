@@ -87,6 +87,13 @@ export interface BookingSummary {
   priceBreakdown: { totalAmount: number; currency: string } | null;
 }
 
+export interface BookingWeekSummary {
+  weekStart: string;
+  earnings: { amount: number; currency: string };
+  completedThisWeek: number;
+  days: { label: string; count: number }[];
+}
+
 export interface TripPoint {
   lat: number;
   lng: number;
@@ -417,6 +424,10 @@ export const api = {
 
   getBooking(token: string, bookingId: string) {
     return request<BookingSummary>(`/v1/bookings/${bookingId}`, { token });
+  },
+
+  getBookingWeekSummary(token: string) {
+    return request<BookingWeekSummary>('/v1/bookings/summary', { token });
   },
 
   acceptBooking(token: string, bookingId: string) {
