@@ -15,6 +15,7 @@ import ScreenContainer from '../components/ScreenContainer';
 import { IconButton } from '../components/Button';
 import { colors, fonts, space } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
+import { markChatRead } from '../utils/chatReads';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Chat'>;
 
@@ -28,8 +29,14 @@ export default function ChatScreen({ navigation, route }: Props) {
   const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
-    void s.refreshMessages(bookingId);
-    const id = setInterval(() => void s.refreshMessages(bookingId), POLL_MS);
+    // Marked read on every refresh, not just on entry — a message that
+    // lands while this screen is already open shouldn't stay "unread"
+    // just because the poll happened to catch it after mount.
+    const refresh = () => {
+      void s.refreshMessages(bookingId).then(() => void markChatRead(bookingId));
+    };
+    refresh();
+    const id = setInterval(refresh, POLL_MS);
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookingId]);

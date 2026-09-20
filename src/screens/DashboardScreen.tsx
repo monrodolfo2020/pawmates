@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, Image, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -8,6 +8,7 @@ import BottomTabBar from '../components/BottomTabBar';
 import { vividColors as v, vividFonts as vf, vividRadius as vr, vividTintFor } from '../theme/vividTokens';
 import { api, BookingSummary, BookingWeekSummary, MEET_GREET_SERVICE_TYPE_CODE } from '../api/client';
 import { useAppState } from '../state/AppState';
+import { getChatReadAt } from '../utils/chatReads';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Dashboard'>;
 
@@ -74,6 +75,38 @@ export default function DashboardScreen({ navigation }: Props) {
   }, [s.token]);
 
   useFocusEffect(loadUpcoming);
+
+  // A Meet & Greet's message button doubles as an unread flag: if the last
+  // message in its thread came from the owner and postdates the last time
+  // this device opened that chat (see chatReads.ts), it's "new" — flip the
+  // button coral instead of the default grape so it stands out from the
+  // rest of the card.
+  const [unread, setUnread] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    if (!s.token) return;
+    const meetGreetIds = [...(requests ?? []), ...(upcoming ?? [])]
+      .filter((b) => b.lines.some((l) => l.serviceTypeCode === MEET_GREET_SERVICE_TYPE_CODE))
+      .map((b) => b.id);
+    if (meetGreetIds.length === 0) return;
+    let cancelled = false;
+    Promise.all(
+      meetGreetIds.map(async (id) => {
+        const [messages, readAt] = await Promise.all([
+          api.listMessages(s.token!, id).catch(() => []),
+          getChatReadAt(id),
+        ]);
+        const last = messages[messages.length - 1];
+        const isUnread = Boolean(last && last.senderId !== s.accountId && (!readAt || last.sentAt > readAt));
+        return [id, isUnread] as const;
+      }),
+    ).then((entries) => {
+      if (!cancelled) setUnread(Object.fromEntries(entries));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [s.token, s.accountId, requests, upcoming]);
 
   const respond = async (bookingId: string, action: 'accept' | 'reject') => {
     if (!s.token) return;
@@ -202,10 +235,13 @@ export default function DashboardScreen({ navigation }: Props) {
                     </Text>
                     {isMeetGreet && (
                       <Pressable
-                        style={styles.messageBtn}
+                        style={[styles.messageBtn, unread[req.id] && styles.messageBtnUnread]}
                         onPress={() => navigation.navigate('Chat', { bookingId: req.id })}
                       >
-                        <Text style={styles.messageBtnText}>Enviar mensaje</Text>
+                        {unread[req.id] && <View style={styles.messageDot} />}
+                        <Text style={[styles.messageBtnText, unread[req.id] && styles.messageBtnTextUnread]}>
+                          {unread[req.id] ? 'Mensaje nuevo' : 'Enviar mensaje'}
+                        </Text>
                       </Pressable>
                     )}
                     <View style={styles.requestActions}>
@@ -258,10 +294,13 @@ export default function DashboardScreen({ navigation }: Props) {
                     </Text>
                     {isMeetGreet && (
                       <Pressable
-                        style={styles.messageBtn}
+                        style={[styles.messageBtn, unread[b.id] && styles.messageBtnUnread]}
                         onPress={() => navigation.navigate('Chat', { bookingId: b.id })}
                       >
-                        <Text style={styles.messageBtnText}>Enviar mensaje</Text>
+                        {unread[b.id] && <View style={styles.messageDot} />}
+                        <Text style={[styles.messageBtnText, unread[b.id] && styles.messageBtnTextUnread]}>
+                          {unread[b.id] ? 'Mensaje nuevo' : 'Enviar mensaje'}
+                        </Text>
                       </Pressable>
                     )}
                   </View>
@@ -329,8 +368,14 @@ const styles = StyleSheet.create({
   timeTag: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: vr.pill, backgroundColor: v.sunTint },
   timeTagText: { fontFamily: vf.bodyBold, fontSize: 11, color: '#8A6400' },
   requestMeta: { fontFamily: vf.body, fontSize: 13, color: v.mute },
-  messageBtn: { paddingVertical: 10, borderRadius: vr.md, borderWidth: 1.5, borderColor: v.grapeTintLine, backgroundColor: v.grapeTint, alignItems: 'center' },
+  messageBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+    paddingVertical: 10, borderRadius: vr.md, borderWidth: 1.5, borderColor: v.grapeTintLine, backgroundColor: v.grapeTint,
+  },
   messageBtnText: { fontFamily: vf.bodyBold, fontSize: 12.5, color: v.grape },
+  messageBtnUnread: { borderColor: v.coral, backgroundColor: v.coral },
+  messageBtnTextUnread: { color: '#fff' },
+  messageDot: { width: 7, height: 7, borderRadius: vr.pill, backgroundColor: '#fff' },
   requestActions: { flexDirection: 'row', gap: 8, marginTop: 4 },
   rejectBtn: { flex: 1, paddingVertical: 12, borderRadius: vr.md, borderWidth: 1.5, borderColor: v.line, backgroundColor: v.surface, alignItems: 'center' },
   rejectBtnText: { fontFamily: vf.bodyBold, fontSize: 13.5, color: v.ink },
