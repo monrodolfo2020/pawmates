@@ -84,6 +84,7 @@ export interface BookingSummary {
   providerId: string;
   status: string;
   scheduledAt: string;
+  hasUnreadMessages: boolean;
   lines: {
     petId: string;
     petName: string | null;

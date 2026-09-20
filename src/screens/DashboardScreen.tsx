@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, Text, Image, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -8,7 +8,6 @@ import BottomTabBar from '../components/BottomTabBar';
 import { vividColors as v, vividFonts as vf, vividRadius as vr, vividTintFor } from '../theme/vividTokens';
 import { api, BookingSummary, BookingWeekSummary, MEET_GREET_SERVICE_TYPE_CODE } from '../api/client';
 import { useAppState } from '../state/AppState';
-import { getChatReadAt } from '../utils/chatReads';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Dashboard'>;
 
@@ -75,38 +74,6 @@ export default function DashboardScreen({ navigation }: Props) {
   }, [s.token]);
 
   useFocusEffect(loadUpcoming);
-
-  // A Meet & Greet's message button doubles as an unread flag: if the last
-  // message in its thread came from the owner and postdates the last time
-  // this device opened that chat (see chatReads.ts), it's "new" — flip the
-  // button coral instead of the default grape so it stands out from the
-  // rest of the card.
-  const [unread, setUnread] = useState<Record<string, boolean>>({});
-
-  useEffect(() => {
-    if (!s.token) return;
-    const meetGreetIds = [...(requests ?? []), ...(upcoming ?? [])]
-      .filter((b) => b.lines.some((l) => l.serviceTypeCode === MEET_GREET_SERVICE_TYPE_CODE))
-      .map((b) => b.id);
-    if (meetGreetIds.length === 0) return;
-    let cancelled = false;
-    Promise.all(
-      meetGreetIds.map(async (id) => {
-        const [messages, readAt] = await Promise.all([
-          api.listMessages(s.token!, id).catch(() => []),
-          getChatReadAt(id),
-        ]);
-        const last = messages[messages.length - 1];
-        const isUnread = Boolean(last && last.senderId !== s.accountId && (!readAt || last.sentAt > readAt));
-        return [id, isUnread] as const;
-      }),
-    ).then((entries) => {
-      if (!cancelled) setUnread(Object.fromEntries(entries));
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [s.token, s.accountId, requests, upcoming]);
 
   const respond = async (bookingId: string, action: 'accept' | 'reject') => {
     if (!s.token) return;
@@ -235,12 +202,12 @@ export default function DashboardScreen({ navigation }: Props) {
                     </Text>
                     {isMeetGreet && (
                       <Pressable
-                        style={[styles.messageBtn, unread[req.id] && styles.messageBtnUnread]}
+                        style={[styles.messageBtn, req.hasUnreadMessages && styles.messageBtnUnread]}
                         onPress={() => navigation.navigate('Chat', { bookingId: req.id })}
                       >
-                        {unread[req.id] && <View style={styles.messageDot} />}
-                        <Text style={[styles.messageBtnText, unread[req.id] && styles.messageBtnTextUnread]}>
-                          {unread[req.id] ? 'Mensaje nuevo' : 'Enviar mensaje'}
+                        {req.hasUnreadMessages && <View style={styles.messageDot} />}
+                        <Text style={[styles.messageBtnText, req.hasUnreadMessages && styles.messageBtnTextUnread]}>
+                          {req.hasUnreadMessages ? 'Mensaje nuevo' : 'Enviar mensaje'}
                         </Text>
                       </Pressable>
                     )}
@@ -294,12 +261,12 @@ export default function DashboardScreen({ navigation }: Props) {
                     </Text>
                     {isMeetGreet && (
                       <Pressable
-                        style={[styles.messageBtn, unread[b.id] && styles.messageBtnUnread]}
+                        style={[styles.messageBtn, b.hasUnreadMessages && styles.messageBtnUnread]}
                         onPress={() => navigation.navigate('Chat', { bookingId: b.id })}
                       >
-                        {unread[b.id] && <View style={styles.messageDot} />}
-                        <Text style={[styles.messageBtnText, unread[b.id] && styles.messageBtnTextUnread]}>
-                          {unread[b.id] ? 'Mensaje nuevo' : 'Enviar mensaje'}
+                        {b.hasUnreadMessages && <View style={styles.messageDot} />}
+                        <Text style={[styles.messageBtnText, b.hasUnreadMessages && styles.messageBtnTextUnread]}>
+                          {b.hasUnreadMessages ? 'Mensaje nuevo' : 'Enviar mensaje'}
                         </Text>
                       </Pressable>
                     )}
