@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, Image, ScrollView, StyleSheet } from 'react-native';
 import { ChevronLeft } from 'lucide-react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
@@ -12,7 +13,7 @@ import Card from '../components/Card';
 import { CardMeta, CardBody } from '../components/CardText';
 import { MessageCircle } from 'lucide-react-native';
 import { colors, fonts, space } from '../theme/tokens';
-import { api, ProviderDetail } from '../api/client';
+import { api, BookingSummary, ProviderDetail } from '../api/client';
 import { useAppState } from '../state/AppState';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'WalkerProfile'>;
@@ -31,7 +32,7 @@ export default function WalkerProfileScreen({ navigation, route }: Props) {
   // Lets an owner who already has a request/booking with this paseador
   // (most commonly a Meet & Greet) jump straight into that chat from here,
   // instead of having to dig through "Tus reservas" to find it.
-  const [chatBookingId, setChatBookingId] = useState<string | null>(null);
+  const [chatBooking, setChatBooking] = useState<BookingSummary | null>(null);
 
   useEffect(() => {
     api
@@ -40,19 +41,25 @@ export default function WalkerProfileScreen({ navigation, route }: Props) {
       .catch((err) => setError(err instanceof Error ? err.message : 'No se pudo cargar este paseador.'));
   }, [s.token, walkerId]);
 
-  useEffect(() => {
-    if (!s.token) {
-      setChatBookingId(null);
-      return;
-    }
-    api
-      .listBookings(s.token, { activeContext: 'owner' })
-      .then((bookings) => {
-        const match = bookings.find((b) => b.providerId === walkerId && CHATTABLE_STATUSES.has(b.status));
-        setChatBookingId(match?.id ?? null);
-      })
-      .catch(() => setChatBookingId(null));
-  }, [s.token, walkerId]);
+  // Refetches on focus (not just mount) so coming back from the chat
+  // clears "Mensaje nuevo" right away — hasUnreadMessages is server-side
+  // (per account, see BookingController), so this reflects reality even
+  // if the message was read from a different device.
+  useFocusEffect(
+    useCallback(() => {
+      if (!s.token) {
+        setChatBooking(null);
+        return;
+      }
+      api
+        .listBookings(s.token, { activeContext: 'owner' })
+        .then((bookings) => {
+          const match = bookings.find((b) => b.providerId === walkerId && CHATTABLE_STATUSES.has(b.status));
+          setChatBooking(match ?? null);
+        })
+        .catch(() => setChatBooking(null));
+    }, [s.token, walkerId]),
+  );
 
   const handleReservar = () => {
     if (s.authStatus !== 'authed') {
@@ -91,14 +98,27 @@ export default function WalkerProfileScreen({ navigation, route }: Props) {
                 <Tag variant="outline">{money(provider.price.amount, provider.price.currency)}/paseo</Tag>
               )}
             </View>
-            {chatBookingId && (
+            {chatBooking && (
               <Card
                 row
                 elevation="sm"
-                onPress={() => navigation.navigate('Chat', { bookingId: chatBookingId })}
+                style={chatBooking.hasUnreadMessages ? styles.chatCardUnread : undefined}
+                onPress={() => navigation.navigate('Chat', { bookingId: chatBooking.id })}
               >
-                <MessageCircle size={20} strokeWidth={1.5} color={colors.accent} />
-                <CardBody style={{ flex: 1, margin: 0, marginLeft: space.s2 }}>Enviar mensaje a {provider.name}</CardBody>
+                <MessageCircle
+                  size={20}
+                  strokeWidth={1.5}
+                  color={chatBooking.hasUnreadMessages ? '#fff' : colors.accent}
+                />
+                <CardBody
+                  style={[
+                    { flex: 1, margin: 0, marginLeft: space.s2 },
+                    chatBooking.hasUnreadMessages && { color: '#fff', opacity: 1 },
+                  ]}
+                >
+                  {chatBooking.hasUnreadMessages ? `Mensaje nuevo de ${provider.name}` : `Enviar mensaje a ${provider.name}`}
+                </CardBody>
+                {chatBooking.hasUnreadMessages && <View style={styles.chatDot} />}
               </Card>
             )}
             {provider.bio && <Text style={styles.bio}>{provider.bio}</Text>}
@@ -153,4 +173,6 @@ const styles = StyleSheet.create({
   hr: { height: 1, backgroundColor: colors.divider },
   h5: { fontFamily: fonts.heading, fontSize: 16, color: colors.text, marginBottom: space.s2 },
   footer: { flexDirection: 'row', gap: space.s2, padding: space.s4 },
+  chatCardUnread: { backgroundColor: colors.accent, borderColor: colors.accent },
+  chatDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#fff' },
 });
