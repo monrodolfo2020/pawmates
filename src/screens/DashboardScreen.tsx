@@ -20,6 +20,7 @@ export default function DashboardScreen({ navigation }: Props) {
   const s = useAppState();
   const [photo, setPhoto] = useState<string | null>(null);
   const [requests, setRequests] = useState<BookingSummary[] | null>(null);
+  const [upcoming, setUpcoming] = useState<BookingSummary[] | null>(null);
   const [actingOn, setActingOn] = useState<string | null>(null);
   const [summary, setSummary] = useState<BookingWeekSummary | null>(null);
 
@@ -58,6 +59,22 @@ export default function DashboardScreen({ navigation }: Props) {
     }, [s.token]),
   );
 
+  // Once accepted, a request drops off "Solicitudes nuevas" — without this,
+  // the paseador would lose their only way back into that booking's chat
+  // (see ChatScreen) the moment they accepted it. Fetches without a status
+  // filter (the list is small — recent bookings only) and keeps whatever
+  // isn't still pending or already over, so this refetch below is the same
+  // request confirming as much.
+  const loadUpcoming = useCallback(() => {
+    if (!s.token) return;
+    api
+      .listBookings(s.token, { activeContext: 'provider' })
+      .then((all) => setUpcoming(all.filter((b) => b.status === 'confirmed' || b.status === 'in_progress')))
+      .catch(() => setUpcoming([]));
+  }, [s.token]);
+
+  useFocusEffect(loadUpcoming);
+
   const respond = async (bookingId: string, action: 'accept' | 'reject') => {
     if (!s.token) return;
     setActingOn(bookingId);
@@ -65,6 +82,7 @@ export default function DashboardScreen({ navigation }: Props) {
       if (action === 'accept') {
         await api.acceptBooking(s.token, bookingId);
         loadSummary(); // accepting adds this walk to "Esta semana" right away
+        loadUpcoming();
       } else {
         await api.rejectBooking(s.token, bookingId);
       }
@@ -206,6 +224,46 @@ export default function DashboardScreen({ navigation }: Props) {
                         <Text style={styles.acceptBtnText}>Aceptar</Text>
                       </Pressable>
                     </View>
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+
+          <View style={{ gap: 12 }}>
+            <Text style={styles.sectionTitle}>Próximos</Text>
+            {upcoming === null && <Text style={styles.mutedBody}>Cargando…</Text>}
+            {upcoming?.length === 0 && <Text style={styles.mutedBody}>No tienes paseos confirmados todavía.</Text>}
+            {upcoming?.map((b) => {
+              const petLabel = b.lines.map((l) => l.petName).filter(Boolean).join(', ') || 'Mascota';
+              const firstLine = b.lines[0];
+              const isMeetGreet = b.lines.some((l) => l.serviceTypeCode === MEET_GREET_SERVICE_TYPE_CODE);
+              return (
+                <View key={b.id} style={styles.requestCard}>
+                  <View style={[styles.requestAccent, { backgroundColor: v.mint }]} />
+                  <View style={styles.requestBody}>
+                    <View style={styles.rowBetween}>
+                      <Text style={styles.requestPet}>{petLabel}</Text>
+                      <View style={styles.timeTag}>
+                        <Text style={styles.timeTagText}>{requestTimeLabel(b.scheduledAt)}</Text>
+                      </View>
+                    </View>
+                    <Text style={styles.requestMeta}>
+                      {isMeetGreet
+                        ? 'Meet & Greet — sesión de conocernos (sin costo)'
+                        : firstLine
+                          ? `Paseo de ${firstLine.durationValue} min`
+                          : 'Paseo'}
+                      {b.ownerName ? ` · Dueño: ${b.ownerName}` : ''}
+                    </Text>
+                    {isMeetGreet && (
+                      <Pressable
+                        style={styles.messageBtn}
+                        onPress={() => navigation.navigate('Chat', { bookingId: b.id })}
+                      >
+                        <Text style={styles.messageBtnText}>Enviar mensaje</Text>
+                      </Pressable>
+                    )}
                   </View>
                 </View>
               );
