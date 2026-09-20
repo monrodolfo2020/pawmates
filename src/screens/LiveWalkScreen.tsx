@@ -237,7 +237,8 @@ export default function LiveWalkScreen({ navigation, route }: Props) {
           blueprint
           style={{ flex: 1 }}
           icon={<MessageCircle size={14} strokeWidth={1.5} color={colors.text} />}
-          onPress={() => navigation.navigate('Chat', { walkerId: route.params.walkerId })}
+          disabled={!s.bookingId}
+          onPress={() => s.bookingId && navigation.navigate('Chat', { bookingId: s.bookingId })}
         >
           Mensaje
         </Button>

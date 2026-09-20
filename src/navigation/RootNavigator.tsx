@@ -38,7 +38,7 @@ export type RootStackParamList = {
   Booking: { walkerId: string };
   Checkout: { walkerId: string };
   Live: { walkerId: string };
-  Chat: { walkerId: string };
+  Chat: { bookingId: string };
   Dashboard: undefined;
   Admin: undefined;
   Profile: undefined;

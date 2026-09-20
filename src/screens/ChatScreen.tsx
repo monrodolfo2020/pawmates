@@ -20,18 +20,19 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Chat'>;
 
 const POLL_MS = 3000;
 
-export default function ChatScreen({ navigation }: Props) {
+export default function ChatScreen({ navigation, route }: Props) {
   const s = useAppState();
+  const { bookingId } = route.params;
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
-    void s.refreshMessages();
-    const id = setInterval(() => void s.refreshMessages(), POLL_MS);
+    void s.refreshMessages(bookingId);
+    const id = setInterval(() => void s.refreshMessages(bookingId), POLL_MS);
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [bookingId]);
 
   const handleSend = async () => {
     const text = draft.trim();
@@ -39,7 +40,7 @@ export default function ChatScreen({ navigation }: Props) {
     setDraft('');
     setSending(true);
     try {
-      await s.sendChatMessage(text);
+      await s.sendChatMessage(bookingId, text);
       scrollRef.current?.scrollToEnd({ animated: true });
     } finally {
       setSending(false);

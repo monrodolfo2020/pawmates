@@ -110,8 +110,8 @@ type Ctx = State & {
   refreshTrip: () => Promise<void>;
   logTripLocation: (lat: number, lng: number) => Promise<void>;
   logWalkEvent: (params: { type: 'photo' | 'pee' | 'poop'; photoBase64?: string; note?: string }) => Promise<void>;
-  sendChatMessage: (text: string) => Promise<void>;
-  refreshMessages: () => Promise<void>;
+  sendChatMessage: (bookingId: string, text: string) => Promise<void>;
+  refreshMessages: (bookingId: string) => Promise<void>;
 };
 
 const AppStateContext = createContext<Ctx | null>(null);
@@ -440,9 +440,9 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     [refreshTrip],
   );
 
-  const refreshMessages = useCallback(async () => {
-    const { token, bookingId } = stateRef.current;
-    if (!token || !bookingId) return;
+  const refreshMessages = useCallback(async (bookingId: string) => {
+    const { token } = stateRef.current;
+    if (!token) return;
     try {
       const messages = await api.listMessages(token, bookingId);
       setState((s) => ({ ...s, messages }));
@@ -452,11 +452,11 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const sendChatMessage = useCallback(
-    async (text: string) => {
-      const { token, bookingId } = stateRef.current;
-      if (!token || !bookingId || !text.trim()) return;
+    async (bookingId: string, text: string) => {
+      const { token } = stateRef.current;
+      if (!token || !text.trim()) return;
       await api.sendMessage(token, bookingId, text.trim());
-      await refreshMessages();
+      await refreshMessages(bookingId);
     },
     [refreshMessages],
   );

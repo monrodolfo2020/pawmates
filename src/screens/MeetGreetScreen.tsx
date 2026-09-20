@@ -23,7 +23,7 @@ export default function MeetGreetScreen({ navigation, route }: Props) {
   const [petId, setPetId] = useState(s.pets[0]?.id ?? '');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [sent, setSent] = useState(false);
+  const [sentBookingId, setSentBookingId] = useState<string | null>(null);
 
   useEffect(() => {
     api.getProvider(s.token, walkerId).then(setProvider).catch(() => {});
@@ -38,8 +38,8 @@ export default function MeetGreetScreen({ navigation, route }: Props) {
     setError(null);
     setSubmitting(true);
     try {
-      await api.requestMeetGreet(s.token, petId, walkerId);
-      setSent(true);
+      const booking = await api.requestMeetGreet(s.token, petId, walkerId);
+      setSentBookingId(booking.id);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo enviar la solicitud.');
     } finally {
@@ -47,7 +47,7 @@ export default function MeetGreetScreen({ navigation, route }: Props) {
     }
   };
 
-  if (sent) {
+  if (sentBookingId) {
     return (
       <ScreenContainer>
         <View style={styles.header}>
@@ -61,8 +61,19 @@ export default function MeetGreetScreen({ navigation, route }: Props) {
           <Text style={styles.sentBody2}>
             En cuanto confirme el Meet &amp; Greet, lo verás en "Tus reservas". No tiene costo.
           </Text>
+          <Text style={styles.sentBody2}>
+            Mientras tanto, pueden escribirse para acordar el punto de encuentro.
+          </Text>
         </View>
         <View style={styles.footer}>
+          <Button
+            variant="secondary"
+            block
+            blueprint
+            onPress={() => navigation.navigate('Chat', { bookingId: sentBookingId })}
+          >
+            Enviar mensaje
+          </Button>
           <Button variant="primary" block blueprint onPress={() => navigation.navigate('Home')}>
             Volver al inicio
           </Button>
@@ -134,7 +145,7 @@ const styles = StyleSheet.create({
   },
   title: { fontFamily: fonts.heading, fontSize: 20, color: colors.text },
   scroll: { paddingHorizontal: space.s4, gap: space.s4, paddingBottom: space.s4 },
-  footer: { padding: space.s4 },
+  footer: { padding: space.s4, gap: space.s2 },
   sentBody: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.s3, paddingHorizontal: space.s6 },
   sentTitle: { fontFamily: fonts.heading, fontSize: 22, color: colors.text, textAlign: 'center' },
   sentBody2: { fontFamily: fonts.body, fontSize: 14, color: colors.text, opacity: 0.75, textAlign: 'center' },

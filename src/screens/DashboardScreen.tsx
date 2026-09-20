@@ -182,6 +182,14 @@ export default function DashboardScreen({ navigation }: Props) {
                           : 'Paseo'}
                       {req.ownerName ? ` · Dueño: ${req.ownerName}` : ''}
                     </Text>
+                    {isMeetGreet && (
+                      <Pressable
+                        style={styles.messageBtn}
+                        onPress={() => navigation.navigate('Chat', { bookingId: req.id })}
+                      >
+                        <Text style={styles.messageBtnText}>Enviar mensaje</Text>
+                      </Pressable>
+                    )}
                     <View style={styles.requestActions}>
                       <Pressable
                         style={[styles.rejectBtn, busy && styles.btnDisabled]}
@@ -263,6 +271,8 @@ const styles = StyleSheet.create({
   timeTag: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: vr.pill, backgroundColor: v.sunTint },
   timeTagText: { fontFamily: vf.bodyBold, fontSize: 11, color: '#8A6400' },
   requestMeta: { fontFamily: vf.body, fontSize: 13, color: v.mute },
+  messageBtn: { paddingVertical: 10, borderRadius: vr.md, borderWidth: 1.5, borderColor: v.grapeTintLine, backgroundColor: v.grapeTint, alignItems: 'center' },
+  messageBtnText: { fontFamily: vf.bodyBold, fontSize: 12.5, color: v.grape },
   requestActions: { flexDirection: 'row', gap: 8, marginTop: 4 },
   rejectBtn: { flex: 1, paddingVertical: 12, borderRadius: vr.md, borderWidth: 1.5, borderColor: v.line, backgroundColor: v.surface, alignItems: 'center' },
   rejectBtnText: { fontFamily: vf.bodyBold, fontSize: 13.5, color: v.ink },
