@@ -18,6 +18,11 @@ export default function StoresScreen({ navigation }: Props) {
   const s = useAppState();
   const [stores, setStores] = useState<StorefrontListing[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // A provider-only account reaches this screen from their own Dashboard's
+  // "Tienda" tab — "Inicio"/"Paseadores cerca de ti" and "Reservas" (the
+  // owner's booking list) make no sense for them, so this mirrors
+  // Dashboard's own tab bar instead of the owner's Home/Bookings one.
+  const providerOnly = s.roles.includes('provider') && !s.roles.includes('owner');
 
   useEffect(() => {
     api
@@ -73,12 +78,21 @@ export default function StoresScreen({ navigation }: Props) {
       </ScrollView>
 
       <BottomTabBar
-        items={[
-          { label: 'Inicio', onPress: () => navigation.navigate(s.authStatus === 'authed' ? 'Home' : 'Login') },
-          { label: 'Reservas', onPress: () => navigation.navigate(s.authStatus === 'authed' ? 'Bookings' : 'Login') },
-          { label: 'Tienda', onPress: () => navigation.navigate('Stores') },
-          { label: 'Perfil', onPress: () => navigation.navigate(s.authStatus === 'authed' ? 'Profile' : 'Login') },
-        ]}
+        items={
+          providerOnly
+            ? [
+                { label: 'Panel', onPress: () => navigation.navigate('Dashboard') },
+                { label: 'Solicitudes', onPress: () => navigation.navigate('ComingSoon', { title: 'Solicitudes' }) },
+                { label: 'Tienda', onPress: () => navigation.navigate('Stores') },
+                { label: 'Perfil', onPress: () => navigation.navigate('Profile') },
+              ]
+            : [
+                { label: 'Inicio', onPress: () => navigation.navigate(s.authStatus === 'authed' ? 'Home' : 'Login') },
+                { label: 'Reservas', onPress: () => navigation.navigate(s.authStatus === 'authed' ? 'Bookings' : 'Login') },
+                { label: 'Tienda', onPress: () => navigation.navigate('Stores') },
+                { label: 'Perfil', onPress: () => navigation.navigate(s.authStatus === 'authed' ? 'Profile' : 'Login') },
+              ]
+        }
         activeIndex={2}
       />
     </ScreenContainer>

@@ -38,6 +38,10 @@ export default function StorefrontScreen({ navigation, route }: Props) {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState<ProductCategory | 'all'>('all');
   const [toast, setToast] = useState<string | null>(null);
+  // See StoresScreen's comment — a provider-only account can land here too
+  // (Stores auto-redirects into the single storefront), and "Inicio"/
+  // "Reservas" mean the owner's Home/Bookings, which make no sense for them.
+  const providerOnly = s.roles.includes('provider') && !s.roles.includes('owner');
 
   useEffect(() => {
     api
@@ -163,12 +167,21 @@ export default function StorefrontScreen({ navigation, route }: Props) {
         )}
 
         <BottomTabBar
-          items={[
-            { label: 'Inicio', onPress: () => navigation.navigate(s.authStatus === 'authed' ? 'Home' : 'Login') },
-            { label: 'Reservas', onPress: () => navigation.navigate(s.authStatus === 'authed' ? 'Bookings' : 'Login') },
-            { label: 'Tienda', onPress: () => navigation.navigate('Stores') },
-            { label: 'Perfil', onPress: () => navigation.navigate(s.authStatus === 'authed' ? 'Profile' : 'Login') },
-          ]}
+          items={
+            providerOnly
+              ? [
+                  { label: 'Panel', onPress: () => navigation.navigate('Dashboard') },
+                  { label: 'Solicitudes', onPress: () => navigation.navigate('ComingSoon', { title: 'Solicitudes' }) },
+                  { label: 'Tienda', onPress: () => navigation.navigate('Stores') },
+                  { label: 'Perfil', onPress: () => navigation.navigate('Profile') },
+                ]
+              : [
+                  { label: 'Inicio', onPress: () => navigation.navigate(s.authStatus === 'authed' ? 'Home' : 'Login') },
+                  { label: 'Reservas', onPress: () => navigation.navigate(s.authStatus === 'authed' ? 'Bookings' : 'Login') },
+                  { label: 'Tienda', onPress: () => navigation.navigate('Stores') },
+                  { label: 'Perfil', onPress: () => navigation.navigate(s.authStatus === 'authed' ? 'Profile' : 'Login') },
+                ]
+          }
           activeIndex={2}
         />
       </View>
