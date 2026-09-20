@@ -7,7 +7,6 @@ import ScreenContainer from '../components/ScreenContainer';
 import { api, BookingSummary, MEET_GREET_SERVICE_TYPE_CODE } from '../api/client';
 import { vividColors as v, vividFonts as vf, vividRadius as vr } from '../theme/vividTokens';
 import { useAppState } from '../state/AppState';
-import Button from '../components/Button';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Bookings'>;
 
@@ -72,16 +71,7 @@ export default function BookingsScreen({ navigation }: Props) {
                   </View>
                 </View>
                 {isMeetGreet ? (
-                  <>
-                    <Text style={styles.mutedBody}>Meet & Greet — sin costo</Text>
-                    <Button
-                      variant="secondary"
-                      blueprint
-                      onPress={() => navigation.navigate('Chat', { bookingId: b.id })}
-                    >
-                      Enviar mensaje
-                    </Button>
-                  </>
+                  <Text style={styles.mutedBody}>Meet & Greet — sin costo</Text>
                 ) : (
                   b.priceBreakdown && (
                     <Text style={styles.mutedBody}>Total: {money(b.priceBreakdown.totalAmount, b.priceBreakdown.currency)}</Text>

@@ -8,7 +8,9 @@ import { IconButton } from '../components/Button';
 import Button from '../components/Button';
 import ImagePlaceholder from '../components/ImagePlaceholder';
 import Tag from '../components/Tag';
-import { CardMeta } from '../components/CardText';
+import Card from '../components/Card';
+import { CardMeta, CardBody } from '../components/CardText';
+import { MessageCircle } from 'lucide-react-native';
 import { colors, fonts, space } from '../theme/tokens';
 import { api, ProviderDetail } from '../api/client';
 import { useAppState } from '../state/AppState';
@@ -17,17 +19,39 @@ type Props = NativeStackScreenProps<RootStackParamList, 'WalkerProfile'>;
 
 const money = (cents: number, currency: string) => '$' + (cents / 100).toFixed(0) + ' ' + currency;
 
+// A booking still worth chatting about — not one the owner cancelled or
+// the paseador turned down.
+const CHATTABLE_STATUSES = new Set(['requested', 'confirmed', 'in_progress', 'completed']);
+
 export default function WalkerProfileScreen({ navigation, route }: Props) {
   const s = useAppState();
   const { walkerId } = route.params;
   const [provider, setProvider] = useState<ProviderDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Lets an owner who already has a request/booking with this paseador
+  // (most commonly a Meet & Greet) jump straight into that chat from here,
+  // instead of having to dig through "Tus reservas" to find it.
+  const [chatBookingId, setChatBookingId] = useState<string | null>(null);
 
   useEffect(() => {
     api
       .getProvider(s.token, walkerId)
       .then(setProvider)
       .catch((err) => setError(err instanceof Error ? err.message : 'No se pudo cargar este paseador.'));
+  }, [s.token, walkerId]);
+
+  useEffect(() => {
+    if (!s.token) {
+      setChatBookingId(null);
+      return;
+    }
+    api
+      .listBookings(s.token, { activeContext: 'owner' })
+      .then((bookings) => {
+        const match = bookings.find((b) => b.providerId === walkerId && CHATTABLE_STATUSES.has(b.status));
+        setChatBookingId(match?.id ?? null);
+      })
+      .catch(() => setChatBookingId(null));
   }, [s.token, walkerId]);
 
   const handleReservar = () => {
@@ -67,6 +91,16 @@ export default function WalkerProfileScreen({ navigation, route }: Props) {
                 <Tag variant="outline">{money(provider.price.amount, provider.price.currency)}/paseo</Tag>
               )}
             </View>
+            {chatBookingId && (
+              <Card
+                row
+                elevation="sm"
+                onPress={() => navigation.navigate('Chat', { bookingId: chatBookingId })}
+              >
+                <MessageCircle size={20} strokeWidth={1.5} color={colors.accent} />
+                <CardBody style={{ flex: 1, margin: 0, marginLeft: space.s2 }}>Enviar mensaje a {provider.name}</CardBody>
+              </Card>
+            )}
             {provider.bio && <Text style={styles.bio}>{provider.bio}</Text>}
             {provider.plansOffered && (
               <View style={{ gap: space.s2 }}>

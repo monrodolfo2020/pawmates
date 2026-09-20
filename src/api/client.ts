@@ -81,6 +81,7 @@ export interface BookingSummary {
   id: string;
   ownerId: string;
   ownerName: string | null;
+  providerId: string;
   status: string;
   scheduledAt: string;
   lines: {
