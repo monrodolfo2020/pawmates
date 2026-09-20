@@ -360,6 +360,24 @@ export const api = {
     });
   },
 
+  /** No auth token — this is how a locked-out person starts the flow.
+   * Always resolves (backend never reveals whether the email exists). */
+  forgotPassword(email: string) {
+    return request<{ sent: boolean }>('/v1/auth/forgot-password', {
+      method: 'POST',
+      body: { email },
+    });
+  },
+
+  /** Also no auth token — the reset token from the emailed link is the
+   * only credential here. */
+  resetPassword(token: string, newPassword: string) {
+    return request<{ reset: boolean }>('/v1/auth/reset-password', {
+      method: 'POST',
+      body: { token, newPassword },
+    });
+  },
+
   listPets(token: string) {
     return request<Pet[]>('/v1/pets', { token });
   },

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { ChevronLeft } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
@@ -54,6 +54,9 @@ export default function LoginScreen({ navigation }: Props) {
           secureTextEntry
           placeholder="••••••••"
         />
+        <Pressable onPress={() => navigation.navigate('ForgotPassword')}>
+          <Text style={styles.forgotLink}>¿Olvidaste tu contraseña?</Text>
+        </Pressable>
         {s.authError && (
           <Card>
             <CardBody style={{ color: colors.accent }}>{s.authError}</CardBody>
@@ -82,5 +85,6 @@ const styles = StyleSheet.create({
   },
   title: { fontFamily: fonts.heading, fontSize: 20, color: colors.text },
   body: { paddingHorizontal: space.s4, gap: space.s4 },
+  forgotLink: { fontFamily: fonts.bodyMedium, fontSize: 13, color: colors.accent, marginTop: -space.s2 },
   footer: { marginTop: space.s2 },
 });

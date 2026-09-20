@@ -4,6 +4,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import WelcomeScreen from '../screens/WelcomeScreen';
 import AdminLoginScreen from '../screens/AdminLoginScreen';
 import LoginScreen from '../screens/LoginScreen';
+import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
+import ResetPasswordScreen from '../screens/ResetPasswordScreen';
 import SignupScreen from '../screens/SignupScreen';
 import OnboardingScreen from '../screens/OnboardingScreen';
 import HomeScreen from '../screens/HomeScreen';
@@ -30,6 +32,8 @@ import { useAppState } from '../state/AppState';
 export type RootStackParamList = {
   Welcome: undefined;
   Login: undefined;
+  ForgotPassword: undefined;
+  ResetPassword: { token: string };
   Signup: { role?: 'owner' | 'provider' } | undefined;
   Onboarding: { petId?: string } | undefined;
   Home: undefined;
@@ -64,12 +68,37 @@ function isAdminGatePath(): boolean {
   return /\/admin\/?$/.test(window.location.pathname);
 }
 
+// Same idea as isAdminGatePath — /reset-password?token=... is a standalone
+// entry point from the emailed link, independent of whatever session (if
+// any) already exists in this browser, so it's checked before the normal
+// guest/authed branching and regardless of authStatus.
+function getResetPasswordToken(): string | null {
+  if (Platform.OS !== 'web' || typeof window === 'undefined') return null;
+  if (!/\/reset-password\/?$/.test(window.location.pathname)) return null;
+  return new URLSearchParams(window.location.search).get('token');
+}
+
 export default function RootNavigator() {
   const s = useAppState();
 
   // Auth state loads from AsyncStorage asynchronously (see AppState's
   // mount effect) — App.tsx keeps the splash screen up until this settles.
   if (s.authStatus === 'checking') return null;
+
+  // Checked before authStatus even matters — see getResetPasswordToken's
+  // comment.
+  const resetPasswordToken = getResetPasswordToken();
+  if (resetPasswordToken) {
+    return (
+      <Stack.Navigator key="reset-password-gate" screenOptions={{ headerShown: false }}>
+        <Stack.Screen
+          name="ResetPassword"
+          component={ResetPasswordScreen}
+          initialParams={{ token: resetPasswordToken }}
+        />
+      </Stack.Navigator>
+    );
+  }
 
   // /admin is a standalone gate that bypasses Welcome/Login entirely —
   // one password field, checked before the normal guest/authed branching
@@ -101,6 +130,7 @@ export default function RootNavigator() {
       <Stack.Navigator key="guest" screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
         <Stack.Screen name="Welcome" component={WelcomeScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
         <Stack.Screen name="Signup" component={SignupScreen} />
         <Stack.Screen name="Stores" component={StoresScreen} />
         <Stack.Screen name="Storefront" component={StorefrontScreen} />
