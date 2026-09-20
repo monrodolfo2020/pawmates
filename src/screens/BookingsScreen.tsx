@@ -4,7 +4,7 @@ import { ChevronLeft } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
-import { api, BookingSummary } from '../api/client';
+import { api, BookingSummary, MEET_GREET_SERVICE_TYPE_CODE } from '../api/client';
 import { vividColors as v, vividFonts as vf, vividRadius as vr } from '../theme/vividTokens';
 import { useAppState } from '../state/AppState';
 
@@ -59,6 +59,7 @@ export default function BookingsScreen({ navigation }: Props) {
           {bookings?.length === 0 && <Text style={styles.mutedBody}>Todavía no tienes reservas.</Text>}
           {bookings?.map((b) => {
             const tint = STATUS_TINT[b.status] ?? { bg: v.panel, border: v.line, text: v.mute };
+            const isMeetGreet = b.lines.some((l) => l.serviceTypeCode === MEET_GREET_SERVICE_TYPE_CODE);
             return (
               <View key={b.id} style={styles.card}>
                 <View style={styles.rowBetween}>
@@ -69,8 +70,12 @@ export default function BookingsScreen({ navigation }: Props) {
                     </Text>
                   </View>
                 </View>
-                {b.priceBreakdown && (
-                  <Text style={styles.mutedBody}>Total: {money(b.priceBreakdown.totalAmount, b.priceBreakdown.currency)}</Text>
+                {isMeetGreet ? (
+                  <Text style={styles.mutedBody}>Meet & Greet — sin costo</Text>
+                ) : (
+                  b.priceBreakdown && (
+                    <Text style={styles.mutedBody}>Total: {money(b.priceBreakdown.totalAmount, b.priceBreakdown.currency)}</Text>
+                  )
                 )}
               </View>
             );

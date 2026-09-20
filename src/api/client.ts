@@ -83,7 +83,13 @@ export interface BookingSummary {
   ownerName: string | null;
   status: string;
   scheduledAt: string;
-  lines: { petId: string; petName: string | null; durationValue: number; durationUnit: string }[];
+  lines: {
+    petId: string;
+    petName: string | null;
+    durationValue: number;
+    durationUnit: string;
+    serviceTypeCode: string;
+  }[];
   priceBreakdown: { totalAmount: number; currency: string } | null;
 }
 
@@ -300,6 +306,12 @@ export interface AdminOrder {
 // 8-4-4-4-12 hex string.
 const DEMO_SERVICE_TYPE_CODE = '00000000-0000-4000-8000-0000000000b3';
 const DEMO_ADDRESS_ID = '00000000-0000-4000-8000-0000000000b4';
+// Must match MEET_GREET_SERVICE_TYPE_CODE in the backend's
+// booking-process-manager.ts — a booking line tagged with this code
+// prices at $0 there regardless of the paseador's normal rate. Exported
+// so screens can tell a Meet & Greet apart from a paid walk when
+// rendering a BookingSummary's lines.
+export const MEET_GREET_SERVICE_TYPE_CODE = '00000000-0000-4000-8000-0000000000c1';
 
 export const api = {
   signup(params: {
@@ -403,6 +415,29 @@ export const api = {
             petId,
             serviceTypeCode: DEMO_SERVICE_TYPE_CODE,
             durationValue,
+            durationUnit: 'min',
+            addressId: DEMO_ADDRESS_ID,
+          },
+        ],
+      },
+    });
+  },
+
+  /** Free intro session with a paseador before committing to paid walks —
+   * same real request/accept pipeline as createBooking, just tagged with
+   * MEET_GREET_SERVICE_TYPE_CODE so the backend prices it at $0. */
+  requestMeetGreet(token: string, petId: string, providerServiceId: string) {
+    return request<BookingResult>('/v1/bookings', {
+      method: 'POST',
+      token,
+      idempotencyKey: uuid(),
+      body: {
+        providerServiceId,
+        lines: [
+          {
+            petId,
+            serviceTypeCode: MEET_GREET_SERVICE_TYPE_CODE,
+            durationValue: 15,
             durationUnit: 'min',
             addressId: DEMO_ADDRESS_ID,
           },

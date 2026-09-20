@@ -6,7 +6,7 @@ import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
 import BottomTabBar from '../components/BottomTabBar';
 import { vividColors as v, vividFonts as vf, vividRadius as vr, vividTintFor } from '../theme/vividTokens';
-import { api, BookingSummary, BookingWeekSummary } from '../api/client';
+import { api, BookingSummary, BookingWeekSummary, MEET_GREET_SERVICE_TYPE_CODE } from '../api/client';
 import { useAppState } from '../state/AppState';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Dashboard'>;
@@ -162,6 +162,7 @@ export default function DashboardScreen({ navigation }: Props) {
             {requests?.map((req) => {
               const petLabel = req.lines.map((l) => l.petName).filter(Boolean).join(', ') || 'Mascota';
               const firstLine = req.lines[0];
+              const isMeetGreet = req.lines.some((l) => l.serviceTypeCode === MEET_GREET_SERVICE_TYPE_CODE);
               const busy = actingOn === req.id;
               return (
                 <View key={req.id} style={styles.requestCard}>
@@ -174,7 +175,11 @@ export default function DashboardScreen({ navigation }: Props) {
                       </View>
                     </View>
                     <Text style={styles.requestMeta}>
-                      {firstLine ? `Paseo de ${firstLine.durationValue} min` : 'Paseo'}
+                      {isMeetGreet
+                        ? 'Meet & Greet — sesión de conocernos (sin costo)'
+                        : firstLine
+                          ? `Paseo de ${firstLine.durationValue} min`
+                          : 'Paseo'}
                       {req.ownerName ? ` · Dueño: ${req.ownerName}` : ''}
                     </Text>
                     <View style={styles.requestActions}>

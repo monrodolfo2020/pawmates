@@ -8,6 +8,7 @@ import SignupScreen from '../screens/SignupScreen';
 import OnboardingScreen from '../screens/OnboardingScreen';
 import HomeScreen from '../screens/HomeScreen';
 import WalkerProfileScreen from '../screens/WalkerProfileScreen';
+import MeetGreetScreen from '../screens/MeetGreetScreen';
 import BookingScreen from '../screens/BookingScreen';
 import CheckoutScreen from '../screens/CheckoutScreen';
 import LiveWalkScreen from '../screens/LiveWalkScreen';
@@ -33,6 +34,7 @@ export type RootStackParamList = {
   Onboarding: { petId?: string } | undefined;
   Home: undefined;
   WalkerProfile: { walkerId: string };
+  MeetGreet: { walkerId: string };
   Booking: { walkerId: string };
   Checkout: { walkerId: string };
   Live: { walkerId: string };
@@ -145,6 +147,7 @@ export default function RootNavigator() {
       <Stack.Screen name="Onboarding" component={OnboardingScreen} />
       <Stack.Screen name="Home" component={HomeScreen} />
       <Stack.Screen name="WalkerProfile" component={WalkerProfileScreen} />
+      <Stack.Screen name="MeetGreet" component={MeetGreetScreen} />
       <Stack.Screen name="Booking" component={BookingScreen} />
       <Stack.Screen name="Checkout" component={CheckoutScreen} />
       <Stack.Screen name="Live" component={LiveWalkScreen} />

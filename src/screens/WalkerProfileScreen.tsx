@@ -89,8 +89,13 @@ export default function WalkerProfileScreen({ navigation, route }: Props) {
         )}
       </ScrollView>
       <View style={styles.footer}>
-        <Button variant="secondary" blueprint style={{ flex: 1 }}>
-          Meet &amp; Greet
+        <Button
+          variant="secondary"
+          blueprint
+          style={{ flex: 1 }}
+          onPress={() => navigation.navigate('MeetGreet', { walkerId })}
+        >
+          Conócenos primero
         </Button>
         <Button variant="primary" blueprint style={{ flex: 1 }} onPress={handleReservar}>
           Reservar
