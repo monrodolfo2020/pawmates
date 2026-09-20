@@ -1,47 +1,51 @@
-// Design tokens mirrored 1:1 from the Industry design system
-// (project/_ds/industry-.../styles.css). Keep in sync with that file —
-// it is the source of truth for the look.
+// PawMates' app-wide design tokens. Was a "blueprint" wireframe system
+// (flat corners, hairline borders, corner-mark decoration) mirrored from
+// an early static mockup; replaced with the vivid identity introduced in
+// theme/vividTokens.ts (bright coral + mint on warm cream, bold Barlow
+// headlines, Figtree body) so every screen using these tokens — still
+// most of the app — inherits the new look without a per-screen rewrite.
+// Key names are kept 1:1 with the old system for exactly that reason.
 
 export const colors = {
-  bg: '#f2f2f3',
-  surface: '#e9e9ea',
-  text: '#1d1f20',
-  accent: '#5980a6',
-  accent2: '#728fab',
-  divider: 'rgba(29, 31, 32, 0.16)',
+  bg: '#FFF7F0',
+  surface: '#FFFFFF',
+  text: '#1D1533',
+  accent: '#FF6B4A',
+  accent2: '#00C2A0',
+  divider: '#F0E4D6',
 
-  neutral100: '#f5f5f8',
-  neutral200: '#e7e7ea',
-  neutral300: '#d4d4d7',
-  neutral400: '#b7b7ba',
-  neutral500: '#98989b',
-  neutral600: '#7a7a7d',
-  neutral700: '#5d5d60',
-  neutral800: '#424244',
-  neutral900: '#2b2b2d',
+  neutral100: '#F7F0E8',
+  neutral200: '#EFE3D6',
+  neutral300: '#DCD0C5',
+  neutral400: '#B8ACB9',
+  neutral500: '#978CA0',
+  neutral600: '#756E85',
+  neutral700: '#5C5570',
+  neutral800: '#3D3654',
+  neutral900: '#1D1533',
 
-  accent100: '#eef6ff',
-  accent200: '#d6ebff',
-  accent300: '#b5d9fd',
-  accent400: '#94bce3',
-  accent500: '#749dc4',
-  accent600: '#597ea3',
-  accent700: '#416180',
-  accent800: '#2c455d',
-  accent900: '#1d2d3d',
+  accent100: '#FFE7DE',
+  accent200: '#FFD2C2',
+  accent300: '#FFB49B',
+  accent400: '#FF9575',
+  accent500: '#FF7A57',
+  accent600: '#FF6B4A',
+  accent700: '#E85234',
+  accent800: '#C43F24',
+  accent900: '#8F2C18',
 
-  textMuted: 'rgba(29, 31, 32, 0.55)',
-  textMuted70: 'rgba(29, 31, 32, 0.7)',
-  textMuted50: 'rgba(29, 31, 32, 0.5)',
-  cornerColor: 'rgba(29, 31, 32, 0.55)',
+  textMuted: 'rgba(29, 21, 51, 0.55)',
+  textMuted70: 'rgba(29, 21, 51, 0.7)',
+  textMuted50: 'rgba(29, 21, 51, 0.5)',
+  cornerColor: 'rgba(29, 21, 51, 0.3)',
 };
 
 export const fonts = {
-  heading: 'BarlowCondensed_600SemiBold',
-  headingRegular: 'BarlowCondensed_400Regular',
-  body: 'Barlow_400Regular',
-  bodyMedium: 'Barlow_500Medium',
-  bodyBold: 'Barlow_700Bold',
+  heading: 'Barlow_700Bold',
+  headingRegular: 'Barlow_500Medium',
+  body: 'Figtree_400Regular',
+  bodyMedium: 'Figtree_500Medium',
+  bodyBold: 'Figtree_700Bold',
 };
 
 // space-*: 3.4 / 6.8 / 10.2 / 13.6 / 20.4 / 27.2
@@ -55,33 +59,32 @@ export const space = {
 };
 
 export const radius = {
-  sm: 2,
-  md: 4,
-  lg: 7,
+  sm: 12,
+  md: 18,
+  lg: 24,
+  pill: 999,
 };
 
-// Blueprint style zeroes out radius on cards/buttons/inputs/tags — this
-// system draws square-cornered wireframe objects, never soft rounded ones.
 export const shadow = {
   sm: {
-    shadowColor: '#2b2b2d',
-    shadowOpacity: 0.14,
-    shadowRadius: 2,
-    shadowOffset: { width: 0, height: 1 },
+    shadowColor: '#3D3654',
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
     elevation: 2,
   },
   md: {
-    shadowColor: '#2b2b2d',
-    shadowOpacity: 0.16,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 3 },
+    shadowColor: '#3D3654',
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
     elevation: 4,
   },
   lg: {
-    shadowColor: '#2b2b2d',
-    shadowOpacity: 0.22,
-    shadowRadius: 32,
-    shadowOffset: { width: 0, height: 12 },
+    shadowColor: '#3D3654',
+    shadowOpacity: 0.14,
+    shadowRadius: 28,
+    shadowOffset: { width: 0, height: 10 },
     elevation: 8,
   },
 };

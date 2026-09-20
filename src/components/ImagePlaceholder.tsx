@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, StyleProp, ViewStyle } from 'react-native';
 import { Camera } from 'lucide-react-native';
-import { colors, fonts } from '../theme/tokens';
+import { colors, fonts, radius } from '../theme/tokens';
 import CornerMarks from './CornerMarks';
 
 type Props = {
@@ -24,9 +24,10 @@ export default function ImagePlaceholder({ label, style, blueprint = true }: Pro
 
 const styles = StyleSheet.create({
   box: {
-    borderWidth: 1,
-    borderColor: colors.divider,
-    backgroundColor: 'rgba(89, 128, 166, 0.08)',
+    borderWidth: 1.5,
+    borderColor: colors.accent200,
+    backgroundColor: colors.accent100,
+    borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,

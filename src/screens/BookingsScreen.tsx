@@ -5,7 +5,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
 import { api, BookingSummary } from '../api/client';
-import { commerceColors as c, commerceFonts as f, commerceRadius as r } from '../theme/commerceTokens';
+import { vividColors as v, vividFonts as vf, vividRadius as vr } from '../theme/vividTokens';
 import { useAppState } from '../state/AppState';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Bookings'>;
@@ -19,15 +19,15 @@ const STATUS_LABEL: Record<string, string> = {
   rejected: 'Rechazado',
 };
 
-// Confirmed/in-progress/completed read as "on the books" (moss tint);
-// cancelled/rejected as a soft stop (clay tint); requested — still
+// Confirmed/in-progress/completed read as "on the books" (mint tint);
+// cancelled/rejected as a soft stop (rose tint); requested — still
 // waiting on the paseador — stays neutral.
 const STATUS_TINT: Record<string, { bg: string; border: string; text: string }> = {
-  confirmed: { bg: c.tintGreen, border: c.tintGreenLine, text: c.moss },
-  in_progress: { bg: c.tintGreen, border: c.tintGreenLine, text: c.moss },
-  completed: { bg: c.tintGreen, border: c.tintGreenLine, text: c.moss },
-  cancelled: { bg: '#F3E4DA', border: '#E7CBB8', text: c.clay },
-  rejected: { bg: '#F3E4DA', border: '#E7CBB8', text: c.clay },
+  confirmed: { bg: v.mintTint, border: v.mintTintLine, text: v.mintDark },
+  in_progress: { bg: v.mintTint, border: v.mintTintLine, text: v.mintDark },
+  completed: { bg: v.mintTint, border: v.mintTintLine, text: v.mintDark },
+  cancelled: { bg: v.roseTint, border: v.roseTintLine, text: v.rose },
+  rejected: { bg: v.roseTint, border: v.roseTintLine, text: v.rose },
 };
 
 const money = (cents: number, currency: string) => `${(cents / 100).toFixed(2)} ${currency}`;
@@ -50,7 +50,7 @@ export default function BookingsScreen({ navigation }: Props) {
       <View style={styles.root}>
         <View style={styles.header}>
           <Pressable style={styles.backBtn} onPress={() => navigation.goBack()}>
-            <ChevronLeft size={16} strokeWidth={2} color={c.ink} />
+            <ChevronLeft size={16} strokeWidth={2} color={v.ink} />
           </Pressable>
           <Text style={styles.title}>Tus reservas</Text>
         </View>
@@ -58,7 +58,7 @@ export default function BookingsScreen({ navigation }: Props) {
           {error && <Text style={styles.error}>{error}</Text>}
           {bookings?.length === 0 && <Text style={styles.mutedBody}>Todavía no tienes reservas.</Text>}
           {bookings?.map((b) => {
-            const tint = STATUS_TINT[b.status] ?? { bg: c.panel, border: c.line, text: c.mute };
+            const tint = STATUS_TINT[b.status] ?? { bg: v.panel, border: v.line, text: v.mute };
             return (
               <View key={b.id} style={styles.card}>
                 <View style={styles.rowBetween}>
@@ -82,19 +82,19 @@ export default function BookingsScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: c.bg },
+  root: { flex: 1, backgroundColor: v.bg },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingTop: 20, paddingBottom: 14 },
   backBtn: {
-    width: 36, height: 36, borderRadius: r.pill, borderWidth: 1, borderColor: c.line,
-    backgroundColor: c.surface, alignItems: 'center', justifyContent: 'center',
+    width: 36, height: 36, borderRadius: vr.pill, borderWidth: 1, borderColor: v.line,
+    backgroundColor: v.surface, alignItems: 'center', justifyContent: 'center',
   },
-  title: { fontFamily: f.serif, fontSize: 26, color: c.ink },
+  title: { fontFamily: vf.display, fontSize: 26, color: v.ink },
   body: { paddingHorizontal: 20, paddingBottom: 24, gap: 12 },
-  error: { fontFamily: f.body, fontSize: 13, color: c.clay },
-  mutedBody: { fontFamily: f.body, fontSize: 13.5, color: c.mute },
-  card: { padding: 16, borderRadius: r.lg, backgroundColor: c.surface, borderWidth: 1, borderColor: c.line, gap: 6 },
+  error: { fontFamily: vf.body, fontSize: 13, color: v.rose },
+  mutedBody: { fontFamily: vf.body, fontSize: 13.5, color: v.mute },
+  card: { padding: 16, borderRadius: vr.lg, backgroundColor: v.surface, borderWidth: 1, borderColor: v.line, gap: 6 },
   rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  date: { fontFamily: f.bodySemiBold, fontSize: 14.5, color: c.ink },
-  statusTag: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: r.pill, borderWidth: 1 },
-  statusTagText: { fontFamily: f.bodySemiBold, fontSize: 11 },
+  date: { fontFamily: vf.bodySemiBold, fontSize: 14.5, color: v.ink },
+  statusTag: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: vr.pill, borderWidth: 1 },
+  statusTagText: { fontFamily: vf.bodySemiBold, fontSize: 11 },
 });

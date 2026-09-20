@@ -6,8 +6,10 @@ import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
 import BottomTabBar from '../components/BottomTabBar';
 import { api, Product, ProductCategory, StorefrontDetail } from '../api/client';
-import { commerceColors as c, commerceFonts as f, commerceRadius as r, tintFor } from '../theme/commerceTokens';
+import { vividColors as c, vividFonts as f, vividRadius as r, vividTintFor as tintForRaw } from '../theme/vividTokens';
 import { useAppState } from '../state/AppState';
+
+const tintFor = (seed: string) => tintForRaw(seed).bg;
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Storefront'>;
 
@@ -208,14 +210,14 @@ const styles = StyleSheet.create({
   body: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 24, gap: 4 },
   header: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 },
   kicker: { fontFamily: f.bodySemiBold, fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: c.muted2 },
-  title: { fontFamily: f.serif, fontSize: 32, color: c.ink, marginTop: 4 },
+  title: { fontFamily: f.display, fontSize: 32, color: c.ink, marginTop: 4 },
   cartBtn: {
     width: 42, height: 42, borderRadius: r.pill, borderWidth: 1, borderColor: c.line,
     backgroundColor: c.surface, alignItems: 'center', justifyContent: 'center', marginTop: 4,
   },
   cartBadge: {
     position: 'absolute', top: -3, right: -3, minWidth: 19, height: 19, borderRadius: r.pill,
-    backgroundColor: c.clay, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 5,
+    backgroundColor: c.rose, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 5,
     borderWidth: 2, borderColor: c.bg,
   },
   cartBadgeText: { fontFamily: f.bodyBold, fontSize: 11, color: '#fff' },
@@ -224,14 +226,14 @@ const styles = StyleSheet.create({
     borderRadius: r.md, borderWidth: 1, borderColor: c.line, backgroundColor: c.surface, marginBottom: 20,
   },
   searchInput: { flex: 1, fontFamily: f.body, fontSize: 15, color: c.ink, padding: 0 },
-  error: { fontFamily: f.body, fontSize: 13, color: c.clay, marginBottom: 12 },
+  error: { fontFamily: f.body, fontSize: 13, color: c.rose, marginBottom: 12 },
   description: { fontFamily: f.body, fontSize: 13.5, color: c.mute, marginBottom: 20, lineHeight: 19 },
-  sectionTitle: { fontFamily: f.serif, fontSize: 21, color: c.ink, marginBottom: 10 },
+  sectionTitle: { fontFamily: f.display, fontSize: 21, color: c.ink, marginBottom: 10 },
   categoryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 22 },
   categoryTile: {
     width: '47.5%', padding: 14, borderRadius: r.md, borderWidth: 1, borderColor: c.line, backgroundColor: c.surface,
   },
-  categoryTileActive: { borderColor: c.moss, backgroundColor: c.tintGreen },
+  categoryTileActive: { borderColor: c.coral, backgroundColor: c.mintTint },
   categoryLabel: { fontFamily: f.bodySemiBold, fontSize: 14.5, color: c.ink },
   categoryCount: { fontFamily: f.body, fontSize: 11.5, color: c.mute, marginTop: 3 },
   rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
@@ -240,18 +242,18 @@ const styles = StyleSheet.create({
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 13 },
   tile: { width: '47%', backgroundColor: c.surface, borderWidth: 1, borderColor: c.line, borderRadius: r.lg, overflow: 'hidden' },
   tileImage: { width: '100%', aspectRatio: 1.1 },
-  tileInitial: { fontFamily: f.serif, fontSize: 44, color: 'rgba(23,26,21,0.22)' },
+  tileInitial: { fontFamily: f.display, fontSize: 44, color: 'rgba(23,26,21,0.22)' },
   tileBody: { padding: 12, gap: 3 },
   tileBrand: { fontFamily: f.bodySemiBold, fontSize: 10.5, letterSpacing: 0.5, textTransform: 'uppercase', color: c.muted2 },
   tileName: { fontFamily: f.bodySemiBold, fontSize: 13.5, lineHeight: 17, color: c.ink, minHeight: 34 },
-  tilePrice: { fontFamily: f.serif, fontSize: 19, color: c.ink },
-  addBtn: { width: 28, height: 28, borderRadius: r.pill, backgroundColor: c.moss, alignItems: 'center', justifyContent: 'center' },
+  tilePrice: { fontFamily: f.display, fontSize: 19, color: c.ink },
+  addBtn: { width: 28, height: 28, borderRadius: r.pill, backgroundColor: c.coral, alignItems: 'center', justifyContent: 'center' },
   addBtnText: { color: '#fff', fontSize: 17, lineHeight: 17, fontFamily: f.body },
   toast: {
     position: 'absolute', left: 16, right: 16, bottom: 96, padding: 14, borderRadius: r.md,
     backgroundColor: c.ink, flexDirection: 'row', alignItems: 'center', gap: 11,
   },
-  toastDot: { width: 7, height: 7, borderRadius: r.pill, backgroundColor: c.clay },
+  toastDot: { width: 7, height: 7, borderRadius: r.pill, backgroundColor: c.rose },
   toastText: { flex: 1, fontFamily: f.bodyMedium, fontSize: 13.5, color: c.bg },
-  toastAction: { fontFamily: f.bodyBold, fontSize: 13.5, color: c.clay },
+  toastAction: { fontFamily: f.bodyBold, fontSize: 13.5, color: c.rose },
 });

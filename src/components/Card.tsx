@@ -12,8 +12,7 @@ type Props = {
   onPress?: () => void;
 };
 
-// Mirrors .card + .blueprint: a transparent, hairline-bordered, square
-// object with optional corner registration marks and elevation.
+// A rounded, white surface card floating on the app's cream background.
 export default function Card({
   children, style, elevation, blueprint = true, row = false, onPress,
 }: Props) {
@@ -41,10 +40,10 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     gap: space.s2,
     padding: space.s3,
-    borderRadius: 0,
-    borderWidth: 1,
+    borderRadius: radius.lg,
+    borderWidth: 1.5,
     borderColor: colors.divider,
-    backgroundColor: 'transparent',
+    backgroundColor: colors.surface,
   },
   row: {
     flexDirection: 'row',

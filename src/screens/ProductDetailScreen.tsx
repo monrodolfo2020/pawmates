@@ -8,8 +8,10 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
 import { api, Product, ProductCategory, StorefrontDetail } from '../api/client';
-import { commerceColors as c, commerceFonts as f, commerceRadius as r, tintFor } from '../theme/commerceTokens';
+import { vividColors as c, vividFonts as f, vividRadius as r, vividTintFor as tintForRaw } from '../theme/vividTokens';
 import { useAppState } from '../state/AppState';
+
+const tintFor = (seed: string) => tintForRaw(seed).bg;
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ProductDetail'>;
 
@@ -150,11 +152,11 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: c.bg },
   scrollBody: { paddingBottom: 120 },
   centerFill: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  error: { fontFamily: f.body, fontSize: 14, color: c.clay, textAlign: 'center' },
+  error: { fontFamily: f.body, fontSize: 14, color: c.rose, textAlign: 'center' },
   mutedBody: { fontFamily: f.body, fontSize: 14, color: c.mute },
   hero: { height: 320, position: 'relative' },
   heroImage: { width: HERO_WIDTH, height: 320 },
-  heroInitial: { fontFamily: f.serif, fontSize: 120, color: 'rgba(23,26,21,0.18)' },
+  heroInitial: { fontFamily: f.display, fontSize: 120, color: 'rgba(23,26,21,0.18)' },
   backBtn: {
     position: 'absolute', top: 20, left: 18, width: 38, height: 38, borderRadius: r.pill,
     backgroundColor: 'rgba(255,255,255,0.88)', alignItems: 'center', justifyContent: 'center',
@@ -164,7 +166,7 @@ const styles = StyleSheet.create({
   dotActive: { width: 16, backgroundColor: 'rgba(23,26,21,0.5)' },
   body: { padding: 20 },
   brand: { fontFamily: f.bodySemiBold, fontSize: 11.5, letterSpacing: 1, textTransform: 'uppercase', color: c.muted2 },
-  name: { fontFamily: f.serif, fontSize: 30, color: c.ink, marginTop: 6, lineHeight: 34 },
+  name: { fontFamily: f.display, fontSize: 30, color: c.ink, marginTop: 6, lineHeight: 34 },
   stock: { fontFamily: f.body, fontSize: 13, color: c.mute, marginTop: 8 },
   description: { fontFamily: f.body, fontSize: 14.5, lineHeight: 22, color: '#4A4F45', marginTop: 14 },
   qtyLabel: { fontFamily: f.bodyBold, fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: c.muted2, marginTop: 24 },
@@ -179,9 +181,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(247,244,238,0.94)', borderTopWidth: 1, borderTopColor: c.line,
     flexDirection: 'row', alignItems: 'center', gap: 14,
   },
-  footerPrice: { fontFamily: f.serif, fontSize: 24, color: c.ink },
+  footerPrice: { fontFamily: f.display, fontSize: 24, color: c.ink },
   footerNote: { fontFamily: f.body, fontSize: 11, color: c.muted2, marginTop: 2 },
-  addBtn: { flex: 1, paddingVertical: 16, borderRadius: r.md, backgroundColor: c.moss, alignItems: 'center' },
+  addBtn: { flex: 1, paddingVertical: 16, borderRadius: r.md, backgroundColor: c.coral, alignItems: 'center' },
   addBtnDisabled: { opacity: 0.4 },
   addBtnText: { fontFamily: f.bodyBold, fontSize: 15, color: c.bg },
 });

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { colors, fonts } from '../theme/tokens';
+import { colors, fonts, radius } from '../theme/tokens';
 
 type Option = { label: string; value: string };
 
@@ -37,20 +37,20 @@ export default function Segmented({ options, value, onChange }: Props) {
 const styles = StyleSheet.create({
   wrap: {
     flexDirection: 'row',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.divider,
-    borderRadius: 0,
+    borderRadius: radius.md,
     overflow: 'hidden',
   },
   opt: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 7,
+    paddingVertical: 10,
     paddingHorizontal: 12,
   },
-  divider: { borderLeftWidth: 1, borderLeftColor: colors.divider },
+  divider: { borderLeftWidth: 1.5, borderLeftColor: colors.divider },
   selected: { backgroundColor: colors.accent },
-  text: { fontFamily: fonts.body, fontSize: 13, color: colors.text },
-  textSelected: { color: colors.bg },
+  text: { fontFamily: fonts.bodyMedium, fontSize: 13, color: colors.text },
+  textSelected: { fontFamily: fonts.bodyBold, color: '#fff' },
 });

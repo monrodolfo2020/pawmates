@@ -4,7 +4,7 @@ import { ChevronLeft } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
-import { commerceColors as c, commerceFonts as f, commerceRadius as r } from '../theme/commerceTokens';
+import { vividColors as v, vividFonts as vf, vividRadius as vr } from '../theme/vividTokens';
 import { useAppState } from '../state/AppState';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Profile'>;
@@ -23,7 +23,7 @@ export default function ProfileScreen({ navigation }: Props) {
       <View style={styles.root}>
         <View style={styles.header}>
           <Pressable style={styles.backBtn} onPress={() => navigation.goBack()}>
-            <ChevronLeft size={16} strokeWidth={2} color={c.ink} />
+            <ChevronLeft size={16} strokeWidth={2} color={v.ink} />
           </Pressable>
           <Text style={styles.title}>Perfil</Text>
         </View>
@@ -98,26 +98,26 @@ export default function ProfileScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: c.bg },
+  root: { flex: 1, backgroundColor: v.bg },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingTop: 20, paddingBottom: 14 },
   backBtn: {
-    width: 36, height: 36, borderRadius: r.pill, borderWidth: 1, borderColor: c.line,
-    backgroundColor: c.surface, alignItems: 'center', justifyContent: 'center',
+    width: 36, height: 36, borderRadius: vr.pill, borderWidth: 1, borderColor: v.line,
+    backgroundColor: v.surface, alignItems: 'center', justifyContent: 'center',
   },
-  title: { fontFamily: f.serif, fontSize: 26, color: c.ink },
+  title: { fontFamily: vf.display, fontSize: 26, color: v.ink },
   body: { paddingHorizontal: 20, paddingBottom: 24, gap: 16 },
-  card: { padding: 18, borderRadius: r.lg, backgroundColor: c.surface, borderWidth: 1, borderColor: c.line, gap: 4 },
-  kicker: { fontFamily: f.bodySemiBold, fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: c.muted2 },
-  name: { fontFamily: f.serif, fontSize: 24, color: c.ink, marginTop: 2 },
-  mutedBody: { fontFamily: f.body, fontSize: 13.5, color: c.mute },
+  card: { padding: 18, borderRadius: vr.lg, backgroundColor: v.surface, borderWidth: 1, borderColor: v.line, gap: 4 },
+  kicker: { fontFamily: vf.bodySemiBold, fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: v.muted2 },
+  name: { fontFamily: vf.display, fontSize: 24, color: v.ink, marginTop: 2 },
+  mutedBody: { fontFamily: vf.body, fontSize: 13.5, color: v.mute },
   wrapRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 6 },
-  roleTag: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: r.pill, borderWidth: 1, borderColor: c.line, backgroundColor: c.panel },
-  roleTagText: { fontFamily: f.bodySemiBold, fontSize: 11, color: c.mute },
-  petRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: c.line, marginTop: 4 },
-  addPetRow: { paddingTop: 10, marginTop: 4, borderTopWidth: 1, borderTopColor: c.line },
-  linkText: { fontFamily: f.bodySemiBold, fontSize: 13.5, color: c.moss },
-  outlineBtn: { paddingVertical: 14, borderRadius: r.md, borderWidth: 1, borderColor: c.line, backgroundColor: c.surface, alignItems: 'center' },
-  outlineBtnText: { fontFamily: f.bodySemiBold, fontSize: 14, color: c.ink },
-  primaryBtn: { paddingVertical: 14, borderRadius: r.md, backgroundColor: c.moss, alignItems: 'center' },
-  primaryBtnText: { fontFamily: f.bodyBold, fontSize: 14, color: c.bg },
+  roleTag: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: vr.pill, borderWidth: 1, borderColor: v.line, backgroundColor: v.panel },
+  roleTagText: { fontFamily: vf.bodySemiBold, fontSize: 11, color: v.mute },
+  petRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: v.line, marginTop: 4 },
+  addPetRow: { paddingTop: 10, marginTop: 4, borderTopWidth: 1, borderTopColor: v.line },
+  linkText: { fontFamily: vf.bodySemiBold, fontSize: 13.5, color: v.coral },
+  outlineBtn: { paddingVertical: 14, borderRadius: vr.md, borderWidth: 1, borderColor: v.line, backgroundColor: v.surface, alignItems: 'center' },
+  outlineBtnText: { fontFamily: vf.bodySemiBold, fontSize: 14, color: v.ink },
+  primaryBtn: { paddingVertical: 14, borderRadius: vr.md, backgroundColor: v.coral, alignItems: 'center' },
+  primaryBtnText: { fontFamily: vf.bodyBold, fontSize: 14, color: v.bg },
 });

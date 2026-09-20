@@ -1,6 +1,6 @@
 import React from 'react';
 import { TextInput, StyleSheet, TextInputProps } from 'react-native';
-import { colors, fonts } from '../theme/tokens';
+import { colors, fonts, radius } from '../theme/tokens';
 import Field from './Field';
 
 type Props = Omit<TextInputProps, 'style'> & {
@@ -25,13 +25,13 @@ export default function TextField({ label, ...inputProps }: Props) {
 
 const styles = StyleSheet.create({
   input: {
-    minHeight: 36,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
+    minHeight: 44,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
     backgroundColor: colors.surface,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.divider,
-    borderRadius: 0,
+    borderRadius: radius.md,
     fontFamily: fonts.body,
     fontSize: 14,
     color: colors.text,

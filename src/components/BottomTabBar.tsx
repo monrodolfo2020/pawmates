@@ -19,15 +19,16 @@ export default function BottomTabBar({ items, activeIndex }: { items: TabItem[];
 const styles = StyleSheet.create({
   wrap: {
     flexDirection: 'row',
-    borderTopWidth: 1,
+    borderTopWidth: 1.5,
     borderTopColor: colors.divider,
+    backgroundColor: colors.surface,
     paddingVertical: space.s2,
     paddingHorizontal: space.s4,
   },
   item: { flex: 1, alignItems: 'center' },
   label: {
-    fontFamily: fonts.body, fontSize: 10, letterSpacing: 1, textTransform: 'uppercase',
-    color: colors.text, opacity: 0.5,
+    fontFamily: fonts.bodyBold, fontSize: 10, letterSpacing: 0.6, textTransform: 'uppercase',
+    color: colors.text, opacity: 0.45,
   },
   active: { color: colors.accent, opacity: 1 },
 });

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { colors, fonts, radius } from '../theme/tokens';
+import { colors, fonts } from '../theme/tokens';
 
 type Props = {
   label: string;
@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
   dot: {
     width: 16, height: 16, borderRadius: 8, borderWidth: 1.5, borderColor: colors.divider,
   },
-  dotSquare: { borderRadius: radius.sm },
+  dotSquare: { borderRadius: 5 },
   dotSelected: {
     borderColor: colors.accent,
     backgroundColor: colors.accent,

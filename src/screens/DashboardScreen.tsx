@@ -5,7 +5,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
 import BottomTabBar from '../components/BottomTabBar';
-import { commerceColors as c, commerceFonts as f, commerceRadius as r } from '../theme/commerceTokens';
+import { vividColors as v, vividFonts as vf, vividRadius as vr, vividTintFor } from '../theme/vividTokens';
 import { api, BookingSummary, BookingWeekSummary } from '../api/client';
 import { useAppState } from '../state/AppState';
 
@@ -76,6 +76,8 @@ export default function DashboardScreen({ navigation }: Props) {
     }
   };
 
+  const avatarTint = vividTintFor(s.name ?? s.email ?? 'paseador');
+
   return (
     <ScreenContainer>
       <View style={styles.root}>
@@ -86,8 +88,10 @@ export default function DashboardScreen({ navigation }: Props) {
                 {photo ? (
                   <Image source={{ uri: photo }} style={styles.avatar} resizeMode="cover" />
                 ) : (
-                  <View style={styles.avatarPlaceholder}>
-                    <Text style={styles.avatarPlaceholderText}>{(s.name ?? 'T')[0].toUpperCase()}</Text>
+                  <View style={[styles.avatarPlaceholder, { backgroundColor: avatarTint.bg }]}>
+                    <Text style={[styles.avatarPlaceholderText, { color: avatarTint.fg }]}>
+                      {(s.name ?? 'T')[0].toUpperCase()}
+                    </Text>
                   </View>
                 )}
               </Pressable>
@@ -125,11 +129,11 @@ export default function DashboardScreen({ navigation }: Props) {
           </Pressable>
 
           <View style={styles.earningsCard}>
-            <Text style={styles.kicker}>Ingresos esta semana</Text>
+            <Text style={styles.earningsKicker}>Ingresos esta semana</Text>
             <Text style={styles.earnings}>
               {summary ? money(summary.earnings.amount, summary.earnings.currency) : '—'}
             </Text>
-            <Text style={styles.mutedSmall}>
+            <Text style={styles.earningsMeta}>
               {summary
                 ? `${summary.completedThisWeek} paseo${summary.completedThisWeek === 1 ? '' : 's'} completado${summary.completedThisWeek === 1 ? '' : 's'}`
                 : 'Cargando…'}
@@ -139,12 +143,15 @@ export default function DashboardScreen({ navigation }: Props) {
           <View>
             <Text style={styles.sectionTitle}>Esta semana</Text>
             <View style={styles.weekRow}>
-              {(summary?.days ?? []).map((wd, i) => (
-                <View key={i} style={styles.weekCell}>
-                  <Text style={styles.weekLabel}>{wd.label}</Text>
-                  <Text style={styles.weekCount}>{wd.count}</Text>
-                </View>
-              ))}
+              {(summary?.days ?? []).map((wd, i) => {
+                const active = wd.count > 0;
+                return (
+                  <View key={i} style={[styles.weekCell, active && styles.weekCellActive]}>
+                    <Text style={[styles.weekLabel, active && styles.weekLabelActive]}>{wd.label}</Text>
+                    <Text style={[styles.weekCount, active && styles.weekCountActive]}>{wd.count}</Text>
+                  </View>
+                );
+              })}
             </View>
           </View>
 
@@ -158,31 +165,34 @@ export default function DashboardScreen({ navigation }: Props) {
               const busy = actingOn === req.id;
               return (
                 <View key={req.id} style={styles.requestCard}>
-                  <View style={styles.rowBetween}>
-                    <Text style={styles.requestPet}>{petLabel}</Text>
-                    <View style={styles.timeTag}>
-                      <Text style={styles.timeTagText}>{requestTimeLabel(req.scheduledAt)}</Text>
+                  <View style={styles.requestAccent} />
+                  <View style={styles.requestBody}>
+                    <View style={styles.rowBetween}>
+                      <Text style={styles.requestPet}>{petLabel}</Text>
+                      <View style={styles.timeTag}>
+                        <Text style={styles.timeTagText}>{requestTimeLabel(req.scheduledAt)}</Text>
+                      </View>
                     </View>
-                  </View>
-                  <Text style={styles.requestMeta}>
-                    {firstLine ? `Paseo de ${firstLine.durationValue} min` : 'Paseo'}
-                    {req.ownerName ? ` · Dueño: ${req.ownerName}` : ''}
-                  </Text>
-                  <View style={styles.requestActions}>
-                    <Pressable
-                      style={[styles.rejectBtn, busy && styles.btnDisabled]}
-                      disabled={busy}
-                      onPress={() => void respond(req.id, 'reject')}
-                    >
-                      <Text style={styles.rejectBtnText}>Rechazar</Text>
-                    </Pressable>
-                    <Pressable
-                      style={[styles.acceptBtn, busy && styles.btnDisabled]}
-                      disabled={busy}
-                      onPress={() => void respond(req.id, 'accept')}
-                    >
-                      <Text style={styles.acceptBtnText}>Aceptar</Text>
-                    </Pressable>
+                    <Text style={styles.requestMeta}>
+                      {firstLine ? `Paseo de ${firstLine.durationValue} min` : 'Paseo'}
+                      {req.ownerName ? ` · Dueño: ${req.ownerName}` : ''}
+                    </Text>
+                    <View style={styles.requestActions}>
+                      <Pressable
+                        style={[styles.rejectBtn, busy && styles.btnDisabled]}
+                        disabled={busy}
+                        onPress={() => void respond(req.id, 'reject')}
+                      >
+                        <Text style={styles.rejectBtnText}>Rechazar</Text>
+                      </Pressable>
+                      <Pressable
+                        style={[styles.acceptBtn, busy && styles.btnDisabled]}
+                        disabled={busy}
+                        onPress={() => void respond(req.id, 'accept')}
+                      >
+                        <Text style={styles.acceptBtnText}>Aceptar</Text>
+                      </Pressable>
+                    </View>
                   </View>
                 </View>
               );
@@ -205,56 +215,53 @@ export default function DashboardScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: c.bg },
-  body: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 24, gap: 20 },
+  root: { flex: 1, backgroundColor: v.bg },
+  body: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 24, gap: 18 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  avatar: { width: 48, height: 48, borderRadius: r.pill },
-  avatarPlaceholder: {
-    width: 48, height: 48, borderRadius: r.pill, backgroundColor: c.tintGreen,
-    borderWidth: 1, borderColor: c.tintGreenLine, alignItems: 'center', justifyContent: 'center',
-  },
-  avatarPlaceholderText: { fontFamily: f.serif, fontSize: 20, color: c.moss },
-  kicker: { fontFamily: f.bodySemiBold, fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: c.muted2 },
-  title: { fontFamily: f.serif, fontSize: 22, color: c.ink, marginTop: 2 },
-  pillBtn: {
-    paddingHorizontal: 14, paddingVertical: 8, borderRadius: r.pill,
-    borderWidth: 1, borderColor: c.line, backgroundColor: c.surface,
-  },
-  pillBtnText: { fontFamily: f.bodySemiBold, fontSize: 12.5, color: c.ink },
+  avatar: { width: 48, height: 48, borderRadius: vr.pill },
+  avatarPlaceholder: { width: 48, height: 48, borderRadius: vr.pill, alignItems: 'center', justifyContent: 'center' },
+  avatarPlaceholderText: { fontFamily: vf.display, fontSize: 20 },
+  kicker: { fontFamily: vf.bodyBold, fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: v.coral },
+  title: { fontFamily: vf.display, fontSize: 19, color: v.ink, marginTop: 2 },
+  pillBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: vr.pill, backgroundColor: v.surface, borderWidth: 1.5, borderColor: v.line },
+  pillBtnText: { fontFamily: vf.bodyBold, fontSize: 12.5, color: v.ink },
 
-  alertCard: { padding: 16, borderRadius: r.md, backgroundColor: c.tintGreen, borderWidth: 1, borderColor: c.tintGreenLine, gap: 4 },
-  alertTitle: { fontFamily: f.bodySemiBold, fontSize: 14, color: c.ink },
-  alertBody: { fontFamily: f.body, fontSize: 12.5, color: c.mute, lineHeight: 17 },
+  alertCard: { padding: 16, borderRadius: vr.md, backgroundColor: v.sunTint, borderWidth: 1.5, borderColor: v.sunTintLine, gap: 4 },
+  alertTitle: { fontFamily: vf.bodyBold, fontSize: 14, color: v.ink },
+  alertBody: { fontFamily: vf.body, fontSize: 12.5, color: v.mute, lineHeight: 17 },
 
-  outlineBtn: { paddingVertical: 14, borderRadius: r.md, borderWidth: 1, borderColor: c.line, backgroundColor: c.surface, alignItems: 'center' },
-  outlineBtnText: { fontFamily: f.bodySemiBold, fontSize: 14, color: c.ink },
+  outlineBtn: { paddingVertical: 14, borderRadius: vr.md, borderWidth: 1.5, borderColor: v.grapeTintLine, backgroundColor: v.grapeTint, alignItems: 'center' },
+  outlineBtnText: { fontFamily: vf.bodyBold, fontSize: 14, color: v.grape },
 
-  earningsCard: { padding: 18, borderRadius: r.lg, backgroundColor: c.surface, borderWidth: 1, borderColor: c.line, gap: 4 },
-  earnings: { fontFamily: f.serif, fontSize: 38, color: c.ink, marginTop: 2 },
-  mutedSmall: { fontFamily: f.body, fontSize: 12, color: c.muted2 },
+  earningsCard: { padding: 20, borderRadius: vr.lg, backgroundColor: v.coral, gap: 4 },
+  earningsKicker: { fontFamily: vf.bodyBold, fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: v.coralTint },
+  earnings: { fontFamily: vf.display, fontSize: 40, color: '#fff', marginTop: 2 },
+  earningsMeta: { fontFamily: vf.bodyMedium, fontSize: 12.5, color: v.coralTint },
 
-  sectionTitle: { fontFamily: f.serif, fontSize: 21, color: c.ink, marginBottom: 10 },
+  sectionTitle: { fontFamily: vf.display, fontSize: 17, color: v.ink, marginBottom: 10 },
   weekRow: { flexDirection: 'row', gap: 8 },
-  weekCell: {
-    flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: r.md,
-    backgroundColor: c.surface, borderWidth: 1, borderColor: c.line, gap: 4,
-  },
-  weekLabel: { fontFamily: f.bodySemiBold, fontSize: 10.5, letterSpacing: 0.5, textTransform: 'uppercase', color: c.muted2 },
-  weekCount: { fontFamily: f.serif, fontSize: 18, color: c.ink },
+  weekCell: { flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: vr.md, backgroundColor: v.surface, borderWidth: 1.5, borderColor: v.line, gap: 4 },
+  weekCellActive: { backgroundColor: v.mintTint, borderColor: v.mintTintLine },
+  weekLabel: { fontFamily: vf.bodyBold, fontSize: 10.5, letterSpacing: 0.5, textTransform: 'uppercase', color: v.muted2 },
+  weekLabelActive: { color: '#00947C' },
+  weekCount: { fontFamily: vf.display, fontSize: 18, color: v.mute },
+  weekCountActive: { color: v.ink },
 
-  mutedBody: { fontFamily: f.body, fontSize: 13.5, color: c.mute },
+  mutedBody: { fontFamily: vf.body, fontSize: 13.5, color: v.mute },
 
-  requestCard: { padding: 16, borderRadius: r.lg, backgroundColor: c.surface, borderWidth: 1, borderColor: c.line, gap: 8 },
+  requestCard: { flexDirection: 'row', borderRadius: vr.lg, backgroundColor: v.surface, borderWidth: 1.5, borderColor: v.line, overflow: 'hidden' },
+  requestAccent: { width: 6, backgroundColor: v.coral },
+  requestBody: { flex: 1, padding: 16, gap: 8 },
   rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  requestPet: { fontFamily: f.bodySemiBold, fontSize: 15, color: c.ink },
-  timeTag: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: r.pill, borderWidth: 1, borderColor: c.line, backgroundColor: c.panel },
-  timeTagText: { fontFamily: f.bodySemiBold, fontSize: 11, color: c.mute },
-  requestMeta: { fontFamily: f.body, fontSize: 13, color: c.mute },
+  requestPet: { fontFamily: vf.bodyBold, fontSize: 15, color: v.ink },
+  timeTag: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: vr.pill, backgroundColor: v.sunTint },
+  timeTagText: { fontFamily: vf.bodyBold, fontSize: 11, color: '#8A6400' },
+  requestMeta: { fontFamily: vf.body, fontSize: 13, color: v.mute },
   requestActions: { flexDirection: 'row', gap: 8, marginTop: 4 },
-  rejectBtn: { flex: 1, paddingVertical: 12, borderRadius: r.md, borderWidth: 1, borderColor: c.line, backgroundColor: c.surface, alignItems: 'center' },
-  rejectBtnText: { fontFamily: f.bodySemiBold, fontSize: 13.5, color: c.ink },
-  acceptBtn: { flex: 1, paddingVertical: 12, borderRadius: r.md, backgroundColor: c.moss, alignItems: 'center' },
-  acceptBtnText: { fontFamily: f.bodySemiBold, fontSize: 13.5, color: c.bg },
+  rejectBtn: { flex: 1, paddingVertical: 12, borderRadius: vr.md, borderWidth: 1.5, borderColor: v.line, backgroundColor: v.surface, alignItems: 'center' },
+  rejectBtnText: { fontFamily: vf.bodyBold, fontSize: 13.5, color: v.ink },
+  acceptBtn: { flex: 1, paddingVertical: 12, borderRadius: vr.md, backgroundColor: v.mint, alignItems: 'center' },
+  acceptBtnText: { fontFamily: vf.bodyBold, fontSize: 13.5, color: '#fff' },
   btnDisabled: { opacity: 0.5 },
 });

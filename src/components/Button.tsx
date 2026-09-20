@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, Text, View, StyleSheet, StyleProp, ViewStyle } from 'react-native';
-import { colors, fonts, space } from '../theme/tokens';
+import { colors, fonts, radius, space } from '../theme/tokens';
 import CornerMarks from './CornerMarks';
 
 type Variant = 'primary' | 'secondary' | 'ghost';
@@ -45,27 +45,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    paddingVertical: space.s2,
+    paddingVertical: space.s2 * 1.35,
     paddingHorizontal: space.s3 * 1.2,
-    borderRadius: 0,
-    borderWidth: 1,
+    borderRadius: radius.md,
+    borderWidth: 1.5,
     borderColor: 'transparent',
   },
   block: { width: '100%' },
   disabled: { opacity: 0.45 },
-  text: { fontFamily: fonts.heading, fontSize: 14 },
+  text: { fontFamily: fonts.bodyBold, fontSize: 14 },
 });
 
 const VARIANTS = StyleSheet.create({
   primary: { backgroundColor: colors.accent, borderColor: colors.accent },
-  secondary: { backgroundColor: 'transparent', borderColor: colors.divider },
+  secondary: { backgroundColor: colors.surface, borderColor: colors.divider },
   ghost: { backgroundColor: 'transparent', borderColor: 'transparent', paddingHorizontal: space.s1 },
 });
 
 const PRESSED = StyleSheet.create({
   primary: { backgroundColor: colors.accent700 },
-  secondary: { backgroundColor: 'rgba(29,31,32,0.10)' },
-  ghost: { backgroundColor: 'rgba(89,128,166,0.15)' },
+  secondary: { backgroundColor: colors.neutral100 },
+  ghost: { backgroundColor: colors.accent100 },
 });
 
 const TEXT_VARIANTS = StyleSheet.create({
@@ -80,7 +80,7 @@ export function IconButton({
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [iconStyles.base, pressed && { backgroundColor: 'rgba(29,31,32,0.10)' }, style]}
+      style={({ pressed }) => [iconStyles.base, pressed && { backgroundColor: colors.neutral100 }, style]}
     >
       {children}
     </Pressable>
@@ -90,6 +90,6 @@ export function IconButton({
 const iconStyles = StyleSheet.create({
   base: {
     width: 36, height: 36, alignItems: 'center', justifyContent: 'center',
-    borderRadius: 0,
+    borderRadius: radius.pill, borderWidth: 1.5, borderColor: colors.divider, backgroundColor: colors.surface,
   },
 });

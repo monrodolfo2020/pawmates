@@ -5,8 +5,10 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
 import { api, StorefrontDetail } from '../api/client';
-import { commerceColors as c, commerceFonts as f, commerceRadius as r, tintFor } from '../theme/commerceTokens';
+import { vividColors as c, vividFonts as f, vividRadius as r, vividTintFor as tintForRaw } from '../theme/vividTokens';
 import { useAppState } from '../state/AppState';
+
+const tintFor = (seed: string) => tintForRaw(seed).bg;
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Cart'>;
 
@@ -148,12 +150,12 @@ const styles = StyleSheet.create({
     width: 36, height: 36, borderRadius: r.pill, borderWidth: 1, borderColor: c.line,
     backgroundColor: c.surface, alignItems: 'center', justifyContent: 'center',
   },
-  title: { fontFamily: f.serif, fontSize: 28, color: c.ink },
+  title: { fontFamily: f.display, fontSize: 28, color: c.ink },
   body: { paddingHorizontal: 20, paddingBottom: 24, gap: 4 },
-  error: { fontFamily: f.body, fontSize: 13, color: c.clay, marginBottom: 8 },
+  error: { fontFamily: f.body, fontSize: 13, color: c.rose, marginBottom: 8 },
   line: { flexDirection: 'row', gap: 13, paddingVertical: 15, borderBottomWidth: 1, borderBottomColor: c.line },
   lineImage: { width: 72, height: 72, borderRadius: r.md },
-  lineInitial: { fontFamily: f.serif, fontSize: 28, color: 'rgba(23,26,21,0.22)' },
+  lineInitial: { fontFamily: f.display, fontSize: 28, color: 'rgba(23,26,21,0.22)' },
   lineName: { fontFamily: f.bodySemiBold, fontSize: 14.5, color: c.ink, lineHeight: 19 },
   rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   stepper: {
@@ -162,15 +164,15 @@ const styles = StyleSheet.create({
   },
   stepperBtn: { width: 30, height: 28, alignItems: 'center', justifyContent: 'center' },
   stepperQty: { fontFamily: f.bodySemiBold, fontSize: 14, color: c.ink, minWidth: 18, textAlign: 'center' },
-  lineTotal: { fontFamily: f.serif, fontSize: 18, color: c.ink },
+  lineTotal: { fontFamily: f.display, fontSize: 18, color: c.ink },
   summary: { marginTop: 16, padding: 18, borderRadius: r.md, backgroundColor: c.surface, borderWidth: 1, borderColor: c.line },
   summaryTotalLabel: { fontFamily: f.bodySemiBold, fontSize: 14, color: c.ink },
-  summaryTotal: { fontFamily: f.serif, fontSize: 24, color: c.ink },
+  summaryTotal: { fontFamily: f.display, fontSize: 24, color: c.ink },
   footer: { padding: 20, backgroundColor: 'rgba(247,244,238,0.94)', borderTopWidth: 1, borderTopColor: c.line },
-  primaryBtn: { paddingVertical: 16, borderRadius: r.md, backgroundColor: c.moss, alignItems: 'center' },
+  primaryBtn: { paddingVertical: 16, borderRadius: r.md, backgroundColor: c.coral, alignItems: 'center' },
   primaryBtnDisabled: { opacity: 0.5 },
   primaryBtnText: { fontFamily: f.bodyBold, fontSize: 15, color: c.bg },
   centerFill: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40, gap: 12 },
-  emptyTitle: { fontFamily: f.serif, fontSize: 26, color: c.ink, textAlign: 'center' },
+  emptyTitle: { fontFamily: f.display, fontSize: 26, color: c.ink, textAlign: 'center' },
   emptyBody: { fontFamily: f.body, fontSize: 14, color: c.mute, textAlign: 'center', lineHeight: 20 },
 });

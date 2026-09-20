@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, fonts, space } from '../theme/tokens';
+import { colors, fonts, radius } from '../theme/tokens';
 
 type Props = { label: string; children: React.ReactNode };
 
@@ -25,14 +25,14 @@ export function InputDisplay({ value }: { value: string }) {
 const styles = StyleSheet.create({
   label: { fontFamily: fonts.body, fontSize: 12, color: colors.textMuted70 },
   input: {
-    minHeight: 36,
+    minHeight: 44,
     justifyContent: 'center',
-    paddingVertical: 6,
-    paddingHorizontal: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
     backgroundColor: colors.surface,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.divider,
-    borderRadius: 0,
+    borderRadius: radius.md,
   },
   inputText: { fontFamily: fonts.body, fontSize: 14, color: colors.text },
 });
