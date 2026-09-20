@@ -9,7 +9,7 @@ import Card from '../components/Card';
 import { CardTitle, CardBody } from '../components/CardText';
 import Tag from '../components/Tag';
 import ImagePlaceholder from '../components/ImagePlaceholder';
-import BottomTabBar from '../components/BottomTabBar';
+import AppNav from '../components/AppNav';
 import MapMock from '../components/MapMock';
 import { api, ProviderListing } from '../api/client';
 import { colors, fonts, space } from '../theme/tokens';
@@ -39,6 +39,15 @@ export default function HomeScreen({ navigation }: Props) {
 
   return (
     <ScreenContainer>
+      <AppNav
+        items={[
+          { label: 'Inicio', onPress: () => navigation.navigate('Home') },
+          { label: 'Reservas', onPress: () => navigation.navigate('Bookings') },
+          { label: 'Tienda', onPress: () => navigation.navigate('Stores') },
+          { label: 'Perfil', onPress: () => navigation.navigate('Profile') },
+        ]}
+        activeIndex={0}
+      />
       <View style={styles.header}>
         <View>
           <Text style={styles.kicker}>Hola, {s.name ?? s.email ?? ''}</Text>
@@ -151,16 +160,6 @@ export default function HomeScreen({ navigation }: Props) {
           </Card>
         ))}
       </ScrollView>
-
-      <BottomTabBar
-        items={[
-          { label: 'Inicio', onPress: () => navigation.navigate('Home') },
-          { label: 'Reservas', onPress: () => navigation.navigate('Bookings') },
-          { label: 'Tienda', onPress: () => navigation.navigate('Stores') },
-          { label: 'Perfil', onPress: () => navigation.navigate('Profile') },
-        ]}
-        activeIndex={0}
-      />
     </ScreenContainer>
   );
 }

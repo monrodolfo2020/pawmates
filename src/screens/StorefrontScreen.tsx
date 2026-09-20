@@ -4,7 +4,7 @@ import { ShoppingBag, Search } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
-import BottomTabBar from '../components/BottomTabBar';
+import AppNav from '../components/AppNav';
 import { api, Product, ProductCategory, StorefrontDetail } from '../api/client';
 import { vividColors as c, vividFonts as f, vividRadius as r, vividTintFor as tintForRaw } from '../theme/vividTokens';
 import { useAppState } from '../state/AppState';
@@ -79,6 +79,24 @@ export default function StorefrontScreen({ navigation, route }: Props) {
   return (
     <ScreenContainer>
       <View style={styles.root}>
+        <AppNav
+          items={
+            providerOnly
+              ? [
+                  { label: 'Panel', onPress: () => navigation.navigate('Dashboard') },
+                  { label: 'Solicitudes', onPress: () => navigation.navigate('ComingSoon', { title: 'Solicitudes' }) },
+                  { label: 'Tienda', onPress: () => navigation.navigate('Stores') },
+                  { label: 'Perfil', onPress: () => navigation.navigate('Profile') },
+                ]
+              : [
+                  { label: 'Inicio', onPress: () => navigation.navigate(s.authStatus === 'authed' ? 'Home' : 'Login') },
+                  { label: 'Reservas', onPress: () => navigation.navigate(s.authStatus === 'authed' ? 'Bookings' : 'Login') },
+                  { label: 'Tienda', onPress: () => navigation.navigate('Stores') },
+                  { label: 'Perfil', onPress: () => navigation.navigate(s.authStatus === 'authed' ? 'Profile' : 'Login') },
+                ]
+          }
+          activeIndex={2}
+        />
         <ScrollView contentContainerStyle={styles.body} style={styles.scroll}>
           <View style={styles.header}>
             <View>
@@ -166,24 +184,6 @@ export default function StorefrontScreen({ navigation, route }: Props) {
           </View>
         )}
 
-        <BottomTabBar
-          items={
-            providerOnly
-              ? [
-                  { label: 'Panel', onPress: () => navigation.navigate('Dashboard') },
-                  { label: 'Solicitudes', onPress: () => navigation.navigate('ComingSoon', { title: 'Solicitudes' }) },
-                  { label: 'Tienda', onPress: () => navigation.navigate('Stores') },
-                  { label: 'Perfil', onPress: () => navigation.navigate('Profile') },
-                ]
-              : [
-                  { label: 'Inicio', onPress: () => navigation.navigate(s.authStatus === 'authed' ? 'Home' : 'Login') },
-                  { label: 'Reservas', onPress: () => navigation.navigate(s.authStatus === 'authed' ? 'Bookings' : 'Login') },
-                  { label: 'Tienda', onPress: () => navigation.navigate('Stores') },
-                  { label: 'Perfil', onPress: () => navigation.navigate(s.authStatus === 'authed' ? 'Profile' : 'Login') },
-                ]
-          }
-          activeIndex={2}
-        />
       </View>
     </ScreenContainer>
   );

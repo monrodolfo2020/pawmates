@@ -7,7 +7,7 @@ import ScreenContainer from '../components/ScreenContainer';
 import Card from '../components/Card';
 import { CardTitle, CardMeta, CardBody } from '../components/CardText';
 import Tag from '../components/Tag';
-import BottomTabBar from '../components/BottomTabBar';
+import AppNav from '../components/AppNav';
 import { api, StorefrontListing } from '../api/client';
 import { colors, fonts, space } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
@@ -43,6 +43,24 @@ export default function StoresScreen({ navigation }: Props) {
 
   return (
     <ScreenContainer>
+      <AppNav
+        items={
+          providerOnly
+            ? [
+                { label: 'Panel', onPress: () => navigation.navigate('Dashboard') },
+                { label: 'Solicitudes', onPress: () => navigation.navigate('ComingSoon', { title: 'Solicitudes' }) },
+                { label: 'Tienda', onPress: () => navigation.navigate('Stores') },
+                { label: 'Perfil', onPress: () => navigation.navigate('Profile') },
+              ]
+            : [
+                { label: 'Inicio', onPress: () => navigation.navigate(s.authStatus === 'authed' ? 'Home' : 'Login') },
+                { label: 'Reservas', onPress: () => navigation.navigate(s.authStatus === 'authed' ? 'Bookings' : 'Login') },
+                { label: 'Tienda', onPress: () => navigation.navigate('Stores') },
+                { label: 'Perfil', onPress: () => navigation.navigate(s.authStatus === 'authed' ? 'Profile' : 'Login') },
+              ]
+        }
+        activeIndex={2}
+      />
       <View style={styles.header}>
         <Text style={styles.kicker}>PawMates Commerce</Text>
         <Text style={styles.title}>Tienda PawMates</Text>
@@ -76,25 +94,6 @@ export default function StoresScreen({ navigation }: Props) {
           </Card>
         ))}
       </ScrollView>
-
-      <BottomTabBar
-        items={
-          providerOnly
-            ? [
-                { label: 'Panel', onPress: () => navigation.navigate('Dashboard') },
-                { label: 'Solicitudes', onPress: () => navigation.navigate('ComingSoon', { title: 'Solicitudes' }) },
-                { label: 'Tienda', onPress: () => navigation.navigate('Stores') },
-                { label: 'Perfil', onPress: () => navigation.navigate('Profile') },
-              ]
-            : [
-                { label: 'Inicio', onPress: () => navigation.navigate(s.authStatus === 'authed' ? 'Home' : 'Login') },
-                { label: 'Reservas', onPress: () => navigation.navigate(s.authStatus === 'authed' ? 'Bookings' : 'Login') },
-                { label: 'Tienda', onPress: () => navigation.navigate('Stores') },
-                { label: 'Perfil', onPress: () => navigation.navigate(s.authStatus === 'authed' ? 'Profile' : 'Login') },
-              ]
-        }
-        activeIndex={2}
-      />
     </ScreenContainer>
   );
 }

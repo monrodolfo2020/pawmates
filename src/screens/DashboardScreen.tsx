@@ -4,7 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
-import BottomTabBar from '../components/BottomTabBar';
+import AppNav from '../components/AppNav';
 import { vividColors as v, vividFonts as vf, vividRadius as vr, vividTintFor } from '../theme/vividTokens';
 import { api, BookingSummary, BookingWeekSummary, MEET_GREET_SERVICE_TYPE_CODE } from '../api/client';
 import { useAppState } from '../state/AppState';
@@ -99,6 +99,15 @@ export default function DashboardScreen({ navigation }: Props) {
   return (
     <ScreenContainer>
       <View style={styles.root}>
+        <AppNav
+          items={[
+            { label: 'Panel', onPress: () => navigation.navigate('Dashboard') },
+            { label: 'Solicitudes', onPress: () => navigation.navigate('ComingSoon', { title: 'Solicitudes' }) },
+            { label: 'Tienda', onPress: () => navigation.navigate('Stores') },
+            { label: 'Perfil', onPress: () => navigation.navigate('Profile') },
+          ]}
+          activeIndex={0}
+        />
         <ScrollView contentContainerStyle={styles.body}>
           <View style={styles.header}>
             <View style={styles.headerLeft}>
@@ -276,16 +285,6 @@ export default function DashboardScreen({ navigation }: Props) {
             })}
           </View>
         </ScrollView>
-
-        <BottomTabBar
-          items={[
-            { label: 'Panel', onPress: () => navigation.navigate('Dashboard') },
-            { label: 'Solicitudes', onPress: () => navigation.navigate('ComingSoon', { title: 'Solicitudes' }) },
-            { label: 'Tienda', onPress: () => navigation.navigate('Stores') },
-            { label: 'Perfil', onPress: () => navigation.navigate('Profile') },
-          ]}
-          activeIndex={0}
-        />
       </View>
     </ScreenContainer>
   );
