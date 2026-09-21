@@ -159,55 +159,54 @@ export interface AdminVerification {
   createdAt: string;
 }
 
-export type ProductCategory = 'treat' | 'toy' | 'accessory' | 'service_addon' | 'other';
+// Must stay in sync with SERVICE_CATEGORIES in the backend's
+// providers/domain/value-objects/service-category.ts (same manual-sync
+// convention as MEET_GREET_SERVICE_TYPE_CODE below).
+export const SERVICE_CATEGORIES = [
+  'walker',
+  'vet',
+  'grooming',
+  'boarding',
+  'training',
+  'shop',
+  'other',
+] as const;
 
-export interface Product {
-  id: string;
-  storefrontId: string;
-  catalogItemId: string | null;
-  name: string;
-  description: string | null;
-  price: { amount: number; currency: string };
-  stockQuantity: number | null;
-  category: ProductCategory;
-  isActive: boolean;
-  photos: string[];
+export type ServiceCategory = (typeof SERVICE_CATEGORIES)[number];
+
+export const CATEGORY_LABELS: Record<ServiceCategory, string> = {
+  walker: 'Paseadores',
+  vet: 'Veterinarias',
+  grooming: 'Estética',
+  boarding: 'Hotel y guardería',
+  training: 'Entrenamiento',
+  shop: 'Tiendas',
+  other: 'Otros servicios',
+};
+
+/** Singular form, for a single business's own page/card. */
+export const CATEGORY_LABELS_SINGULAR: Record<ServiceCategory, string> = {
+  walker: 'Paseador',
+  vet: 'Veterinaria',
+  grooming: 'Estética canina',
+  boarding: 'Hotel y guardería',
+  training: 'Entrenamiento',
+  shop: 'Tienda de mascotas',
+  other: 'Otro servicio',
+};
+
+/** Only walkers can be booked in-app (bookings, Meet & Greet, live walk)
+ * — every other category is a directory listing you contact directly.
+ * Mirrors requiresRate() on the backend. */
+export function isBookable(category: ServiceCategory): boolean {
+  return category === 'walker';
 }
-
-export interface CatalogItem {
-  id: string;
-  name: string;
-  description: string | null;
-  category: ProductCategory;
-  suggestedPrice: { amount: number; currency: string };
-  photo: string | null;
-}
-
-export interface AdminCatalogItem extends CatalogItem {
-  isActive: boolean;
-}
-
-export interface Storefront {
-  id: string;
-  providerId: string;
-  name: string;
-  description: string | null;
-  isActive: boolean;
-}
-
-export interface StorefrontListing extends Storefront {
-  productCount: number;
-}
-
-export interface StorefrontDetail extends Storefront {
-  products: Product[];
-}
-
-// --- PawMates Providers (real paseador directory/profile) ---
 
 export interface ProviderListing {
   accountId: string;
   name: string;
+  category: ServiceCategory;
+  slug: string | null;
   photo: string | null;
   serviceArea: string | null;
   specialty: string | null;
@@ -220,6 +219,10 @@ export interface ProviderListing {
 
 export interface ProviderDetail extends ProviderListing {
   bio: string | null;
+  photos: string[];
+  publicAddress: string | null;
+  hours: string | null;
+  whatsapp: string | null;
 }
 
 // Private fields (address/idNumber/age/phone) only ever come back on this
@@ -228,8 +231,15 @@ export interface ProviderDetail extends ProviderListing {
 // a public response; see ProvidersController's comment).
 export interface MyProviderProfile {
   accountId: string;
+  category: ServiceCategory;
+  businessName: string | null;
+  slug: string | null;
   bio: string | null;
   photo: string | null;
+  photos: string[];
+  publicAddress: string | null;
+  hours: string | null;
+  whatsapp: string | null;
   serviceArea: string | null;
   specialty: string | null;
   price: { amount: number; currency: string } | null;
@@ -240,60 +250,6 @@ export interface MyProviderProfile {
   age: number | null;
   phone: string | null;
   isPublished: boolean;
-}
-
-export type OrderStatus =
-  | 'pending_payment'
-  | 'paid'
-  | 'awaiting_delivery'
-  | 'delivered'
-  | 'refunded';
-
-export interface OrderLine {
-  productId: string;
-  name: string;
-  unitPrice: { amount: number; currency: string };
-  quantity: number;
-  lineTotal: number;
-}
-
-export interface Order {
-  id: string;
-  ownerId: string;
-  storefrontId: string;
-  providerId: string;
-  status: OrderStatus;
-  deliveryBookingId: string | null;
-  deliveryWindowOpenAt: string | null;
-  total: { amount: number; currency: string };
-  lines: OrderLine[];
-  createdAt: string;
-  paidAt: string | null;
-  deliveredAt: string | null;
-  refundedAt: string | null;
-}
-
-export interface AdminStorefront {
-  id: string;
-  providerId: string;
-  providerEmail: string | null;
-  providerName: string | null;
-  name: string;
-  description: string | null;
-  isActive: boolean;
-  productCount: number;
-  createdAt: string;
-}
-
-export interface AdminOrder {
-  id: string;
-  ownerId: string;
-  providerId: string;
-  storefrontId: string;
-  status: OrderStatus;
-  total: { amount: number; currency: string };
-  createdAt: string;
-  deliveredAt: string | null;
 }
 
 /**
@@ -321,6 +277,8 @@ export const api = {
     password: string;
     role: 'owner' | 'provider';
     name?: string;
+    category?: ServiceCategory;
+    businessName?: string;
     facePhoto?: string;
     idDocumentPhoto?: string;
     profilePhoto?: string;
@@ -336,6 +294,8 @@ export const api = {
     token: string,
     params: {
       role: 'owner' | 'provider';
+      category?: ServiceCategory;
+      businessName?: string;
       facePhoto?: string;
       idDocumentPhoto?: string;
       profilePhoto?: string;
@@ -545,101 +505,13 @@ export const api = {
     return request<ChatMessage[]>(`/v1/bookings/${bookingId}/messages`, { token });
   },
 
-  // --- PawMates Commerce (walker storefronts) ---
+  // --- PawMates Providers (the pet-services directory) ---
 
-  /** Public — works for a signed-out guest too (token is optional). */
-  listStorefronts(token?: string | null) {
-    return request<StorefrontListing[]>('/v1/storefronts', { token: token ?? undefined });
-  },
-
-  /** Public — works for a signed-out guest too (token is optional). */
-  getStorefront(token: string | null | undefined, providerId: string) {
-    return request<StorefrontDetail>(`/v1/storefronts/${providerId}`, { token: token ?? undefined });
-  },
-
-  getMyStorefront(token: string) {
-    return request<StorefrontDetail | null>('/v1/storefronts/me', { token });
-  },
-
-  /** Admin-only: creates the one platform store if it doesn't exist yet. */
-  openStorefront(token: string, params: { name: string; description?: string }) {
-    return request<Storefront>('/v1/storefronts', { method: 'POST', token, body: params });
-  },
-
-  listCatalog(token: string) {
-    return request<CatalogItem[]>('/v1/storefronts/catalog', { token });
-  },
-
-  /** Lists a product from the catalog — price/stock are the provider's to
-   * set, but name/description/category always come from the catalog item.
-   * photos: 1-6 base64 data URLs, required. */
-  addProduct(
-    token: string,
-    params: {
-      catalogItemId: string;
-      priceAmount?: number;
-      priceCurrency?: string;
-      stockQuantity?: number;
-      photos: string[];
-    },
-  ) {
-    return request<Product>('/v1/storefronts/me/products', { method: 'POST', token, body: params });
-  },
-
-  /** photos, if included, replaces the whole gallery and must be 1-6 images. */
-  updateProduct(
-    token: string,
-    productId: string,
-    params: Partial<{
-      name: string;
-      description: string;
-      priceAmount: number;
-      priceCurrency: string;
-      stockQuantity: number;
-      isActive: boolean;
-      photos: string[];
-    }>,
-  ) {
-    return request<Product>(`/v1/products/${productId}`, { method: 'PATCH', token, body: params });
-  },
-
-  placeOrder(
-    token: string,
-    params: { storefrontId: string; lines: { productId: string; quantity: number }[] },
-  ) {
-    return request<Order>('/v1/orders', {
-      method: 'POST',
-      token,
-      idempotencyKey: uuid(),
-      body: { ...params, paymentMethodId: uuid() },
-    });
-  },
-
-  listOrders(token: string, activeContext: 'owner' | 'provider' = 'owner') {
-    return request<Order[]>('/v1/orders', { token, activeContext });
-  },
-
-  confirmDelivery(token: string, orderId: string) {
-    return request<Order>(`/v1/orders/${orderId}/confirm-delivery`, { method: 'POST', token });
-  },
-
-  cancelOrder(token: string, orderId: string) {
-    return request<Order>(`/v1/orders/${orderId}/cancel`, {
-      method: 'POST',
-      token,
-      idempotencyKey: uuid(),
-    });
-  },
-
-  attachDeliveryBooking(token: string, orderId: string) {
-    return request<Order>(`/v1/orders/${orderId}/attach-delivery-booking`, { method: 'POST', token });
-  },
-
-  // --- PawMates Providers (real paseador directory/profile) ---
-
-  /** Public — works for a signed-out guest too (token is optional). */
-  listProviders(token?: string | null) {
-    return request<ProviderListing[]>('/v1/providers', { token: token ?? undefined });
+  /** The whole published directory, or one category of it. Free-text
+   * search is done on the result client-side — see HomeScreen. */
+  listProviders(token?: string | null, category?: ServiceCategory) {
+    const query = category ? `?category=${encodeURIComponent(category)}` : '';
+    return request<ProviderListing[]>(`/v1/providers${query}`, { token: token ?? undefined });
   },
 
   /** Public — works for a signed-out guest too (token is optional). */
@@ -647,15 +519,29 @@ export const api = {
     return request<ProviderDetail>(`/v1/providers/${accountId}`, { token: token ?? undefined });
   },
 
+  /** Backs the shareable micro-page at /s/<slug> — public by design:
+   * whoever the business sends the link to has no account. */
+  getProviderBySlug(slug: string) {
+    return request<ProviderDetail>(`/v1/providers/by-slug/${encodeURIComponent(slug)}`);
+  },
+
   getMyProviderProfile(token: string) {
     return request<MyProviderProfile | null>('/v1/providers/me', { token });
   },
 
   /** Partial update — every field optional, '' clears a field back to
-   * unset. Publishes automatically once bio + price are both set. */
+   * unset. Publishes automatically once the business has a name and a
+   * description (plus a rate, for paseadores). `photos` is the one
+   * exception to "partial": it replaces the whole gallery. */
   saveMyProviderProfile(
     token: string,
     params: Partial<{
+      category: ServiceCategory;
+      businessName: string;
+      photos: string[];
+      publicAddress: string;
+      hours: string;
+      whatsapp: string;
       bio: string;
       serviceArea: string;
       specialty: string;
@@ -673,23 +559,4 @@ export const api = {
     return request<MyProviderProfile>('/v1/providers/me', { method: 'PATCH', token, body: params });
   },
 
-  adminListStorefronts(token: string) {
-    return request<AdminStorefront[]>('/v1/admin/storefronts', { token });
-  },
-
-  adminListOrders(token: string) {
-    return request<AdminOrder[]>('/v1/admin/orders', { token });
-  },
-
-  adminListCatalog(token: string) {
-    return request<AdminCatalogItem[]>('/v1/admin/catalog', { token });
-  },
-
-  adminUpdateCatalogItem(
-    token: string,
-    id: string,
-    params: Partial<{ name: string; description: string; suggestedPriceAmount: number; photo: string; isActive: boolean }>,
-  ) {
-    return request<AdminCatalogItem>(`/v1/admin/catalog/${id}`, { method: 'PATCH', token, body: params });
-  },
 };

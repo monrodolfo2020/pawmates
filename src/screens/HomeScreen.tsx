@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, Image, ScrollView, StyleSheet, Pressable } from 'react-native';
-import { Plus } from 'lucide-react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { View, Text, Image, ScrollView, StyleSheet, Pressable, TextInput } from 'react-native';
+import { Plus, Search } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
@@ -11,8 +11,15 @@ import Tag from '../components/Tag';
 import ImagePlaceholder from '../components/ImagePlaceholder';
 import AppNav from '../components/AppNav';
 import MapMock from '../components/MapMock';
-import { api, ProviderListing } from '../api/client';
-import { colors, fonts, space } from '../theme/tokens';
+import {
+  api,
+  CATEGORY_LABELS,
+  CATEGORY_LABELS_SINGULAR,
+  ProviderListing,
+  SERVICE_CATEGORIES,
+  ServiceCategory,
+} from '../api/client';
+import { colors, fonts, radius, space } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
@@ -29,29 +36,47 @@ export default function HomeScreen({ navigation }: Props) {
   const s = useAppState();
   const [providers, setProviders] = useState<ProviderListing[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [category, setCategory] = useState<ServiceCategory | 'all'>('all');
+  const [search, setSearch] = useState('');
+  // The directory is public — a guest who was sent a link should be able
+  // to browse it and only hit the login wall when they try to book.
+  const authed = s.authStatus === 'authed';
 
   useEffect(() => {
+    setProviders(null);
     api
-      .listProviders(s.token)
+      .listProviders(s.token, category === 'all' ? undefined : category)
       .then(setProviders)
-      .catch((err) => setError(err instanceof Error ? err.message : 'No se pudieron cargar los paseadores.'));
-  }, [s.token]);
+      .catch((err) => setError(err instanceof Error ? err.message : 'No se pudieron cargar los servicios.'));
+  }, [s.token, category]);
+
+  // Search stays client-side on the already-loaded category: instant, and
+  // the directory is small enough that a round trip per keystroke would
+  // only make it feel slower.
+  const results = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!providers || q === '') return providers;
+    return providers.filter((p) =>
+      [p.name, p.serviceArea, p.specialty, CATEGORY_LABELS_SINGULAR[p.category]]
+        .filter(Boolean)
+        .some((field) => field!.toLowerCase().includes(q)),
+    );
+  }, [providers, search]);
 
   return (
     <ScreenContainer>
       <AppNav
         items={[
           { label: 'Inicio', onPress: () => navigation.navigate('Home') },
-          { label: 'Reservas', onPress: () => navigation.navigate('Bookings') },
-          { label: 'Tienda', onPress: () => navigation.navigate('Stores') },
-          { label: 'Perfil', onPress: () => navigation.navigate('Profile') },
+          { label: 'Reservas', onPress: () => navigation.navigate(authed ? 'Bookings' : 'Login') },
+          { label: 'Perfil', onPress: () => navigation.navigate(authed ? 'Profile' : 'Login') },
         ]}
         activeIndex={0}
       />
       <View style={styles.header}>
         <View>
-          <Text style={styles.kicker}>Hola, {s.name ?? s.email ?? ''}</Text>
-          <Text style={styles.title}>Paseadores cerca de ti</Text>
+          {authed && <Text style={styles.kicker}>Hola, {s.name ?? s.email ?? ''}</Text>}
+          <Text style={styles.title}>Servicios para tu mascota</Text>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s2 }}>
           {s.roles.includes('admin') && (
@@ -61,12 +86,18 @@ export default function HomeScreen({ navigation }: Props) {
           )}
           {s.roles.includes('provider') && (
             <Pressable onPress={() => navigation.navigate('Dashboard')}>
-              <Tag variant="outline">Modo paseador</Tag>
+              <Tag variant="outline">Mi negocio</Tag>
             </Pressable>
           )}
-          <Pressable onPress={() => void s.logout()}>
-            <Tag variant="outline">Salir</Tag>
-          </Pressable>
+          {authed ? (
+            <Pressable onPress={() => void s.logout()}>
+              <Tag variant="outline">Salir</Tag>
+            </Pressable>
+          ) : (
+            <Pressable onPress={() => navigation.navigate('Login')}>
+              <Tag variant="accent">Iniciar sesión</Tag>
+            </Pressable>
+          )}
         </View>
       </View>
 
@@ -97,6 +128,32 @@ export default function HomeScreen({ navigation }: Props) {
         </ScrollView>
       )}
 
+      <View style={styles.searchBox}>
+        <Search size={16} strokeWidth={2} color={colors.textMuted50} />
+        <TextInput
+          value={search}
+          onChangeText={setSearch}
+          placeholder="Busca veterinaria, estética, paseador…"
+          placeholderTextColor={colors.textMuted50}
+          style={styles.searchInput}
+        />
+      </View>
+
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.chipsRow}
+        contentContainerStyle={styles.chipsRowContent}
+      >
+        {(['all', ...SERVICE_CATEGORIES] as const).map((c) => (
+          <Pressable key={c} onPress={() => setCategory(c)}>
+            <Tag variant={category === c ? 'accent' : 'outline'}>
+              {c === 'all' ? 'Todos' : CATEGORY_LABELS[c]}
+            </Tag>
+          </Pressable>
+        ))}
+      </ScrollView>
+
       <View style={styles.segRow}>
         <Segmented
           options={[{ label: 'Lista', value: 'lista' }, { label: 'Mapa', value: 'mapa' }]}
@@ -105,14 +162,14 @@ export default function HomeScreen({ navigation }: Props) {
         />
       </View>
 
-      {s.discoverView === 'mapa' && providers && providers.length > 0 && (
+      {s.discoverView === 'mapa' && results && results.length > 0 && (
         <MapMock
-          pins={providers.map((p, i) => ({
+          pins={results.map((p, i) => ({
             id: p.accountId,
             name: p.name.split(' ')[0],
             top: MAP_POSITIONS[i % MAP_POSITIONS.length].top,
             left: MAP_POSITIONS[i % MAP_POSITIONS.length].left,
-            onPress: () => navigation.navigate('WalkerProfile', { walkerId: p.accountId }),
+            onPress: () => navigation.navigate('Business', { providerId: p.accountId }),
           }))}
         />
       )}
@@ -123,20 +180,24 @@ export default function HomeScreen({ navigation }: Props) {
             <CardBody style={{ color: colors.accent }}>{error}</CardBody>
           </Card>
         )}
-        {providers?.length === 0 && (
-          <CardBody>Todavía no hay paseadores publicados por aquí. Vuelve pronto.</CardBody>
+        {results?.length === 0 && (
+          <CardBody>
+            {search.trim()
+              ? 'Ningún negocio coincide con tu búsqueda.'
+              : 'Todavía no hay negocios publicados en esta categoría. Vuelve pronto.'}
+          </CardBody>
         )}
-        {providers?.map((p) => (
+        {results?.map((p) => (
           <Card
             key={p.accountId}
             row
             elevation="sm"
-            onPress={() => navigation.navigate('WalkerProfile', { walkerId: p.accountId })}
+            onPress={() => navigation.navigate('Business', { providerId: p.accountId })}
           >
             {p.photo ? (
-              <Image source={{ uri: p.photo }} style={styles.walkerPhoto} resizeMode="cover" />
+              <Image source={{ uri: p.photo }} style={styles.businessPhoto} resizeMode="cover" />
             ) : (
-              <ImagePlaceholder label="Foto" style={styles.walkerPhoto} />
+              <ImagePlaceholder label="Foto" style={styles.businessPhoto} />
             )}
             <View style={{ flex: 1, gap: 2 }}>
               <View style={styles.nameRow}>
@@ -151,11 +212,16 @@ export default function HomeScreen({ navigation }: Props) {
                 {p.serviceArea ?? 'Zona sin especificar'}
                 {p.price ? ` · ${money(p.price.amount, p.price.currency)}/paseo` : ''}
               </CardBody>
-              {p.specialty && (
+              <View style={styles.tagsRow}>
                 <Tag variant="outline" style={{ paddingVertical: 1, paddingHorizontal: 6 }}>
-                  {p.specialty}
+                  {CATEGORY_LABELS_SINGULAR[p.category]}
                 </Tag>
-              )}
+                {p.specialty && (
+                  <Tag variant="outline" style={{ paddingVertical: 1, paddingHorizontal: 6 }}>
+                    {p.specialty}
+                  </Tag>
+                )}
+              </View>
             </View>
           </Card>
         ))}
@@ -171,7 +237,6 @@ const styles = StyleSheet.create({
   },
   kicker: { fontFamily: fonts.body, fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', color: colors.accent },
   title: { fontFamily: fonts.heading, fontSize: 22, color: colors.text },
-  avatar: { width: 40, height: 40 },
   petsRow: { flexGrow: 0 },
   petsRowContent: { paddingHorizontal: space.s4, gap: space.s3, paddingBottom: space.s2 },
   petItem: { alignItems: 'center', gap: 4, width: 56 },
@@ -181,8 +246,18 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   petName: { fontFamily: fonts.body, fontSize: 11, color: colors.text, opacity: 0.8 },
+  searchBox: {
+    marginHorizontal: space.s4, marginBottom: space.s2,
+    flexDirection: 'row', alignItems: 'center', gap: space.s2,
+    paddingHorizontal: space.s3, minHeight: 42,
+    backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.divider, borderRadius: radius.pill,
+  },
+  searchInput: { flex: 1, fontFamily: fonts.body, fontSize: 14, color: colors.text, paddingVertical: 10 },
+  chipsRow: { flexGrow: 0 },
+  chipsRowContent: { paddingHorizontal: space.s4, gap: 6, paddingBottom: space.s2 },
   segRow: { paddingHorizontal: space.s4, paddingBottom: space.s2 },
   list: { paddingHorizontal: space.s4, gap: space.s3, paddingBottom: space.s4 },
-  walkerPhoto: { width: 56, height: 56, marginRight: space.s3 },
+  businessPhoto: { width: 56, height: 56, marginRight: space.s3 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 2 },
 });

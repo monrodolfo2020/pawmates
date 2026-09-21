@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { ChevronLeft } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
@@ -13,6 +13,7 @@ import Card from '../components/Card';
 import Tag from '../components/Tag';
 import { CardBody } from '../components/CardText';
 import { colors, fonts, space } from '../theme/tokens';
+import { CATEGORY_LABELS_SINGULAR, SERVICE_CATEGORIES, ServiceCategory } from '../api/client';
 import { useAppState } from '../state/AppState';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Signup'>;
@@ -21,6 +22,8 @@ export default function SignupScreen({ navigation, route }: Props) {
   const s = useAppState();
   const role: 'owner' | 'provider' = route.params?.role ?? 'owner';
   const [name, setName] = useState('');
+  const [category, setCategory] = useState<ServiceCategory>('walker');
+  const [businessName, setBusinessName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [facePhoto, setFacePhoto] = useState<PhotoResult | null>(null);
@@ -39,6 +42,8 @@ export default function SignupScreen({ navigation, route }: Props) {
         password,
         role,
         name: name.trim() || undefined,
+        category: role === 'provider' ? category : undefined,
+        businessName: role === 'provider' ? businessName.trim() || undefined : undefined,
         facePhoto: facePhoto?.base64 ?? undefined,
         idDocumentPhoto: idPhoto?.base64 ?? undefined,
         profilePhoto: profilePhoto?.base64 ?? undefined,
@@ -60,8 +65,31 @@ export default function SignupScreen({ navigation, route }: Props) {
       </View>
       <ScrollView contentContainerStyle={styles.body}>
         <Field label="Tipo de cuenta">
-          <Tag variant="accent">{role === 'provider' ? 'Paseador' : 'Dueño de mascota'}</Tag>
+          <Tag variant="accent">{role === 'provider' ? 'Negocio de mascotas' : 'Dueño de mascota'}</Tag>
         </Field>
+
+        {role === 'provider' && (
+          <>
+            <Field label="¿Qué tipo de negocio tienes?">
+              <View style={styles.categoryRow}>
+                {SERVICE_CATEGORIES.map((c) => (
+                  <Pressable key={c} onPress={() => setCategory(c)}>
+                    <Tag variant={category === c ? 'accent' : 'outline'}>
+                      {CATEGORY_LABELS_SINGULAR[c]}
+                    </Tag>
+                  </Pressable>
+                ))}
+              </View>
+            </Field>
+            <TextField
+              label="Nombre del negocio"
+              value={businessName}
+              onChangeText={setBusinessName}
+              placeholder="Ej. Veterinaria San Ángel"
+              autoCapitalize="words"
+            />
+          </>
+        )}
 
         <TextField label="Nombre" value={name} onChangeText={setName} placeholder="Tu nombre" autoCapitalize="words" />
         <TextField
@@ -82,9 +110,9 @@ export default function SignupScreen({ navigation, route }: Props) {
         {role === 'provider' && (
           <View style={{ gap: space.s2 }}>
             <Text style={styles.note}>
-              Como paseador necesitamos verificar tu identidad: una foto de tu cara y una foto de
-              tu documento. La verificación automática llega más adelante — por ahora tu cuenta
-              queda marcada como "pendiente" hasta que se revise.
+              Para registrar tu negocio necesitamos verificar tu identidad: una foto de tu cara y
+              una foto de tu documento. La verificación automática llega más adelante — por ahora
+              tu cuenta queda marcada como "pendiente" hasta que se revise.
             </Text>
             <View style={styles.photoRow}>
               <View style={{ flex: 1 }}>
@@ -111,17 +139,17 @@ export default function SignupScreen({ navigation, route }: Props) {
 
             <View style={{ gap: space.s2 }}>
               <Text style={styles.note}>
-                Los dueños verán esta otra foto en tu página pública — puedes usar la misma de tu
-                cara o subir una distinta, y siempre podrás cambiarla después desde tu página.
+                Esta otra foto es la que verán en tu página y en el directorio — puedes usar la
+                misma de tu cara, el logo de tu negocio o cualquier otra, y cambiarla después.
               </Text>
               <View style={styles.photoRow}>
                 <View style={{ flex: 1 }}>
-                  <Field label="Foto de tu página pública">
+                  <Field label="Foto de tu página">
                     <PhotoPicker
                       uri={profilePhoto?.uri ?? null}
                       onChange={setProfilePhoto}
                       style={styles.photoBox}
-                      alertTitle="Foto de tu página pública"
+                      alertTitle="Foto de tu página"
                     />
                   </Field>
                 </View>
@@ -163,6 +191,7 @@ const styles = StyleSheet.create({
   body: { paddingHorizontal: space.s4, gap: space.s4, paddingBottom: space.s4 },
   note: { fontFamily: fonts.body, fontSize: 12, color: colors.text, opacity: 0.7 },
   photoRow: { flexDirection: 'row', gap: space.s3 },
+  categoryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   photoBox: { width: '100%', aspectRatio: 1 },
   footer: { padding: space.s4 },
 });

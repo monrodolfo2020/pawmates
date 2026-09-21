@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { api, AuthResult, ChatMessage, MeResult, Pet, Role, TripDetail } from '../api/client';
+import { api, AuthResult, ChatMessage, MeResult, Pet, Role, ServiceCategory, TripDetail } from '../api/client';
 import { BASE_PRICE } from './mockData';
 
 export type BookingStatus =
@@ -55,9 +55,6 @@ type State = {
   bookingError: string | null;
   tripDetail: TripDetail | null;
   messages: ChatMessage[];
-  /** Store cart, keyed by product id — shared across the catalog, product
-   * detail, and cart screens so it survives navigating between them. */
-  cart: Record<string, number>;
 };
 
 type Ctx = State & {
@@ -72,8 +69,6 @@ type Ctx = State & {
   setTime: (v: string) => void;
   setTip: (v: number) => void;
   setPayment: (v: string) => void;
-  setCartQty: (productId: string, qty: number) => void;
-  clearCart: () => void;
   tipAmount: number;
   total: number;
   signup: (params: {
@@ -81,6 +76,8 @@ type Ctx = State & {
     password: string;
     role: 'owner' | 'provider';
     name?: string;
+    category?: ServiceCategory;
+    businessName?: string;
     facePhoto?: string;
     idDocumentPhoto?: string;
     profilePhoto?: string;
@@ -89,6 +86,8 @@ type Ctx = State & {
   logout: () => Promise<void>;
   addRole: (params: {
     role: 'owner' | 'provider';
+    category?: ServiceCategory;
+    businessName?: string;
     facePhoto?: string;
     idDocumentPhoto?: string;
     profilePhoto?: string;
@@ -153,7 +152,6 @@ const initialState: State = {
   bookingError: null,
   tripDetail: null,
   messages: [],
-  cart: {},
 };
 
 export function AppStateProvider({ children }: { children: React.ReactNode }) {
@@ -226,6 +224,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       password: string;
       role: 'owner' | 'provider';
       name?: string;
+      category?: ServiceCategory;
+      businessName?: string;
       facePhoto?: string;
       idDocumentPhoto?: string;
       profilePhoto?: string;
@@ -281,6 +281,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const addRole = useCallback(
     async (params: {
       role: 'owner' | 'provider';
+      category?: ServiceCategory;
+      businessName?: string;
       facePhoto?: string;
       idDocumentPhoto?: string;
       profilePhoto?: string;
@@ -478,14 +480,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       setTime: (v) => setState((s) => ({ ...s, time: v })),
       setTip: (v) => setState((s) => ({ ...s, tip: v })),
       setPayment: (v) => setState((s) => ({ ...s, payment: v })),
-      setCartQty: (productId, qty) =>
-        setState((s) => {
-          const cart = { ...s.cart };
-          if (qty <= 0) delete cart[productId];
-          else cart[productId] = qty;
-          return { ...s, cart };
-        }),
-      clearCart: () => setState((s) => ({ ...s, cart: {} })),
       signup,
       login,
       logout,

@@ -61,25 +61,9 @@ export default function ProfileScreen({ navigation }: Props) {
           )}
 
           <View style={{ gap: 10 }}>
-            {s.roles.includes('owner') && (
-              <Pressable
-                style={styles.outlineBtn}
-                onPress={() => navigation.navigate('Orders', { mode: 'purchases', title: 'Mis compras' })}
-              >
-                <Text style={styles.outlineBtnText}>Mis compras</Text>
-              </Pressable>
-            )}
-            {s.roles.includes('provider') && (
-              <Pressable
-                style={styles.outlineBtn}
-                onPress={() => navigation.navigate('Orders', { mode: 'sales', title: 'Pedidos por entregar' })}
-              >
-                <Text style={styles.outlineBtnText}>Pedidos por entregar</Text>
-              </Pressable>
-            )}
             {s.roles.includes('provider') && (
               <Pressable style={styles.outlineBtn} onPress={() => navigation.navigate('Dashboard')}>
-                <Text style={styles.outlineBtnText}>Modo paseador</Text>
+                <Text style={styles.outlineBtnText}>Mi negocio</Text>
               </Pressable>
             )}
             {s.roles.includes('admin') && (

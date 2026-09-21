@@ -32,7 +32,7 @@ export default function DashboardScreen({ navigation }: Props) {
   useFocusEffect(loadSummary);
 
   // Refetches every time this screen regains focus (not just on mount) so
-  // coming back from "Editar mi página pública" shows a just-changed photo
+  // coming back from "Editar mi página" shows a just-changed photo
   // — the same real ProviderProfile.photoBase64 a shopper sees on this
   // paseador's public page, not the old disconnected mock avatar.
   useFocusEffect(
@@ -103,7 +103,7 @@ export default function DashboardScreen({ navigation }: Props) {
           items={[
             { label: 'Panel', onPress: () => navigation.navigate('Dashboard') },
             { label: 'Solicitudes', onPress: () => navigation.navigate('ComingSoon', { title: 'Solicitudes' }) },
-            { label: 'Tienda', onPress: () => navigation.navigate('Stores') },
+            { label: 'Mi página', onPress: () => navigation.navigate('MyPage') },
             { label: 'Perfil', onPress: () => navigation.navigate('Profile') },
           ]}
           activeIndex={0}
@@ -123,7 +123,7 @@ export default function DashboardScreen({ navigation }: Props) {
                 )}
               </Pressable>
               <View>
-                <Text style={styles.kicker}>Modo paseador</Text>
+                <Text style={styles.kicker}>Mi negocio</Text>
                 <Text style={styles.title}>Hola, {s.name ?? s.email ?? 'paseador'}</Text>
               </View>
             </View>
@@ -152,7 +152,7 @@ export default function DashboardScreen({ navigation }: Props) {
           )}
 
           <Pressable style={styles.outlineBtn} onPress={() => navigation.navigate('ProviderProfileEdit')}>
-            <Text style={styles.outlineBtnText}>Editar mi página pública</Text>
+            <Text style={styles.outlineBtnText}>Editar mi página</Text>
           </Pressable>
 
           <View style={styles.earningsCard}>

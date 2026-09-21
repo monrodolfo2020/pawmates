@@ -9,7 +9,9 @@ import ResetPasswordScreen from '../screens/ResetPasswordScreen';
 import SignupScreen from '../screens/SignupScreen';
 import OnboardingScreen from '../screens/OnboardingScreen';
 import HomeScreen from '../screens/HomeScreen';
-import WalkerProfileScreen from '../screens/WalkerProfileScreen';
+import BusinessProfileScreen from '../screens/BusinessProfileScreen';
+import MicrositeScreen from '../screens/MicrositeScreen';
+import MyPageScreen from '../screens/MyPageScreen';
 import MeetGreetScreen from '../screens/MeetGreetScreen';
 import BookingScreen from '../screens/BookingScreen';
 import CheckoutScreen from '../screens/CheckoutScreen';
@@ -20,11 +22,6 @@ import AdminScreen from '../screens/AdminScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import BookingsScreen from '../screens/BookingsScreen';
 import ComingSoonScreen from '../screens/ComingSoonScreen';
-import StoresScreen from '../screens/StoresScreen';
-import StorefrontScreen from '../screens/StorefrontScreen';
-import ProductDetailScreen from '../screens/ProductDetailScreen';
-import CartScreen from '../screens/CartScreen';
-import OrdersScreen from '../screens/OrdersScreen';
 import ProviderProfileEditScreen from '../screens/ProviderProfileEditScreen';
 import VerifyEmailScreen from '../screens/VerifyEmailScreen';
 import { useAppState } from '../state/AppState';
@@ -37,7 +34,9 @@ export type RootStackParamList = {
   Signup: { role?: 'owner' | 'provider' } | undefined;
   Onboarding: { petId?: string } | undefined;
   Home: undefined;
-  WalkerProfile: { walkerId: string };
+  Business: { providerId: string };
+  Microsite: { slug: string };
+  MyPage: undefined;
   MeetGreet: { walkerId: string };
   Booking: { walkerId: string };
   Checkout: { walkerId: string };
@@ -48,11 +47,6 @@ export type RootStackParamList = {
   Profile: undefined;
   Bookings: undefined;
   ComingSoon: { title: string };
-  Stores: undefined;
-  Storefront: { providerId: string };
-  ProductDetail: { providerId: string; productId: string };
-  Cart: { providerId: string };
-  Orders: { mode: 'purchases' | 'sales'; title: string };
   AdminLogin: undefined;
   ProviderProfileEdit: undefined;
   VerifyEmail: undefined;
@@ -78,6 +72,17 @@ function getResetPasswordToken(): string | null {
   return new URLSearchParams(window.location.search).get('token');
 }
 
+/**
+ * /s/<slug> — a business's shareable micro-page. Another standalone
+ * gate: whoever opens the link a business shared is usually a stranger
+ * with no account, and if they *do* happen to be signed in, they should
+ * still land on the page they clicked rather than their own home screen.
+ */
+function getMicrositeSlug(): string | null {
+  if (Platform.OS !== 'web' || typeof window === 'undefined') return null;
+  return /\/s\/([^/?#]+)\/?$/.exec(window.location.pathname)?.[1] ?? null;
+}
+
 export default function RootNavigator() {
   const s = useAppState();
 
@@ -95,6 +100,19 @@ export default function RootNavigator() {
           name="ResetPassword"
           component={ResetPasswordScreen}
           initialParams={{ token: resetPasswordToken }}
+        />
+      </Stack.Navigator>
+    );
+  }
+
+  const micrositeSlug = getMicrositeSlug();
+  if (micrositeSlug) {
+    return (
+      <Stack.Navigator key="microsite-gate" screenOptions={{ headerShown: false }}>
+        <Stack.Screen
+          name="Microsite"
+          component={MicrositeScreen}
+          initialParams={{ slug: micrositeSlug }}
         />
       </Stack.Navigator>
     );
@@ -129,14 +147,11 @@ export default function RootNavigator() {
     return (
       <Stack.Navigator key="guest" screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
         <Stack.Screen name="Welcome" component={WelcomeScreen} />
+        <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
         <Stack.Screen name="Signup" component={SignupScreen} />
-        <Stack.Screen name="Stores" component={StoresScreen} />
-        <Stack.Screen name="Storefront" component={StorefrontScreen} />
-        <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
-        <Stack.Screen name="Cart" component={CartScreen} />
-        <Stack.Screen name="WalkerProfile" component={WalkerProfileScreen} />
+        <Stack.Screen name="Business" component={BusinessProfileScreen} />
       </Stack.Navigator>
     );
   }
@@ -154,11 +169,10 @@ export default function RootNavigator() {
       if (!s.petsChecked) return null;
       initialAuthedRoute.current = s.pets.length === 0 ? 'Onboarding' : 'Home';
     } else if (s.roles.includes('provider') && !s.roles.includes('admin')) {
-      // A provider-only account has no reason to land on Home — that's the
-      // owner's "find a walker" screen, and used to be where every account
-      // landed by default (the else-branch below). A provider who'd just
-      // signed up saw their own (empty) discovery list as if they were a
-      // customer looking for themselves.
+      // A business account lands on its own Panel, not on Home — Home is
+      // the customer-facing services directory, and a business that had
+      // just signed up used to see its own (empty) directory as if it
+      // were a customer looking for itself.
       // An unverified email additionally routes through VerifyEmail first
       // (see that screen's comment on why it's a nudge, not a hard gate —
       // "Omitir por ahora" always works).
@@ -176,7 +190,8 @@ export default function RootNavigator() {
     >
       <Stack.Screen name="Onboarding" component={OnboardingScreen} />
       <Stack.Screen name="Home" component={HomeScreen} />
-      <Stack.Screen name="WalkerProfile" component={WalkerProfileScreen} />
+      <Stack.Screen name="Business" component={BusinessProfileScreen} />
+      <Stack.Screen name="MyPage" component={MyPageScreen} />
       <Stack.Screen name="MeetGreet" component={MeetGreetScreen} />
       <Stack.Screen name="Booking" component={BookingScreen} />
       <Stack.Screen name="Checkout" component={CheckoutScreen} />
@@ -189,11 +204,6 @@ export default function RootNavigator() {
       <Stack.Screen name="Profile" component={ProfileScreen} />
       <Stack.Screen name="Bookings" component={BookingsScreen} />
       <Stack.Screen name="ComingSoon" component={ComingSoonScreen} />
-      <Stack.Screen name="Stores" component={StoresScreen} />
-      <Stack.Screen name="Storefront" component={StorefrontScreen} />
-      <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
-      <Stack.Screen name="Cart" component={CartScreen} />
-      <Stack.Screen name="Orders" component={OrdersScreen} />
     </Stack.Navigator>
   );
 }

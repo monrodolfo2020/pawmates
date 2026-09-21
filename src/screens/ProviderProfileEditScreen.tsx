@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { ChevronLeft } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
@@ -8,10 +8,17 @@ import { IconButton } from '../components/Button';
 import Button from '../components/Button';
 import TextField from '../components/TextField';
 import PhotoPicker, { PhotoResult } from '../components/PhotoPicker';
+import GalleryPicker from '../components/GalleryPicker';
 import Tag from '../components/Tag';
 import { CardBody } from '../components/CardText';
 import { colors, fonts, space } from '../theme/tokens';
-import { api } from '../api/client';
+import {
+  api,
+  CATEGORY_LABELS_SINGULAR,
+  SERVICE_CATEGORIES,
+  ServiceCategory,
+  isBookable,
+} from '../api/client';
 import { useAppState } from '../state/AppState';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ProviderProfileEdit'>;
@@ -22,6 +29,12 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
   const [isPublished, setIsPublished] = useState(false);
   const [photo, setPhoto] = useState<PhotoResult | null>(null);
   const [existingPhotoUrl, setExistingPhotoUrl] = useState<string | null>(null);
+  const [category, setCategory] = useState<ServiceCategory>('walker');
+  const [businessName, setBusinessName] = useState('');
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [publicAddress, setPublicAddress] = useState('');
+  const [hours, setHours] = useState('');
+  const [whatsapp, setWhatsapp] = useState('');
   const [bio, setBio] = useState('');
   const [serviceArea, setServiceArea] = useState('');
   const [specialty, setSpecialty] = useState('');
@@ -43,6 +56,12 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
         if (profile) {
           setIsPublished(profile.isPublished);
           setExistingPhotoUrl(profile.photo);
+          setCategory(profile.category);
+          setBusinessName(profile.businessName ?? '');
+          setPhotos(profile.photos);
+          setPublicAddress(profile.publicAddress ?? '');
+          setHours(profile.hours ?? '');
+          setWhatsapp(profile.whatsapp ?? '');
           setBio(profile.bio ?? '');
           setServiceArea(profile.serviceArea ?? '');
           setSpecialty(profile.specialty ?? '');
@@ -70,6 +89,12 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
       const priceAmount = priceMxn.trim() ? Math.round(Number(priceMxn) * 100) : undefined;
       const ageValue = age.trim() ? Number(age) : undefined;
       const saved = await api.saveMyProviderProfile(s.token, {
+        category,
+        businessName: businessName.trim(),
+        photos,
+        publicAddress: publicAddress.trim(),
+        hours: hours.trim(),
+        whatsapp: whatsapp.trim(),
         bio: bio.trim(),
         serviceArea: serviceArea.trim(),
         specialty: specialty.trim(),
@@ -85,6 +110,9 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
       });
       setIsPublished(saved.isPublished);
       if (saved.photo) setExistingPhotoUrl(saved.photo);
+      // Comes back as hosted URLs — swapping the local base64 for them
+      // keeps a second save from re-uploading the same images.
+      setPhotos(saved.photos);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo guardar tu página.');
     } finally {
@@ -100,35 +128,54 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
         <IconButton onPress={() => navigation.goBack()}>
           <ChevronLeft size={18} strokeWidth={1.5} color={colors.text} />
         </IconButton>
-        <Text style={styles.title}>Mi página pública</Text>
+        <Text style={styles.title}>Editar mi página</Text>
       </View>
       <ScrollView contentContainerStyle={styles.body}>
         {loaded && (
           <Tag variant={isPublished ? 'accent' : 'outline'}>
-            {isPublished ? 'Publicada — visible para dueños' : 'Aún no publicada'}
+            {isPublished ? 'Publicada — visible en el directorio' : 'Aún no publicada'}
           </Tag>
         )}
         {!isPublished && loaded && (
           <CardBody>
-            Completa al menos tu biografía y tu precio por paseo para que tu página se publique
+            Completa el nombre de tu negocio y su descripción
+            {isBookable(category) ? ', más tu precio por paseo,' : ''} para que tu página se publique
             automáticamente.
           </CardBody>
         )}
         {error && <CardBody style={{ color: colors.accent }}>{error}</CardBody>}
 
+        <View style={{ gap: 5 }}>
+          <Text style={styles.fieldLabel}>Tipo de negocio</Text>
+          <View style={styles.categoryRow}>
+            {SERVICE_CATEGORIES.map((c) => (
+              <Pressable key={c} onPress={() => setCategory(c)}>
+                <Tag variant={category === c ? 'accent' : 'outline'}>{CATEGORY_LABELS_SINGULAR[c]}</Tag>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        <TextField
+          label="Nombre del negocio"
+          value={businessName}
+          onChangeText={setBusinessName}
+          placeholder="Ej. Veterinaria San Ángel"
+        />
+
         <PhotoPicker
           uri={previewUri}
           onChange={setPhoto}
           style={styles.photo}
-          label="Foto de perfil"
-          alertTitle="Foto de perfil"
+          label="Logo o foto"
+          alertTitle="Logo o foto principal"
         />
 
         <TextField
-          label="Biografía"
+          label="Descripción"
           value={bio}
           onChangeText={setBio}
-          placeholder="Cuéntale a los dueños sobre ti y tu experiencia paseando perros."
+          placeholder="Cuéntale a los dueños qué ofreces y por qué confiar en ti."
           multiline
           numberOfLines={4}
         />
@@ -144,33 +191,67 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
           onChangeText={setSpecialty}
           placeholder="Ej. Perros grandes y energéticos"
         />
+        {isBookable(category) && (
+          <TextField
+            label="Precio por paseo (MXN)"
+            value={priceMxn}
+            onChangeText={setPriceMxn}
+            placeholder="Ej. 850"
+            keyboardType="numeric"
+          />
+        )}
         <TextField
-          label="Precio por paseo (MXN)"
-          value={priceMxn}
-          onChangeText={setPriceMxn}
-          placeholder="Ej. 850"
-          keyboardType="numeric"
-        />
-        <TextField
-          label="Planes y servicios"
+          label="Servicios que ofreces"
           value={plansOffered}
           onChangeText={setPlansOffered}
-          placeholder="Ej. Paseo individual 30 min, plan semanal 3x"
+          placeholder="Ej. Consulta general, vacunas, baño y corte"
           multiline
           numberOfLines={2}
         />
+        {isBookable(category) && (
+          <TextField
+            label="Parques o sitios donde paseas"
+            value={walkingSpots}
+            onChangeText={setWalkingSpots}
+            placeholder="Ej. Parque México, Bosque de Chapultepec"
+          />
+        )}
+
+        <View style={{ gap: 4, marginTop: space.s2 }}>
+          <Text style={styles.sectionTitle}>Tu página para compartir</Text>
+          <Text style={styles.sectionNote}>
+            Esto es lo que ven quienes abren el enlace de tu negocio.
+          </Text>
+        </View>
+        <View style={{ gap: 5 }}>
+          <Text style={styles.fieldLabel}>Fotos del negocio</Text>
+          <GalleryPicker photos={photos} onChange={setPhotos} />
+        </View>
         <TextField
-          label="Parques o sitios donde paseas"
-          value={walkingSpots}
-          onChangeText={setWalkingSpots}
-          placeholder="Ej. Parque México, Bosque de Chapultepec"
+          label="Dirección del negocio (pública)"
+          value={publicAddress}
+          onChangeText={setPublicAddress}
+          placeholder="Ej. Av. Revolución 1200, CDMX"
+        />
+        <TextField
+          label="Horarios"
+          value={hours}
+          onChangeText={setHours}
+          placeholder="Ej. Lun a Sáb de 9:00 a 19:00"
+        />
+        <TextField
+          label="WhatsApp"
+          value={whatsapp}
+          onChangeText={setWhatsapp}
+          placeholder="Ej. 5511223344"
+          keyboardType="phone-pad"
         />
 
         <View style={{ gap: 4, marginTop: space.s2 }}>
           <Text style={styles.sectionTitle}>Verificación (privado)</Text>
           <Text style={styles.sectionNote}>
-            Esta información no se muestra en tu página pública — solo la ven nuestro equipo de
-            verificación y tú, para dar más confianza a los dueños que reservan contigo.
+            Esta información no se muestra en tu página — solo la ven nuestro equipo de
+            verificación y tú, para dar más confianza a los dueños.
           </Text>
         </View>
         <TextField
@@ -212,4 +293,6 @@ const styles = StyleSheet.create({
   photo: { width: 88, height: 88 },
   sectionTitle: { fontFamily: fonts.heading, fontSize: 15, color: colors.text },
   sectionNote: { fontFamily: fonts.body, fontSize: 12, color: colors.textMuted70 },
+  fieldLabel: { fontFamily: fonts.body, fontSize: 12, color: colors.textMuted70 },
+  categoryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
 });
