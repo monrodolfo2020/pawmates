@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, Image, ScrollView, StyleSheet, TextInput } from 'react-native';
 import { ChevronLeft } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
@@ -10,7 +10,16 @@ import Segmented from '../components/Segmented';
 import Card from '../components/Card';
 import { CardKicker, CardBody, CardMeta } from '../components/CardText';
 import Tag from '../components/Tag';
-import { api, AdminAccount, AdminBusiness, AdminVerification, CATEGORY_LABELS_SINGULAR } from '../api/client';
+import {
+  api,
+  AdminAccount,
+  AdminBusiness,
+  AdminVerification,
+  BillingPeriod,
+  CATEGORY_LABELS_SINGULAR,
+  PERIOD_LABELS,
+  PlanCode,
+} from '../api/client';
 import { colors, fonts, space } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
 
@@ -22,7 +31,7 @@ const VERIFICATION_VARIANT: Record<string, 'accent' | 'outline'> = {
   rejected: 'outline',
 };
 
-type Section = 'cuentas' | 'negocios' | 'verificaciones';
+type Section = 'cuentas' | 'negocios' | 'codigos' | 'verificaciones';
 
 export default function AdminScreen({ navigation }: Props) {
   const s = useAppState();
@@ -30,6 +39,7 @@ export default function AdminScreen({ navigation }: Props) {
   const [accounts, setAccounts] = useState<AdminAccount[] | null>(null);
   const [verifications, setVerifications] = useState<AdminVerification[] | null>(null);
   const [businesses, setBusinesses] = useState<AdminBusiness[] | null>(null);
+  const [codes, setCodes] = useState<PlanCode[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const load = () => {
@@ -38,11 +48,13 @@ export default function AdminScreen({ navigation }: Props) {
       api.adminListAccounts(s.token),
       api.adminListVerifications(s.token),
       api.adminListBusinesses(s.token),
+      api.adminListPlanCodes(s.token),
     ])
-      .then(([a, v, b]) => {
+      .then(([a, v, b, c]) => {
         setAccounts(a);
         setVerifications(v);
         setBusinesses(b);
+        setCodes(c);
       })
       .catch((err) => setError(err instanceof Error ? err.message : 'No se pudo cargar el panel.'));
   };
@@ -62,6 +74,7 @@ export default function AdminScreen({ navigation }: Props) {
           options={[
             { label: 'Cuentas', value: 'cuentas' },
             { label: 'Negocios', value: 'negocios' },
+            { label: 'Códigos', value: 'codigos' },
             { label: 'Verificaciones', value: 'verificaciones' },
           ]}
           value={section}
@@ -96,12 +109,41 @@ export default function AdminScreen({ navigation }: Props) {
           <View style={{ gap: space.s2 }}>
             <Text style={styles.h5}>Negocios ({businesses?.length ?? '…'})</Text>
             <CardMeta>
-              El cobro del plan VIP todavía ocurre fuera de la app: aquí lo reflejas una vez que el
-              negocio pagó. Quitar VIP no borra su diseño, solo deja de mostrarlo.
+              Para un negocio que ya pagó, lo normal es generarle un código en la pestaña Códigos:
+              queda registrado qué se vendió y por cuánto tiempo. Activar VIP desde aquí es una
+              cortesía sin vencimiento. Quitarlo no borra su diseño, solo deja de mostrarlo.
             </CardMeta>
             {businesses?.length === 0 && <CardMeta>No hay negocios registrados.</CardMeta>}
             {businesses?.map((b) => (
               <BusinessRow key={b.accountId} business={b} onChange={load} />
+            ))}
+          </View>
+        )}
+
+        {section === 'codigos' && (
+          <View style={{ gap: space.s2 }}>
+            <Text style={styles.h5}>Códigos de activación</Text>
+            <CardMeta>
+              Mientras no haya pagos en línea, así se activa el VIP: el negocio paga por
+              transferencia, tú generas un código por el periodo pagado y se lo pasas. El negocio lo
+              escribe en su pantalla "Mi página" y el plan se activa solo.
+            </CardMeta>
+            <NewCodeForm onCreated={load} />
+            {codes?.length === 0 && <CardMeta>Todavía no has generado códigos.</CardMeta>}
+            {codes?.map((c) => (
+              <Card key={c.code}>
+                <View style={styles.row}>
+                  <Text style={styles.codeText}>{c.code}</Text>
+                  <Tag variant={c.isSpent ? 'outline' : 'accent'}>
+                    {c.isSpent ? 'Usado' : 'Disponible'}
+                  </Tag>
+                </View>
+                <CardMeta>
+                  {PERIOD_LABELS[c.period]} · {c.usedCount}/{c.maxUses} usos ·{' '}
+                  {new Date(c.createdAt).toLocaleDateString('es-MX')}
+                </CardMeta>
+                {c.note && <CardBody>{c.note}</CardBody>}
+              </Card>
             ))}
           </View>
         )}
@@ -120,6 +162,69 @@ export default function AdminScreen({ navigation }: Props) {
   );
 }
 
+/** Generates one activation code. Kept deliberately small: period, and a
+ * note so that a list of codes months from now still says who each one
+ * was for. */
+function NewCodeForm({ onCreated }: { onCreated: () => void }) {
+  const s = useAppState();
+  const [period, setPeriod] = useState<BillingPeriod>('monthly');
+  const [note, setNote] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [created, setCreated] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const create = async () => {
+    if (!s.token) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const code = await api.adminCreatePlanCode(s.token, {
+        period,
+        note: note.trim() || undefined,
+      });
+      setCreated(code.code);
+      setNote('');
+      onCreated();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo generar el código.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardBody style={{ margin: 0 }}>Generar un código</CardBody>
+      <Segmented
+        options={[
+          { label: 'Mensual', value: 'monthly' },
+          { label: 'Anual', value: 'annual' },
+        ]}
+        value={period}
+        onChange={(v) => setPeriod(v as BillingPeriod)}
+      />
+      <TextInput
+        value={note}
+        onChangeText={setNote}
+        placeholder="Para quién es (ej. Spa Canino — transferencia 20 sep)"
+        placeholderTextColor={colors.textMuted50}
+        maxLength={120}
+        style={styles.noteInput}
+      />
+      {error && <CardMeta style={{ color: colors.accent }}>{error}</CardMeta>}
+      {created && (
+        <View style={styles.createdBox}>
+          <CardMeta>Pásale este código al negocio:</CardMeta>
+          <Text style={styles.codeText} selectable>{created}</Text>
+        </View>
+      )}
+      <Button variant="primary" blueprint disabled={busy} onPress={() => void create()}>
+        {busy ? 'Generando…' : 'Generar código'}
+      </Button>
+    </Card>
+  );
+}
+
 /** One business with its plan, and the switch that turns VIP on or off
  * — the only way a business gets the design editor today (see the
  * backend's business-plan.ts). */
@@ -127,7 +232,10 @@ function BusinessRow({ business: b, onChange }: { business: AdminBusiness; onCha
   const s = useAppState();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const vip = b.plan === 'vip';
+  // `plan` stays 'vip' after a paid plan lapses, so the badge asks the
+  // backend's effective answer and the button still offers to grant one.
+  const vip = b.isVip;
+  const lapsed = b.plan === 'vip' && !b.isVip;
 
   const setPlan = async () => {
     if (!s.token) return;
@@ -147,7 +255,9 @@ function BusinessRow({ business: b, onChange }: { business: AdminBusiness; onCha
     <Card>
       <View style={styles.row}>
         <CardKicker style={{ margin: 0 }}>{b.email ?? b.accountId.slice(0, 8)}</CardKicker>
-        <Tag variant={vip ? 'accent' : 'outline'}>{vip ? 'VIP' : 'Gratis'}</Tag>
+        <Tag variant={vip ? 'accent' : 'outline'}>
+          {vip ? 'VIP' : lapsed ? 'VIP vencido' : 'Gratis'}
+        </Tag>
       </View>
       <CardBody>{b.name ?? 'Sin nombre'}</CardBody>
       <View style={styles.wrapRow}>
@@ -157,6 +267,11 @@ function BusinessRow({ business: b, onChange }: { business: AdminBusiness; onCha
         </Tag>
         {b.slug && <Tag variant="outline">/s/{b.slug}</Tag>}
       </View>
+      {b.planExpiresAt && (
+        <CardMeta>
+          {vip ? 'Vence' : 'Venció'} el {new Date(b.planExpiresAt).toLocaleDateString('es-MX')}
+        </CardMeta>
+      )}
       {error && <CardMeta style={{ color: colors.accent }}>{error}</CardMeta>}
       <Button variant={vip ? 'secondary' : 'primary'} blueprint={!vip} disabled={busy} onPress={() => void setPlan()}>
         {busy ? 'Guardando…' : vip ? 'Quitar VIP' : 'Activar VIP'}
@@ -245,4 +360,11 @@ const styles = StyleSheet.create({
   wrapRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   photoRow: { flexDirection: 'row', gap: space.s2 },
   verificationPhoto: { width: '100%', aspectRatio: 1, backgroundColor: colors.accent100 },
+  codeText: { fontFamily: fonts.heading, fontSize: 20, letterSpacing: 2, color: colors.text },
+  noteInput: {
+    paddingHorizontal: space.s3, paddingVertical: 10,
+    borderWidth: 1.5, borderColor: colors.divider, borderRadius: 8,
+    fontFamily: fonts.body, fontSize: 13.5, color: colors.text,
+  },
+  createdBox: { gap: 4, paddingVertical: space.s2 },
 });

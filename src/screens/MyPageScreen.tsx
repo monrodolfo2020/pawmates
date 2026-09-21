@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Linking } from 'react-native';
-import { ChevronLeft, Link2, ExternalLink, Copy, Check, Lock, Sparkles } from 'lucide-react-native';
+import { ChevronLeft, Link2, ExternalLink, Copy, Check, Sparkles } from 'lucide-react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
@@ -13,6 +13,7 @@ import Segmented from '../components/Segmented';
 import Tag from '../components/Tag';
 import MicrositeView from '../components/MicrositeView';
 import PageDesignEditor from '../components/PageDesignEditor';
+import PlanCard from '../components/PlanCard';
 import { colors, fonts, radius, space } from '../theme/tokens';
 import { api, MyProviderProfile, PageDesign, ProviderDetail } from '../api/client';
 import { listInSpanish, missingToPublish } from '../utils/pageStatus';
@@ -65,21 +66,21 @@ export default function MyPageScreen({ navigation }: Props) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useFocusEffect(
-    useCallback(() => {
-      if (!s.token) return;
-      api
-        .getMyProviderProfile(s.token)
-        .then((p) => {
-          setProfile(p);
-          setDraft(p?.design ?? null);
-        })
-        .catch(() => setProfile(null));
-    }, [s.token]),
-  );
+  const loadProfile = useCallback(() => {
+    if (!s.token) return;
+    api
+      .getMyProviderProfile(s.token)
+      .then((p) => {
+        setProfile(p);
+        setDraft(p?.design ?? null);
+      })
+      .catch(() => setProfile(null));
+  }, [s.token]);
+
+  useFocusEffect(loadProfile);
 
   const url = profile?.slug ? micrositeUrl(profile.slug) : null;
-  const isVip = profile?.plan === 'vip';
+  const isVip = profile?.isVip ?? false;
   const published = profile?.isPublished ?? false;
   const missing = profile ? missingToPublish(profile) : [];
   // Either an edit that hasn't been saved yet, or one saved as a draft
@@ -240,20 +241,7 @@ export default function MyPageScreen({ navigation }: Props) {
 
         {profile !== undefined && tab === 'design' && (
           <>
-            {!isVip && (
-              <Card>
-                <View style={styles.rowStart}>
-                  <Lock size={18} strokeWidth={1.5} color={colors.accent} />
-                  <CardBody style={{ margin: 0, flex: 1 }}>Diseño personalizado — plan VIP</CardBody>
-                </View>
-                <CardMeta>
-                  Tu página usa el diseño estándar de PawMates, que se ve bien tal cual. Con el plan VIP
-                  eliges colores y tipografía, subes tu logo y tu portada, cambias de plantilla y decides
-                  qué secciones aparecen y en qué orden.
-                </CardMeta>
-                <CardMeta>Escríbenos para activar VIP en tu negocio.</CardMeta>
-              </Card>
-            )}
+            {!isVip && <PlanCard onActivated={loadProfile} />}
 
             {isVip && profile && draft && (
               <>
@@ -286,6 +274,8 @@ export default function MyPageScreen({ navigation }: Props) {
                 <CardMeta>
                   Tus cambios no se ven en tu enlace público hasta que publiques.
                 </CardMeta>
+
+                <PlanCard onActivated={loadProfile} />
               </>
             )}
           </>

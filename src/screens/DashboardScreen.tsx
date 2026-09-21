@@ -274,7 +274,7 @@ export default function DashboardScreen({ navigation }: Props) {
                 <Text style={styles.outlineBtnText}>Editar información de mi negocio</Text>
               </Pressable>
 
-              {profile.plan === 'vip' && (
+              {profile.isVip && (
                 <Pressable style={styles.ghostBtn} onPress={() => navigation.navigate('MyPage')}>
                   <Text style={styles.ghostBtnText}>Personalizar el diseño de mi página</Text>
                 </Pressable>

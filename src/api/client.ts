@@ -223,6 +223,50 @@ export interface ProviderListing {
 export const BUSINESS_PLANS = ['free', 'vip'] as const;
 export type BusinessPlan = (typeof BUSINESS_PLANS)[number];
 
+export const BILLING_PERIODS = ['monthly', 'annual'] as const;
+export type BillingPeriod = (typeof BILLING_PERIODS)[number];
+
+export const PERIOD_LABELS: Record<BillingPeriod, string> = {
+  monthly: 'Mensual',
+  annual: 'Anual',
+};
+
+export interface BillingPlans {
+  /** False while no payment gateway is connected — the UI then offers
+   * the activation-code path instead of a dead checkout button. */
+  online: boolean;
+  provider: string;
+  periods: { period: BillingPeriod; amount: number; currency: string }[];
+}
+
+export interface MyBillingPlan {
+  plan: BusinessPlan;
+  /** Whether VIP is in force right now — `plan` can say 'vip' while this
+   * is false, which is a lapsed plan waiting to be renewed. */
+  isVip: boolean;
+  expiresAt: string | null;
+  online: boolean;
+  history: {
+    id: string;
+    period: BillingPeriod;
+    source: 'checkout' | 'code' | 'admin';
+    amount: { amount: number; currency: string } | null;
+    expiresAt: string | null;
+    activatedAt: string | null;
+  }[];
+}
+
+export interface PlanCode {
+  code: string;
+  period: BillingPeriod;
+  note: string | null;
+  maxUses: number;
+  usedCount: number;
+  isSpent: boolean;
+  expiresAt: string | null;
+  createdAt: string;
+}
+
 export const PAGE_TEMPLATES = ['classic', 'gallery', 'minimal'] as const;
 export type PageTemplate = (typeof PAGE_TEMPLATES)[number];
 
@@ -316,6 +360,10 @@ export interface MyProviderProfile {
   phone: string | null;
   isPublished: boolean;
   plan: BusinessPlan;
+  /** Whether VIP is actually in force — always prefer this over
+   * `plan === 'vip'`, which stays 'vip' after a plan lapses. */
+  isVip: boolean;
+  planExpiresAt: string | null;
   /** The design being edited — what the Diseño tab shows. */
   design: PageDesign;
   /** What's live at /s/<slug>; null until the first publish. */
@@ -330,6 +378,8 @@ export interface AdminBusiness {
   category: ServiceCategory;
   slug: string | null;
   plan: BusinessPlan;
+  isVip: boolean;
+  planExpiresAt: string | null;
   isPublished: boolean;
   createdAt: string;
 }
@@ -446,6 +496,42 @@ export const api = {
       method: 'POST',
       token,
     });
+  },
+
+  getBillingPlans() {
+    return request<BillingPlans>('/v1/billing/plans');
+  },
+
+  getMyBillingPlan(token: string) {
+    return request<MyBillingPlan>('/v1/billing/me', { token });
+  },
+
+  /** Opens a checkout with the configured gateway. Throws when none is
+   * connected — callers should check `online` first and offer a code. */
+  startCheckout(token: string, period: BillingPeriod) {
+    return request<{ url: string; reference: string }>('/v1/billing/checkout', {
+      method: 'POST',
+      token,
+      body: { period },
+    });
+  },
+
+  redeemPlanCode(token: string, code: string) {
+    return request<{ plan: BusinessPlan; isVip: boolean; expiresAt: string }>(
+      '/v1/billing/redeem',
+      { method: 'POST', token, body: { code } },
+    );
+  },
+
+  adminListPlanCodes(token: string) {
+    return request<PlanCode[]>('/v1/admin/plan-codes', { token });
+  },
+
+  adminCreatePlanCode(
+    token: string,
+    params: { period: BillingPeriod; note?: string; maxUses?: number },
+  ) {
+    return request<PlanCode>('/v1/admin/plan-codes', { method: 'POST', token, body: params });
   },
 
   adminListBusinesses(token: string) {
