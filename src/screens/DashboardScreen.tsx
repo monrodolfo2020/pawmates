@@ -1,12 +1,22 @@
 import React, { useCallback, useState } from 'react';
-import { View, Text, Image, ScrollView, StyleSheet, Pressable } from 'react-native';
+import { View, Text, Image, ScrollView, StyleSheet, Pressable, Linking } from 'react-native';
+import { Check } from 'lucide-react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
 import AppNav from '../components/AppNav';
 import { vividColors as v, vividFonts as vf, vividRadius as vr, vividTintFor } from '../theme/vividTokens';
-import { api, BookingSummary, BookingWeekSummary, MEET_GREET_SERVICE_TYPE_CODE } from '../api/client';
+import {
+  api,
+  BookingSummary,
+  BookingWeekSummary,
+  MEET_GREET_SERVICE_TYPE_CODE,
+  MyProviderProfile,
+  isBookable,
+} from '../api/client';
+import { listInSpanish, missingToPublish } from '../utils/pageStatus';
+import { micrositeUrl } from '../utils/contactLinks';
 import { useAppState } from '../state/AppState';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Dashboard'>;
@@ -16,18 +26,38 @@ const requestTimeLabel = (iso: string) =>
 
 const money = (cents: number, currency: string) => '$' + (cents / 100).toFixed(2).replace(/\.00$/, '') + ' ' + currency;
 
+/** The things a directory business's page needs to be worth landing on.
+ * None of these gate publishing (see missingToPublish for what does) —
+ * they're the difference between a page that exists and one that gets
+ * someone to call. */
+const PAGE_CHECKLIST: { label: string; done: (p: MyProviderProfile) => boolean }[] = [
+  { label: 'Descripción de tu negocio', done: (p) => Boolean(p.bio) },
+  { label: 'Fotos del negocio', done: (p) => p.photos.length > 0 },
+  { label: 'Servicios que ofreces', done: (p) => Boolean(p.plansOffered) },
+  { label: 'Dirección y horarios', done: (p) => Boolean(p.publicAddress || p.hours) },
+  { label: 'WhatsApp de contacto', done: (p) => Boolean(p.whatsapp) },
+];
+
 export default function DashboardScreen({ navigation }: Props) {
   const s = useAppState();
-  const [photo, setPhoto] = useState<string | null>(null);
+  const [profile, setProfile] = useState<MyProviderProfile | null | undefined>(undefined);
+  const [copied, setCopied] = useState(false);
   const [requests, setRequests] = useState<BookingSummary[] | null>(null);
   const [upcoming, setUpcoming] = useState<BookingSummary[] | null>(null);
   const [actingOn, setActingOn] = useState<string | null>(null);
   const [summary, setSummary] = useState<BookingWeekSummary | null>(null);
 
+  // Only paseadores can be booked, so only paseadores have earnings, a
+  // week of walks, requests or an agenda (see isBookable). Every other
+  // category is a directory listing whose whole job is its page — for
+  // them those four sections aren't empty, they're meaningless, and the
+  // requests below aren't even fetched.
+  const bookable = profile ? isBookable(profile.category) : false;
+
   const loadSummary = useCallback(() => {
-    if (!s.token) return;
+    if (!s.token || !bookable) return;
     api.getBookingWeekSummary(s.token).then(setSummary).catch(() => {});
-  }, [s.token]);
+  }, [s.token, bookable]);
 
   useFocusEffect(loadSummary);
 
@@ -40,8 +70,8 @@ export default function DashboardScreen({ navigation }: Props) {
       if (!s.token) return;
       api
         .getMyProviderProfile(s.token)
-        .then((profile) => setPhoto(profile?.photo ?? null))
-        .catch(() => {});
+        .then(setProfile)
+        .catch(() => setProfile(null));
     }, [s.token]),
   );
 
@@ -51,12 +81,12 @@ export default function DashboardScreen({ navigation }: Props) {
   // BookingController's list()/accept()/reject() on the backend.
   useFocusEffect(
     useCallback(() => {
-      if (!s.token) return;
+      if (!s.token || !bookable) return;
       api
         .listBookings(s.token, { activeContext: 'provider', status: 'requested' })
         .then(setRequests)
         .catch(() => setRequests([]));
-    }, [s.token]),
+    }, [s.token, bookable]),
   );
 
   // Once accepted, a request drops off "Solicitudes nuevas" — without this,
@@ -66,12 +96,12 @@ export default function DashboardScreen({ navigation }: Props) {
   // isn't still pending or already over, so this refetch below is the same
   // request confirming as much.
   const loadUpcoming = useCallback(() => {
-    if (!s.token) return;
+    if (!s.token || !bookable) return;
     api
       .listBookings(s.token, { activeContext: 'provider' })
       .then((all) => setUpcoming(all.filter((b) => b.status === 'confirmed' || b.status === 'in_progress')))
       .catch(() => setUpcoming([]));
-  }, [s.token]);
+  }, [s.token, bookable]);
 
   useFocusEffect(loadUpcoming);
 
@@ -94,7 +124,24 @@ export default function DashboardScreen({ navigation }: Props) {
     }
   };
 
-  const avatarTint = vividTintFor(s.name ?? s.email ?? 'paseador');
+  const businessName = profile?.businessName ?? s.name ?? s.email ?? 'tu negocio';
+  const avatarTint = vividTintFor(businessName);
+  const photo = profile?.photo ?? null;
+  const url = profile?.slug ? micrositeUrl(profile.slug) : null;
+  const published = profile?.isPublished ?? false;
+  const missing = profile ? missingToPublish(profile) : [];
+
+  const copyLink = async () => {
+    if (!url) return;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard access can be denied (or missing outside a browser) —
+      // the link is on screen right above this button either way.
+    }
+  };
 
   return (
     <ScreenContainer>
@@ -102,7 +149,9 @@ export default function DashboardScreen({ navigation }: Props) {
         <AppNav
           items={[
             { label: 'Panel', onPress: () => navigation.navigate('Dashboard') },
-            { label: 'Solicitudes', onPress: () => navigation.navigate('ComingSoon', { title: 'Solicitudes' }) },
+            ...(bookable
+              ? [{ label: 'Solicitudes', onPress: () => navigation.navigate('ComingSoon', { title: 'Solicitudes' }) }]
+              : []),
             { label: 'Mi página', onPress: () => navigation.navigate('MyPage') },
             { label: 'Perfil', onPress: () => navigation.navigate('Profile') },
           ]}
@@ -117,14 +166,14 @@ export default function DashboardScreen({ navigation }: Props) {
                 ) : (
                   <View style={[styles.avatarPlaceholder, { backgroundColor: avatarTint.bg }]}>
                     <Text style={[styles.avatarPlaceholderText, { color: avatarTint.fg }]}>
-                      {(s.name ?? 'T')[0].toUpperCase()}
+                      {businessName[0].toUpperCase()}
                     </Text>
                   </View>
                 )}
               </Pressable>
               <View>
                 <Text style={styles.kicker}>Mi negocio</Text>
-                <Text style={styles.title}>Hola, {s.name ?? s.email ?? 'paseador'}</Text>
+                <Text style={styles.title}>Hola, {businessName}</Text>
               </View>
             </View>
             <View style={{ flexDirection: 'row', gap: 8 }}>
@@ -151,139 +200,226 @@ export default function DashboardScreen({ navigation }: Props) {
             </Pressable>
           )}
 
-          <Pressable style={styles.outlineBtn} onPress={() => navigation.navigate('ProviderProfileEdit')}>
-            <Text style={styles.outlineBtnText}>Editar mi página</Text>
-          </Pressable>
+          {profile === undefined && <Text style={styles.mutedBody}>Cargando…</Text>}
 
-          <View style={styles.earningsCard}>
-            <Text style={styles.earningsKicker}>Ingresos esta semana</Text>
-            <Text style={styles.earnings}>
-              {summary ? money(summary.earnings.amount, summary.earnings.currency) : '—'}
-            </Text>
-            <Text style={styles.earningsMeta}>
-              {summary
-                ? `${summary.completedThisWeek} paseo${summary.completedThisWeek === 1 ? '' : 's'} completado${summary.completedThisWeek === 1 ? '' : 's'}`
-                : 'Cargando…'}
-            </Text>
-          </View>
+          {profile === null && (
+            <>
+              <View style={styles.pageCard}>
+                <Text style={styles.earningsKicker}>Tu página todavía no existe</Text>
+                <Text style={styles.pageCardTitle}>Empecemos</Text>
+                <Text style={styles.earningsMeta}>
+                  Crea la página de tu negocio para aparecer en el directorio.
+                </Text>
+              </View>
+              <Pressable style={styles.outlineBtn} onPress={() => navigation.navigate('ProviderProfileEdit')}>
+                <Text style={styles.outlineBtnText}>Crear mi página</Text>
+              </Pressable>
+            </>
+          )}
 
-          <View>
-            <Text style={styles.sectionTitle}>Esta semana</Text>
-            <View style={styles.weekRow}>
-              {(summary?.days ?? []).map((wd, i) => {
-                const active = wd.count > 0;
-                return (
-                  <View key={i} style={[styles.weekCell, active && styles.weekCellActive]}>
-                    <Text style={[styles.weekLabel, active && styles.weekLabelActive]}>{wd.label}</Text>
-                    <Text style={[styles.weekCount, active && styles.weekCountActive]}>{wd.count}</Text>
-                  </View>
-                );
-              })}
-            </View>
-          </View>
+          {profile && !bookable && (
+            <>
+              <View style={styles.pageCard}>
+                <Text style={styles.earningsKicker}>
+                  {published ? 'Tu página está en línea' : 'Tu página todavía no es visible'}
+                </Text>
+                <Text style={styles.pageCardTitle}>{businessName}</Text>
+                <Text style={styles.earningsMeta}>
+                  {published
+                    ? url ?? ''
+                    : missing.length
+                      ? `Falta ${listInSpanish(missing)}.`
+                      : 'Completa tu página para publicarla.'}
+                </Text>
+              </View>
 
-          <View style={{ gap: 12 }}>
-            <Text style={styles.sectionTitle}>Solicitudes nuevas</Text>
-            {requests === null && <Text style={styles.mutedBody}>Cargando…</Text>}
-            {requests?.length === 0 && <Text style={styles.mutedBody}>No tienes solicitudes nuevas por ahora.</Text>}
-            {requests?.map((req) => {
-              const petLabel = req.lines.map((l) => l.petName).filter(Boolean).join(', ') || 'Mascota';
-              const firstLine = req.lines[0];
-              const isMeetGreet = req.lines.some((l) => l.serviceTypeCode === MEET_GREET_SERVICE_TYPE_CODE);
-              const busy = actingOn === req.id;
-              return (
-                <View key={req.id} style={styles.requestCard}>
-                  <View style={styles.requestAccent} />
-                  <View style={styles.requestBody}>
-                    <View style={styles.rowBetween}>
-                      <Text style={styles.requestPet}>{petLabel}</Text>
-                      <View style={styles.timeTag}>
-                        <Text style={styles.timeTagText}>{requestTimeLabel(req.scheduledAt)}</Text>
+              {published && url && (
+                <View style={styles.actionsRow}>
+                  <Pressable style={styles.halfBtn} onPress={() => void copyLink()}>
+                    <Text style={styles.halfBtnText}>{copied ? 'Copiado ✓' : 'Copiar enlace'}</Text>
+                  </Pressable>
+                  <Pressable style={styles.halfBtnPrimary} onPress={() => void Linking.openURL(url)}>
+                    <Text style={styles.halfBtnPrimaryText}>Ver mi página</Text>
+                  </Pressable>
+                </View>
+              )}
+
+              <View>
+                <Text style={styles.sectionTitle}>Tu página</Text>
+                <View style={{ gap: 10 }}>
+                  {PAGE_CHECKLIST.map((item) => {
+                    const done = item.done(profile);
+                    return (
+                      <Pressable
+                        key={item.label}
+                        style={styles.checkRow}
+                        onPress={() => navigation.navigate('ProviderProfileEdit')}
+                      >
+                        <View style={[styles.checkDot, done && styles.checkDotDone]}>
+                          {done && <Check size={12} strokeWidth={3} color="#fff" />}
+                        </View>
+                        <Text style={[styles.checkLabel, done && styles.checkLabelDone]}>{item.label}</Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+                {!profile.whatsapp && (
+                  <Text style={styles.warnBody}>
+                    Sin un WhatsApp, quien llegue a tu página no tiene cómo contactarte.
+                  </Text>
+                )}
+              </View>
+
+              <Pressable style={styles.outlineBtn} onPress={() => navigation.navigate('ProviderProfileEdit')}>
+                <Text style={styles.outlineBtnText}>Editar información de mi negocio</Text>
+              </Pressable>
+
+              {profile.plan === 'vip' && (
+                <Pressable style={styles.ghostBtn} onPress={() => navigation.navigate('MyPage')}>
+                  <Text style={styles.ghostBtnText}>Personalizar el diseño de mi página</Text>
+                </Pressable>
+              )}
+            </>
+          )}
+
+          {bookable && (
+            <>
+              <Pressable style={styles.outlineBtn} onPress={() => navigation.navigate('ProviderProfileEdit')}>
+                <Text style={styles.outlineBtnText}>Editar mi página</Text>
+              </Pressable>
+
+              <View style={styles.earningsCard}>
+                <Text style={styles.earningsKicker}>Ingresos esta semana</Text>
+                <Text style={styles.earnings}>
+                  {summary ? money(summary.earnings.amount, summary.earnings.currency) : '—'}
+                </Text>
+                <Text style={styles.earningsMeta}>
+                  {summary
+                    ? `${summary.completedThisWeek} paseo${summary.completedThisWeek === 1 ? '' : 's'} completado${summary.completedThisWeek === 1 ? '' : 's'}`
+                    : 'Cargando…'}
+                </Text>
+              </View>
+
+              <View>
+                <Text style={styles.sectionTitle}>Esta semana</Text>
+                <View style={styles.weekRow}>
+                  {(summary?.days ?? []).map((wd, i) => {
+                    const active = wd.count > 0;
+                    return (
+                      <View key={i} style={[styles.weekCell, active && styles.weekCellActive]}>
+                        <Text style={[styles.weekLabel, active && styles.weekLabelActive]}>{wd.label}</Text>
+                        <Text style={[styles.weekCount, active && styles.weekCountActive]}>{wd.count}</Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              </View>
+
+              <View style={{ gap: 12 }}>
+                <Text style={styles.sectionTitle}>Solicitudes nuevas</Text>
+                {requests === null && <Text style={styles.mutedBody}>Cargando…</Text>}
+                {requests?.length === 0 && <Text style={styles.mutedBody}>No tienes solicitudes nuevas por ahora.</Text>}
+                {requests?.map((req) => {
+                  const petLabel = req.lines.map((l) => l.petName).filter(Boolean).join(', ') || 'Mascota';
+                  const firstLine = req.lines[0];
+                  const isMeetGreet = req.lines.some((l) => l.serviceTypeCode === MEET_GREET_SERVICE_TYPE_CODE);
+                  const busy = actingOn === req.id;
+                  return (
+                    <View key={req.id} style={styles.requestCard}>
+                      <View style={styles.requestAccent} />
+                      <View style={styles.requestBody}>
+                        <View style={styles.rowBetween}>
+                          <Text style={styles.requestPet}>{petLabel}</Text>
+                          <View style={styles.timeTag}>
+                            <Text style={styles.timeTagText}>{requestTimeLabel(req.scheduledAt)}</Text>
+                          </View>
+                        </View>
+                        <Text style={styles.requestMeta}>
+                          {isMeetGreet
+                            ? 'Meet & Greet — sesión de conocernos (sin costo)'
+                            : firstLine
+                              ? `Paseo de ${firstLine.durationValue} min`
+                              : 'Paseo'}
+                          {req.ownerName ? ` · Dueño: ${req.ownerName}` : ''}
+                        </Text>
+                        {isMeetGreet && (
+                          <Pressable
+                            style={[styles.messageBtn, req.hasUnreadMessages && styles.messageBtnUnread]}
+                            onPress={() => navigation.navigate('Chat', { bookingId: req.id })}
+                          >
+                            {req.hasUnreadMessages && <View style={styles.messageDot} />}
+                            <Text style={[styles.messageBtnText, req.hasUnreadMessages && styles.messageBtnTextUnread]}>
+                              {req.hasUnreadMessages ? 'Mensaje nuevo' : 'Enviar mensaje'}
+                            </Text>
+                          </Pressable>
+                        )}
+                        <View style={styles.requestActions}>
+                          <Pressable
+                            style={[styles.rejectBtn, busy && styles.btnDisabled]}
+                            disabled={busy}
+                            onPress={() => void respond(req.id, 'reject')}
+                          >
+                            <Text style={styles.rejectBtnText}>Rechazar</Text>
+                          </Pressable>
+                          <Pressable
+                            style={[styles.acceptBtn, busy && styles.btnDisabled]}
+                            disabled={busy}
+                            onPress={() => void respond(req.id, 'accept')}
+                          >
+                            <Text style={styles.acceptBtnText}>Aceptar</Text>
+                          </Pressable>
+                        </View>
                       </View>
                     </View>
-                    <Text style={styles.requestMeta}>
-                      {isMeetGreet
-                        ? 'Meet & Greet — sesión de conocernos (sin costo)'
-                        : firstLine
-                          ? `Paseo de ${firstLine.durationValue} min`
-                          : 'Paseo'}
-                      {req.ownerName ? ` · Dueño: ${req.ownerName}` : ''}
-                    </Text>
-                    {isMeetGreet && (
-                      <Pressable
-                        style={[styles.messageBtn, req.hasUnreadMessages && styles.messageBtnUnread]}
-                        onPress={() => navigation.navigate('Chat', { bookingId: req.id })}
-                      >
-                        {req.hasUnreadMessages && <View style={styles.messageDot} />}
-                        <Text style={[styles.messageBtnText, req.hasUnreadMessages && styles.messageBtnTextUnread]}>
-                          {req.hasUnreadMessages ? 'Mensaje nuevo' : 'Enviar mensaje'}
-                        </Text>
-                      </Pressable>
-                    )}
-                    <View style={styles.requestActions}>
-                      <Pressable
-                        style={[styles.rejectBtn, busy && styles.btnDisabled]}
-                        disabled={busy}
-                        onPress={() => void respond(req.id, 'reject')}
-                      >
-                        <Text style={styles.rejectBtnText}>Rechazar</Text>
-                      </Pressable>
-                      <Pressable
-                        style={[styles.acceptBtn, busy && styles.btnDisabled]}
-                        disabled={busy}
-                        onPress={() => void respond(req.id, 'accept')}
-                      >
-                        <Text style={styles.acceptBtnText}>Aceptar</Text>
-                      </Pressable>
-                    </View>
-                  </View>
-                </View>
-              );
-            })}
-          </View>
+                  );
+                })}
+              </View>
 
-          <View style={{ gap: 12 }}>
-            <Text style={styles.sectionTitle}>Próximos</Text>
-            {upcoming === null && <Text style={styles.mutedBody}>Cargando…</Text>}
-            {upcoming?.length === 0 && <Text style={styles.mutedBody}>No tienes paseos confirmados todavía.</Text>}
-            {upcoming?.map((b) => {
-              const petLabel = b.lines.map((l) => l.petName).filter(Boolean).join(', ') || 'Mascota';
-              const firstLine = b.lines[0];
-              const isMeetGreet = b.lines.some((l) => l.serviceTypeCode === MEET_GREET_SERVICE_TYPE_CODE);
-              return (
-                <View key={b.id} style={styles.requestCard}>
-                  <View style={[styles.requestAccent, { backgroundColor: v.mint }]} />
-                  <View style={styles.requestBody}>
-                    <View style={styles.rowBetween}>
-                      <Text style={styles.requestPet}>{petLabel}</Text>
-                      <View style={styles.timeTag}>
-                        <Text style={styles.timeTagText}>{requestTimeLabel(b.scheduledAt)}</Text>
+              <View style={{ gap: 12 }}>
+                <Text style={styles.sectionTitle}>Próximos</Text>
+                {upcoming === null && <Text style={styles.mutedBody}>Cargando…</Text>}
+                {upcoming?.length === 0 && <Text style={styles.mutedBody}>No tienes paseos confirmados todavía.</Text>}
+                {upcoming?.map((b) => {
+                  const petLabel = b.lines.map((l) => l.petName).filter(Boolean).join(', ') || 'Mascota';
+                  const firstLine = b.lines[0];
+                  const isMeetGreet = b.lines.some((l) => l.serviceTypeCode === MEET_GREET_SERVICE_TYPE_CODE);
+                  return (
+                    <View key={b.id} style={styles.requestCard}>
+                      <View style={[styles.requestAccent, { backgroundColor: v.mint }]} />
+                      <View style={styles.requestBody}>
+                        <View style={styles.rowBetween}>
+                          <Text style={styles.requestPet}>{petLabel}</Text>
+                          <View style={styles.timeTag}>
+                            <Text style={styles.timeTagText}>{requestTimeLabel(b.scheduledAt)}</Text>
+                          </View>
+                        </View>
+                        <Text style={styles.requestMeta}>
+                          {isMeetGreet
+                            ? 'Meet & Greet — sesión de conocernos (sin costo)'
+                            : firstLine
+                              ? `Paseo de ${firstLine.durationValue} min`
+                              : 'Paseo'}
+                          {b.ownerName ? ` · Dueño: ${b.ownerName}` : ''}
+                        </Text>
+                        {isMeetGreet && (
+                          <Pressable
+                            style={[styles.messageBtn, b.hasUnreadMessages && styles.messageBtnUnread]}
+                            onPress={() => navigation.navigate('Chat', { bookingId: b.id })}
+                          >
+                            {b.hasUnreadMessages && <View style={styles.messageDot} />}
+                            <Text style={[styles.messageBtnText, b.hasUnreadMessages && styles.messageBtnTextUnread]}>
+                              {b.hasUnreadMessages ? 'Mensaje nuevo' : 'Enviar mensaje'}
+                            </Text>
+                          </Pressable>
+                        )}
                       </View>
                     </View>
-                    <Text style={styles.requestMeta}>
-                      {isMeetGreet
-                        ? 'Meet & Greet — sesión de conocernos (sin costo)'
-                        : firstLine
-                          ? `Paseo de ${firstLine.durationValue} min`
-                          : 'Paseo'}
-                      {b.ownerName ? ` · Dueño: ${b.ownerName}` : ''}
-                    </Text>
-                    {isMeetGreet && (
-                      <Pressable
-                        style={[styles.messageBtn, b.hasUnreadMessages && styles.messageBtnUnread]}
-                        onPress={() => navigation.navigate('Chat', { bookingId: b.id })}
-                      >
-                        {b.hasUnreadMessages && <View style={styles.messageDot} />}
-                        <Text style={[styles.messageBtnText, b.hasUnreadMessages && styles.messageBtnTextUnread]}>
-                          {b.hasUnreadMessages ? 'Mensaje nuevo' : 'Enviar mensaje'}
-                        </Text>
-                      </Pressable>
-                    )}
-                  </View>
-                </View>
-              );
-            })}
-          </View>
+                  );
+                })}
+              </View>
+            </>
+          )}
+
         </ScrollView>
       </View>
     </ScreenContainer>
@@ -314,6 +450,28 @@ const styles = StyleSheet.create({
   earningsKicker: { fontFamily: vf.bodyBold, fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: v.coralTint },
   earnings: { fontFamily: vf.display, fontSize: 40, color: '#fff', marginTop: 2 },
   earningsMeta: { fontFamily: vf.bodyMedium, fontSize: 12.5, color: v.coralTint },
+
+  // The directory business's counterpart to earningsCard: same weight on
+  // the screen, but it leads with the page and its link, which is the
+  // only thing PawMates actually does for a non-paseador today.
+  pageCard: { padding: 20, borderRadius: vr.lg, backgroundColor: v.coral, gap: 4 },
+  pageCardTitle: { fontFamily: vf.display, fontSize: 26, color: '#fff', marginTop: 2 },
+
+  actionsRow: { flexDirection: 'row', gap: 8 },
+  halfBtn: { flex: 1, paddingVertical: 13, borderRadius: vr.md, borderWidth: 1.5, borderColor: v.line, backgroundColor: v.surface, alignItems: 'center' },
+  halfBtnText: { fontFamily: vf.bodyBold, fontSize: 13.5, color: v.ink },
+  halfBtnPrimary: { flex: 1, paddingVertical: 13, borderRadius: vr.md, backgroundColor: v.ink, alignItems: 'center' },
+  halfBtnPrimaryText: { fontFamily: vf.bodyBold, fontSize: 13.5, color: '#fff' },
+
+  ghostBtn: { paddingVertical: 12, alignItems: 'center' },
+  ghostBtnText: { fontFamily: vf.bodyBold, fontSize: 13.5, color: v.grape },
+
+  checkRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  checkDot: { width: 20, height: 20, borderRadius: vr.pill, borderWidth: 1.5, borderColor: v.line, backgroundColor: v.surface, alignItems: 'center', justifyContent: 'center' },
+  checkDotDone: { backgroundColor: v.mint, borderColor: v.mint },
+  checkLabel: { flex: 1, fontFamily: vf.body, fontSize: 13.5, color: v.mute },
+  checkLabelDone: { fontFamily: vf.bodyMedium, color: v.ink },
+  warnBody: { marginTop: 10, fontFamily: vf.body, fontSize: 12.5, color: v.mute, lineHeight: 17 },
 
   sectionTitle: { fontFamily: vf.display, fontSize: 17, color: v.ink, marginBottom: 10 },
   weekRow: { flexDirection: 'row', gap: 8 },

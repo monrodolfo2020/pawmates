@@ -14,24 +14,14 @@ import Tag from '../components/Tag';
 import MicrositeView from '../components/MicrositeView';
 import PageDesignEditor from '../components/PageDesignEditor';
 import { colors, fonts, radius, space } from '../theme/tokens';
-import { api, MyProviderProfile, PageDesign, ProviderDetail, isBookable } from '../api/client';
+import { api, MyProviderProfile, PageDesign, ProviderDetail } from '../api/client';
+import { listInSpanish, missingToPublish } from '../utils/pageStatus';
 import { useAppState } from '../state/AppState';
 import { micrositeUrl } from '../utils/contactLinks';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MyPage'>;
 
 type Tab = 'online' | 'design';
-
-/** What the business still has to fill in before its page goes live —
- * mirrors ProviderProfile's publish rule on the backend, which is what
- * actually decides. */
-function missingToPublish(profile: MyProviderProfile): string[] {
-  const missing: string[] = [];
-  if (!profile.businessName) missing.push('el nombre del negocio');
-  if (!profile.bio) missing.push('la descripción');
-  if (isBookable(profile.category) && !profile.price) missing.push('la tarifa por paseo');
-  return missing;
-}
 
 /** MicrositeView renders the public shape, so the preview feeds it the
  * same fields off the owner's own profile. */
@@ -169,7 +159,7 @@ export default function MyPageScreen({ navigation }: Props) {
               {!published && (
                 <CardMeta>
                   {missing.length
-                    ? `Falta ${missing.join(', ')} para que tu página sea visible.`
+                    ? `Falta ${listInSpanish(missing)} para que tu página sea visible.`
                     : 'Completa tu página para publicarla.'}
                 </CardMeta>
               )}
