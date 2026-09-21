@@ -217,12 +217,77 @@ export interface ProviderListing {
   identityVerified: boolean;
 }
 
+// --- Plan and micro-page design (see the backend's business-plan.ts and
+// page-design.ts — these lists must stay in sync with those). ---
+
+export const BUSINESS_PLANS = ['free', 'vip'] as const;
+export type BusinessPlan = (typeof BUSINESS_PLANS)[number];
+
+export const PAGE_TEMPLATES = ['classic', 'gallery', 'minimal'] as const;
+export type PageTemplate = (typeof PAGE_TEMPLATES)[number];
+
+export const TEMPLATE_LABELS: Record<PageTemplate, string> = {
+  classic: 'Clásica',
+  gallery: 'Galería',
+  minimal: 'Minimalista',
+};
+
+export const PAGE_FONTS = ['display', 'soft'] as const;
+export type PageFont = (typeof PAGE_FONTS)[number];
+
+export const FONT_LABELS: Record<PageFont, string> = {
+  display: 'Titulares con carácter',
+  soft: 'Titulares suaves',
+};
+
+export const PAGE_SECTIONS = [
+  'about',
+  'services',
+  'gallery',
+  'hours',
+  'testimonials',
+  'map',
+  'contact',
+] as const;
+export type PageSection = (typeof PAGE_SECTIONS)[number];
+
+export const SECTION_LABELS: Record<PageSection, string> = {
+  about: 'Sobre el negocio',
+  services: 'Servicios',
+  gallery: 'Galería',
+  hours: 'Dirección y horarios',
+  testimonials: 'Testimonios',
+  map: 'Cómo llegar',
+  contact: 'Botón de WhatsApp',
+};
+
+export interface PageTestimonial {
+  text: string;
+  author: string;
+}
+
+export interface PageDesign {
+  template: PageTemplate;
+  font: PageFont;
+  primaryColor: string;
+  backgroundColor: string;
+  textColor: string;
+  logo: string | null;
+  cover: string | null;
+  sections: { id: PageSection; enabled: boolean }[];
+  testimonials: PageTestimonial[];
+}
+
 export interface ProviderDetail extends ProviderListing {
   bio: string | null;
   photos: string[];
   publicAddress: string | null;
   hours: string | null;
   whatsapp: string | null;
+  plan: BusinessPlan;
+  /** What this page should actually render — already resolved by the
+   * backend, so a free page comes back with PawMates' own design. */
+  design: PageDesign;
 }
 
 // Private fields (address/idNumber/age/phone) only ever come back on this
@@ -250,6 +315,23 @@ export interface MyProviderProfile {
   age: number | null;
   phone: string | null;
   isPublished: boolean;
+  plan: BusinessPlan;
+  /** The design being edited — what the Diseño tab shows. */
+  design: PageDesign;
+  /** What's live at /s/<slug>; null until the first publish. */
+  publishedDesign: PageDesign | null;
+  hasUnpublishedDesign: boolean;
+}
+
+export interface AdminBusiness {
+  accountId: string;
+  name: string | null;
+  email: string | null;
+  category: ServiceCategory;
+  slug: string | null;
+  plan: BusinessPlan;
+  isPublished: boolean;
+  createdAt: string;
 }
 
 /**
@@ -355,6 +437,26 @@ export const api = {
     params: Partial<{ name: string; breed: string; size: string; temperament: string[]; vaccines: string[]; photo: string | null }>,
   ) {
     return request<Pet>(`/v1/pets/${petId}`, { method: 'PATCH', token, body: params });
+  },
+
+  /** Promotes the design draft to the live page — the "Publicar
+   * cambios" button in the En línea tab. */
+  publishPageDesign(token: string) {
+    return request<MyProviderProfile>('/v1/providers/me/design/publish', {
+      method: 'POST',
+      token,
+    });
+  },
+
+  adminListBusinesses(token: string) {
+    return request<AdminBusiness[]>('/v1/admin/businesses', { token });
+  },
+
+  adminSetBusinessPlan(token: string, accountId: string, plan: BusinessPlan) {
+    return request<{ accountId: string; plan: BusinessPlan }>(
+      `/v1/admin/businesses/${accountId}/plan`,
+      { method: 'PATCH', token, body: { plan } },
+    );
   },
 
   adminListAccounts(token: string) {
@@ -546,6 +648,7 @@ export const api = {
       serviceArea: string;
       specialty: string;
       photo: string;
+      design: PageDesign;
       priceAmount: number;
       priceCurrency: string;
       plansOffered: string;

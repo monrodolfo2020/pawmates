@@ -10,7 +10,7 @@ import Segmented from '../components/Segmented';
 import Card from '../components/Card';
 import { CardKicker, CardBody, CardMeta } from '../components/CardText';
 import Tag from '../components/Tag';
-import { api, AdminAccount, AdminVerification } from '../api/client';
+import { api, AdminAccount, AdminBusiness, AdminVerification, CATEGORY_LABELS_SINGULAR } from '../api/client';
 import { colors, fonts, space } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
 
@@ -22,21 +22,27 @@ const VERIFICATION_VARIANT: Record<string, 'accent' | 'outline'> = {
   rejected: 'outline',
 };
 
-type Section = 'cuentas' | 'verificaciones';
+type Section = 'cuentas' | 'negocios' | 'verificaciones';
 
 export default function AdminScreen({ navigation }: Props) {
   const s = useAppState();
   const [section, setSection] = useState<Section>('cuentas');
   const [accounts, setAccounts] = useState<AdminAccount[] | null>(null);
   const [verifications, setVerifications] = useState<AdminVerification[] | null>(null);
+  const [businesses, setBusinesses] = useState<AdminBusiness[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const load = () => {
     if (!s.token) return;
-    Promise.all([api.adminListAccounts(s.token), api.adminListVerifications(s.token)])
-      .then(([a, v]) => {
+    Promise.all([
+      api.adminListAccounts(s.token),
+      api.adminListVerifications(s.token),
+      api.adminListBusinesses(s.token),
+    ])
+      .then(([a, v, b]) => {
         setAccounts(a);
         setVerifications(v);
+        setBusinesses(b);
       })
       .catch((err) => setError(err instanceof Error ? err.message : 'No se pudo cargar el panel.'));
   };
@@ -55,6 +61,7 @@ export default function AdminScreen({ navigation }: Props) {
         <Segmented
           options={[
             { label: 'Cuentas', value: 'cuentas' },
+            { label: 'Negocios', value: 'negocios' },
             { label: 'Verificaciones', value: 'verificaciones' },
           ]}
           value={section}
@@ -85,6 +92,20 @@ export default function AdminScreen({ navigation }: Props) {
           </View>
         )}
 
+        {section === 'negocios' && (
+          <View style={{ gap: space.s2 }}>
+            <Text style={styles.h5}>Negocios ({businesses?.length ?? '…'})</Text>
+            <CardMeta>
+              El cobro del plan VIP todavía ocurre fuera de la app: aquí lo reflejas una vez que el
+              negocio pagó. Quitar VIP no borra su diseño, solo deja de mostrarlo.
+            </CardMeta>
+            {businesses?.length === 0 && <CardMeta>No hay negocios registrados.</CardMeta>}
+            {businesses?.map((b) => (
+              <BusinessRow key={b.accountId} business={b} onChange={load} />
+            ))}
+          </View>
+        )}
+
         {section === 'verificaciones' && (
           <View style={{ gap: space.s2 }}>
             <Text style={styles.h5}>Verificaciones de negocios</Text>
@@ -96,6 +117,51 @@ export default function AdminScreen({ navigation }: Props) {
         )}
       </ScrollView>
     </ScreenContainer>
+  );
+}
+
+/** One business with its plan, and the switch that turns VIP on or off
+ * — the only way a business gets the design editor today (see the
+ * backend's business-plan.ts). */
+function BusinessRow({ business: b, onChange }: { business: AdminBusiness; onChange: () => void }) {
+  const s = useAppState();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const vip = b.plan === 'vip';
+
+  const setPlan = async () => {
+    if (!s.token) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await api.adminSetBusinessPlan(s.token, b.accountId, vip ? 'free' : 'vip');
+      onChange();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo cambiar el plan.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Card>
+      <View style={styles.row}>
+        <CardKicker style={{ margin: 0 }}>{b.email ?? b.accountId.slice(0, 8)}</CardKicker>
+        <Tag variant={vip ? 'accent' : 'outline'}>{vip ? 'VIP' : 'Gratis'}</Tag>
+      </View>
+      <CardBody>{b.name ?? 'Sin nombre'}</CardBody>
+      <View style={styles.wrapRow}>
+        <Tag variant="outline">{CATEGORY_LABELS_SINGULAR[b.category]}</Tag>
+        <Tag variant={b.isPublished ? 'accent' : 'outline'}>
+          {b.isPublished ? 'Publicada ✓' : 'Sin publicar'}
+        </Tag>
+        {b.slug && <Tag variant="outline">/s/{b.slug}</Tag>}
+      </View>
+      {error && <CardMeta style={{ color: colors.accent }}>{error}</CardMeta>}
+      <Button variant={vip ? 'secondary' : 'primary'} blueprint={!vip} disabled={busy} onPress={() => void setPlan()}>
+        {busy ? 'Guardando…' : vip ? 'Quitar VIP' : 'Activar VIP'}
+      </Button>
+    </Card>
   );
 }
 
