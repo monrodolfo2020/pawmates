@@ -46,7 +46,7 @@ del Código de Comercio.
 aplicación.
 
 **1.4.** El tratamiento de tus datos personales se rige por nuestro
-**Aviso de Privacidad**, disponible en `[[URL DEL AVISO]]`, que forma
+**Aviso de Privacidad**, disponible en https://pawmates-one.vercel.app/aviso-de-privacidad, que forma
 parte de estos Términos.
 
 ---
@@ -488,9 +488,17 @@ La aplicación **ya exige y registra la aceptación** de los tres
 (documento, versión, fecha, IP y user agent), y el consentimiento de la
 verificación de identidad se registra por separado, como pide la ley.
 
+Los tres se publican también en su propia dirección, para poder citarse
+y compartirse sin tener cuenta:
+
+- `/aviso-de-privacidad`
+- `/terminos`
+- `/acuerdo-de-prestadores`
+
 **Antes de publicar:** sustituye el texto de cada documento por el que
 tu abogado apruebe, borra estas notas y los avisos de borrador, llena
-los marcadores `[[ASÍ]]`, y **sube la versión** en
-`legal-document.ts` del backend y en `src/legal/` del frontend. Subir la
-versión hace que la app vuelva a pedir la aceptación a todo mundo, que
-es justo lo que quieres cuando el texto cambia.
+los marcadores `[[ASÍ]]` que queden, corre
+`node scripts/sync-legal-text.mjs` y **sube la versión** en
+`legal-document.ts` del backend. Subir la versión hace que la app vuelva
+a pedir la aceptación a todo mundo, que es justo lo que quieres cuando
+el texto cambia.

@@ -43,7 +43,7 @@ del Código de Comercio.
 aplicación.
 
 **1.4.** El tratamiento de tus datos personales se rige por nuestro
-**Aviso de Privacidad**, disponible en \`[[URL DEL AVISO]]\`, que forma
+**Aviso de Privacidad**, disponible en https://pawmates-one.vercel.app/aviso-de-privacidad, que forma
 parte de estos Términos.
 
 ---

@@ -53,7 +53,7 @@ Para efectos de este Acuerdo se entenderá por:
   mascotas que la Plataforma pone a disposición de los Usuarios.
 - **Micrositio:** la página pública individual que la Plataforma genera
   para cada Prestador, accesible mediante una dirección de la forma
-  \`[[DOMINIO]]/s/<identificador>\`.
+  https://pawmates-one.vercel.app/s/<identificador>.
 - **Usuario:** la persona que consulta el Directorio o un Micrositio, sea
   o no titular de una cuenta.
 - **Cliente:** el Usuario que contrata directamente los servicios del
@@ -348,6 +348,11 @@ propia persona y a un documento auténtico y vigente, y que su remisión es
 voluntaria. El tratamiento de esas imágenes se rige por el Aviso de
 Privacidad de PawMates.
 
+**9.6.** Esas imágenes **se eliminan en cuanto la verificación queda
+resuelta**; PawMates conserva únicamente el resultado y su fecha. En
+consecuencia, si el Prestador impugna la decisión, PawMates podrá
+solicitarle nuevamente las imágenes para revisarla.
+
 ---
 
 ## 10. Datos personales
@@ -355,7 +360,7 @@ Privacidad de PawMates.
 **10.1. PawMates como responsable.** PawMates trata los datos personales
 del Prestador en su carácter de responsable, conforme a la Ley Federal de
 Protección de Datos Personales en Posesión de los Particulares y a su
-Aviso de Privacidad, disponible en \`[[URL DEL AVISO DE PRIVACIDAD]]\`, el
+Aviso de Privacidad, disponible en https://pawmates-one.vercel.app/aviso-de-privacidad, el
 cual el Prestador declara haber leído. El Prestador podrá ejercer sus
 derechos de acceso, rectificación, cancelación y oposición, así como
 revocar su consentimiento, por los medios que ese Aviso señala.
@@ -435,9 +440,10 @@ terminar la suscripción conforme a la cláusula 13.8.
 
 ## 13. Suscripción, precio, vigencia y renovación
 
-**13.1. Precio.** El precio del Plan VIP es de \`[[PRECIO MENSUAL]]\`
-mensuales o \`[[PRECIO ANUAL]]\` anuales, en moneda nacional, más el
-impuesto al valor agregado cuando corresponda. El precio vigente se
+**13.1. Precio.** El precio del Plan VIP es de **$99.00 (noventa y nueve
+pesos 00/100 M.N.)** mensuales o **$990.00 (novecientos noventa pesos
+00/100 M.N.)** anuales, más el impuesto al valor agregado cuando
+corresponda. El precio vigente se
 muestra en la Plataforma antes de contratar.
 
 **13.2. Vigencia y vencimiento.** El Plan VIP se contrata por periodos
@@ -462,7 +468,8 @@ su responsabilidad.
 **13.5. Cortesías.** PawMates podrá otorgar el Plan VIP sin costo y por
 tiempo indefinido a su discreción, con fines promocionales o de prueba.
 Una cortesía no genera derecho adquirido y podrá retirarse dando aviso
-previo al Prestador con al menos \`[[DÍAS]]\` días de anticipación.
+previo al Prestador con al menos **quince días naturales** de
+anticipación.
 
 **13.6. Comprobante fiscal.** PawMates expedirá al Prestador el
 comprobante fiscal digital por Internet que corresponda a la
@@ -477,7 +484,7 @@ el Prestador no está de acuerdo, podrá no renovar.
 
 **13.8. Devoluciones.** Los periodos ya iniciados no son objeto de
 devolución proporcional, salvo que: (i) el Prestador lo solicite dentro
-de los primeros \`[[DÍAS]]\` días naturales del primer periodo que
+de los primeros **catorce días naturales** del primer periodo que
 contrate; (ii) exista una falla de la Plataforma atribuible a PawMates
 que impida sustancialmente el uso del Plan VIP durante un periodo
 prolongado; o (iii) PawMates suprima de manera sustancial una
@@ -565,7 +572,7 @@ e) incumpla la legislación en materia de datos personales respecto de los
 f) use la Plataforma para suplantar identidades, extraer datos de forma
    masiva o afectar su funcionamiento; o
 g) incumpla cualquier otra obligación de este Acuerdo y no la subsane
-   dentro de los \`[[DÍAS]]\` días naturales siguientes al requerimiento de
+   dentro de los **diez días naturales** siguientes al requerimiento de
    PawMates, cuando la naturaleza del incumplimiento admita subsanación.
 
 **16.4. Efectos de la terminación.** Al terminar este Acuerdo:
@@ -575,7 +582,7 @@ b) el Prestador deja de aparecer en el Directorio;
 c) cesa la licencia de la cláusula 7.2 para usos futuros;
 d) el Prestador conserva la titularidad de su Contenido y podrá
    solicitar una copia de la información que haya cargado, dentro de los
-   \`[[DÍAS]]\` días naturales siguientes; y
+   **treinta días naturales** siguientes; y
 e) subsisten las obligaciones de las cláusulas 4.3, 7.1, 10, 17, 18 y 21.
 
 **16.5.** La terminación no libera al Prestador de las obligaciones

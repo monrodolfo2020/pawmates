@@ -128,13 +128,17 @@ c) **te pediremos tu consentimiento expreso** antes de recabarlas,
    general de este Aviso; y
 d) las usamos **exclusivamente** para que una persona de nuestro equipo
    compruebe visualmente que la persona de la fotografía corresponde a
-   la del documento, y para resolver reclamaciones o requerimientos de
-   autoridad relacionados con esa verificación. **No las publicamos, no
-   las usamos para reconocimiento facial automatizado, no las
-   comercializamos y no las compartimos con otros usuarios.**
+   la del documento. **No las publicamos, no las usamos para
+   reconocimiento facial automatizado, no las comercializamos y no las
+   compartimos con otros usuarios.**; y
+e) **las eliminamos en cuanto la verificación queda resuelta.** De ese
+   momento en adelante solo conservamos el resultado —aprobada o
+   rechazada— y su fecha. No guardamos tu rostro ni tu documento después
+   de haberlos revisado.
 
 **4.3.** Puedes revocar ese consentimiento en cualquier momento
-conforme a la sección 8. Al hacerlo, eliminaremos las imágenes y se
+conforme a la sección 8. Al hacerlo, eliminaremos las imágenes —si
+todavía no se habían eliminado por lo dicho en el inciso anterior— y se
 retirará la insignia.
 
 ---
@@ -157,7 +161,7 @@ darte el servicio:
    reserva, la mensajería entre las partes y el seguimiento en vivo del
    paseo.
 6. Llevar a cabo la verificación de identidad que hayas solicitado, en
-   los términos de la sección 4.
+   los términos de la sección 4, y conservar su resultado.
 7. Cobrar, administrar y facturar tu suscripción, y llevar el registro
    de sus activaciones y vencimientos.
 8. Prevenir, detectar e investigar fraude, suplantación de identidad,
@@ -200,9 +204,9 @@ de datos y **no requiere tu consentimiento**, pero te lo informamos:
 
 | Proveedor | Para qué | Dónde |
 |---|---|---|
-| `[[VERCEL INC.]]` | Alojamiento de la aplicación y almacenamiento de las imágenes que se cargan | Estados Unidos |
-| `[[TURSO / PROVEEDOR DE BASE DE DATOS]]` | Base de datos donde viven las cuentas, las páginas y las reservas | Estados Unidos |
-| `[[RESEND]]` | Envío de los correos del servicio (verificación de cuenta, restablecimiento de contraseña) | Estados Unidos |
+| Vercel | Alojamiento de la aplicación y almacenamiento de las imágenes que se cargan | Estados Unidos |
+| Turso | Base de datos donde viven las cuentas, las páginas y las reservas | Estados Unidos |
+| Resend | Envío de los correos del servicio (verificación de cuenta, restablecimiento de contraseña) | Estados Unidos |
 
 Estos proveedores están fuera de México, de modo que tus datos se
 almacenan y procesan en el extranjero. Elegimos proveedores que ofrecen
@@ -314,10 +318,10 @@ procedimiento. En ese caso te explicaremos por qué.
 | Dato | Plazo de conservación |
 |---|---|
 | Cuenta y contenido de tu página | Mientras tu cuenta esté activa |
-| Después de la baja de tu cuenta | `[[PLAZO]]` para permitirte reactivarla, tras lo cual se eliminan o se anonimizan |
-| Imágenes de verificación de identidad | `[[PLAZO]]` a partir de la resolución de la verificación, o hasta que revoques tu consentimiento |
-| Mensajes y reservas | `[[PLAZO]]`, por si surge una reclamación entre las partes |
-| Rutas de paseos | `[[PLAZO]]` |
+| Después de la baja de tu cuenta | 30 días naturales, para permitirte reactivarla, tras lo cual se eliminan o se anonimizan |
+| Imágenes de verificación de identidad | **Se eliminan al resolverse la verificación.** Solo se conserva el resultado y su fecha |
+| Mensajes y reservas | 24 meses, por si surge una reclamación entre las partes |
+| Rutas de paseos | 12 meses |
 | Información fiscal y de facturación de la suscripción | El plazo que exige la legislación fiscal |
 | Registro de aceptación de términos y de este Aviso | Mientras pueda ser necesario para acreditar el consentimiento |
 
@@ -349,7 +353,11 @@ acceso o tratamiento no autorizados. Entre ellas:
   prestadores nunca se incluyen en las respuestas públicas del
   directorio; y
 - el personal con acceso a datos, incluido el que revisa las
-  verificaciones de identidad, está sujeto a deber de confidencialidad.
+  verificaciones de identidad, está sujeto a deber de confidencialidad; y
+- aplicamos el principio de **conservación mínima**: las imágenes de
+  identificación se destruyen al resolverse la verificación, de modo que
+  el dato más sensible que tratamos deja de existir en cuanto cumple su
+  finalidad.
 
 Ninguna medida de seguridad es absoluta. Si ocurriera una vulneración
 que afecte de forma significativa tus derechos, **te lo comunicaremos
@@ -392,7 +400,7 @@ Te comunicaremos cualquier cambio **por correo electrónico a la
 dirección registrada en tu cuenta y mediante aviso visible en la
 aplicación**, con al menos **quince días naturales** de anticipación a
 su entrada en vigor. La versión vigente, con su fecha, estará siempre
-disponible en `[[URL DEL AVISO]]`.
+disponible en https://pawmates-one.vercel.app/aviso-de-privacidad
 
 Si un cambio implicara una finalidad nueva que requiera tu
 consentimiento, te lo solicitaremos por separado antes de aplicarla.
@@ -438,7 +446,7 @@ aceptación y con un enlace al Aviso completo.*
 > rastreo publicitario. Tratamos tus datos también para finalidades
 > adicionales, como enviarte novedades, a las que puedes negarte.
 > Conoce cómo acceder, rectificar, cancelar u oponerte al tratamiento de
-> tus datos en nuestro **[Aviso de Privacidad completo]([[URL]])**.
+> tus datos en nuestro **[Aviso de Privacidad completo](https://pawmates-one.vercel.app/aviso-de-privacidad)**.
 
 ---
 
@@ -542,12 +550,12 @@ debe publicarse sin revisión.
    exigente**: consentimiento expreso, por separado, y finalidad
    acotada. Es la postura conservadora y te recomiendo conservarla
    aunque tu abogado opine que no es estrictamente necesaria.
-2. **Plazos de conservación.** Los dejé como marcadores porque son una
-   decisión tuya, no mía. El más delicado es el de las imágenes de
-   verificación: conservarlas indefinidamente es difícil de justificar
-   frente al principio de proporcionalidad. Una opción razonable es
-   eliminarlas poco después de resolver la verificación y conservar solo
-   el resultado y su fecha.
+2. **Plazos de conservación: ya están decididos y programados.** Las
+   imágenes de verificación **se eliminan al resolverse** (aprobar o
+   rechazar borra las dos imágenes y guarda solo el resultado y su
+   fecha); la baja de cuenta conserva 30 días para reactivar; mensajes y
+   reservas 24 meses; rutas de paseos 12 meses. Si tu abogado prefiere
+   otros plazos, los cambio en el documento y en el código.
 3. **Ubicación de los paseadores.** El Aviso afirma que solo se registra
    mientras hay un paseo en curso. Eso es lo que hace la app hoy.
    Conviene que se mantenga así, porque es lo que hace defendible el

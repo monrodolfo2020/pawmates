@@ -63,9 +63,13 @@ export default function LegalDocumentScreen({ navigation, route }: Props) {
   return (
     <ScreenContainer>
       <View style={styles.header}>
-        <IconButton onPress={() => navigation.goBack()}>
-          <ChevronLeft size={18} strokeWidth={1.5} color={colors.text} />
-        </IconButton>
+        {/* Opened straight from its own public URL there is nothing to go
+            back to, so the button only appears when there is. */}
+        {navigation.canGoBack() && (
+          <IconButton onPress={() => navigation.goBack()}>
+            <ChevronLeft size={18} strokeWidth={1.5} color={colors.text} />
+          </IconButton>
+        )}
         <Text style={styles.title} numberOfLines={1}>
           {document.title}
         </Text>

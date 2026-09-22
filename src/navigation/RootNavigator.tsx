@@ -65,6 +65,27 @@ function isAdminGatePath(): boolean {
   return /\/admin\/?$/.test(window.location.pathname);
 }
 
+/**
+ * The legal documents get their own public paths, so the privacy notice
+ * and the terms can be cited by URL — in the documents themselves, in
+ * an email, or to an authority — rather than only existing inside a
+ * screen you have to navigate to. Like the microsite gate, this works on
+ * a hard page load and regardless of whether anyone is signed in:
+ * whoever asks for a company's privacy notice usually has no account.
+ */
+const LEGAL_PATHS: Record<string, LegalDocumentType> = {
+  'aviso-de-privacidad': 'privacy_notice',
+  terminos: 'owner_terms',
+  'acuerdo-de-prestadores': 'provider_agreement',
+};
+
+function getLegalDocumentPath(): LegalDocumentType | null {
+  if (Platform.OS !== 'web' || typeof window === 'undefined') return null;
+  const match = /\/([a-z-]+)\/?$/.exec(window.location.pathname);
+  const slug = match?.[1];
+  return slug ? (LEGAL_PATHS[slug] ?? null) : null;
+}
+
 // Same idea as isAdminGatePath — /reset-password?token=... is a standalone
 // entry point from the emailed link, independent of whatever session (if
 // any) already exists in this browser, so it's checked before the normal
@@ -103,6 +124,19 @@ export default function RootNavigator() {
           name="ResetPassword"
           component={ResetPasswordScreen}
           initialParams={{ token: resetPasswordToken }}
+        />
+      </Stack.Navigator>
+    );
+  }
+
+  const legalDocument = getLegalDocumentPath();
+  if (legalDocument) {
+    return (
+      <Stack.Navigator key="legal-gate" screenOptions={{ headerShown: false }}>
+        <Stack.Screen
+          name="LegalDocument"
+          component={LegalDocumentScreen}
+          initialParams={{ type: legalDocument }}
         />
       </Stack.Navigator>
     );
