@@ -340,12 +340,11 @@ acceso o tratamiento no autorizados. Entre ellas:
 - el acceso a la información está **limitado por tipo de cuenta**, de
   modo que los datos privados de un prestador no son accesibles a otros
   usuarios;
-- las **imágenes de verificación de identidad se guardan en
-  almacenamiento privado**, separado del de las fotografías públicas de
-  los negocios: no son accesibles mediante una dirección de internet, y
-  solo pueden consultarse a través de enlaces firmados y de corta
-  duración que se generan cuando una persona autorizada de nuestro
-  equipo las revisa;
+- las **imágenes de verificación de identidad se guardan por separado**
+  de las fotografías públicas de los negocios, y **no son accesibles
+  mediante una dirección de internet**: únicamente puede consultarlas el
+  personal autorizado que revisa la verificación, a través de nuestros
+  propios sistemas autenticados o de enlaces firmados de corta duración;
 - aplicamos el principio de **minimización**: los datos privados de los
   prestadores nunca se incluyen en las respuestas públicas del
   directorio; y
@@ -469,10 +468,14 @@ Borra esta sección antes de publicar.
 
 ## ⚠️ Un paso pendiente sobre las imágenes ya subidas
 
-Las imágenes de verificación **ya se guardan en almacenamiento privado**
-y solo se leen mediante enlaces firmados que caducan en diez minutos
-(`libs/common/src/storage/private-blob-storage.ts`). La sección 10 lo
-afirma porque ahora es cierto.
+Las imágenes de verificación **ya no quedan en direcciones públicas**.
+Se guardan en almacenamiento privado, que se lee mediante enlaces
+firmados con diez minutos de vigencia, y si ese almacenamiento no está
+disponible se conservan dentro de nuestra propia base de datos, donde
+solo las alcanza el panel de administración autenticado
+(`libs/common/src/storage/private-blob-storage.ts`). La sección 10 está
+redactada para ser cierta en ambos casos: en ninguno de los dos existe
+una dirección de internet que las abra.
 
 Falta una cosa: **las imágenes subidas antes de ese cambio siguen en el
 almacenamiento público**, con direcciones no adivinables y no indexadas,
