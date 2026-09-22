@@ -19,11 +19,13 @@ import LiveWalkScreen from '../screens/LiveWalkScreen';
 import ChatScreen from '../screens/ChatScreen';
 import DashboardScreen from '../screens/DashboardScreen';
 import AdminScreen from '../screens/AdminScreen';
+import LegalDocumentScreen from '../screens/LegalDocumentScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import BookingsScreen from '../screens/BookingsScreen';
 import ComingSoonScreen from '../screens/ComingSoonScreen';
 import ProviderProfileEditScreen from '../screens/ProviderProfileEditScreen';
 import VerifyEmailScreen from '../screens/VerifyEmailScreen';
+import { LegalDocumentType } from '../api/client';
 import { useAppState } from '../state/AppState';
 
 export type RootStackParamList = {
@@ -44,6 +46,7 @@ export type RootStackParamList = {
   Chat: { bookingId: string };
   Dashboard: undefined;
   Admin: undefined;
+  LegalDocument: { type: LegalDocumentType };
   Profile: undefined;
   Bookings: undefined;
   ComingSoon: { title: string };
@@ -147,6 +150,7 @@ export default function RootNavigator() {
     return (
       <Stack.Navigator key="guest" screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
         <Stack.Screen name="Welcome" component={WelcomeScreen} />
+        <Stack.Screen name="LegalDocument" component={LegalDocumentScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
@@ -201,6 +205,7 @@ export default function RootNavigator() {
       <Stack.Screen name="ProviderProfileEdit" component={ProviderProfileEditScreen} />
       <Stack.Screen name="VerifyEmail" component={VerifyEmailScreen} />
       <Stack.Screen name="Admin" component={AdminScreen} />
+      <Stack.Screen name="LegalDocument" component={LegalDocumentScreen} />
       <Stack.Screen name="Profile" component={ProfileScreen} />
       <Stack.Screen name="Bookings" component={BookingsScreen} />
       <Stack.Screen name="ComingSoon" component={ComingSoonScreen} />

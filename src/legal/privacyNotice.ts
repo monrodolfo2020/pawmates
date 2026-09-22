@@ -1,14 +1,8 @@
-# Aviso de Privacidad — PawMates
+// GENERATED from docs/legal/aviso-de-privacidad.md by scripts/sync-legal-text.mjs.
+// Do not edit here — edit the markdown and re-run the script, then bump
+// the version in the backend's legal-document.ts.
 
-> **BORRADOR — REQUIERE REVISIÓN DE UN ABOGADO MEXICANO ANTES DE
-> PUBLICARSE.** A diferencia del Acuerdo de Prestadores, este documento
-> es **legalmente obligatorio**: sin él, PawMates trata datos personales
-> sin cumplir la ley. Pero publicarlo con afirmaciones que el sistema no
-> respalda es peor que no tenerlo, porque convierte un incumplimiento en
-> una declaración falsa. Lee las notas del final antes de publicar: hay
-> un asunto técnico que conviene corregir primero.
->
-> Las secciones marcadas `[[ASÍ]]` son datos que solo tú puedes llenar.
+export const privacyNotice = `# Aviso de Privacidad — PawMates
 
 **Versión:** 1.0-borrador
 **Última actualización:** [[FECHA DE PUBLICACIÓN]]
@@ -17,9 +11,9 @@
 
 ## 1. Quién es responsable de tus datos
 
-`[[RAZÓN SOCIAL COMPLETA]]` ("PawMates"), con domicilio en
-`[[DOMICILIO FISCAL COMPLETO]]` y correo de contacto
-`[[CORREO DE PRIVACIDAD]]`, es responsable del tratamiento de tus datos
+\`[[RAZÓN SOCIAL COMPLETA]]\` ("PawMates"), con domicilio en
+\`[[DOMICILIO FISCAL COMPLETO]]\` y correo de contacto
+\`[[CORREO DE PRIVACIDAD]]\`, es responsable del tratamiento de tus datos
 personales, en términos de la legislación mexicana en materia de
 protección de datos personales en posesión de los particulares.
 
@@ -180,7 +174,7 @@ que eso afecte tu cuenta**:
 4. Elaborar estadísticas y análisis internos que nos permitan mejorar el
    producto.
 
-**Cómo negarte:** escribe a `[[CORREO DE PRIVACIDAD]]` indicando a qué
+**Cómo negarte:** escribe a \`[[CORREO DE PRIVACIDAD]]\` indicando a qué
 finalidad adicional te opones, o usa el ajuste correspondiente en tu
 cuenta cuando esté disponible. Si no manifiestas tu negativa dentro de
 los **cinco días hábiles** siguientes a que este Aviso se ponga a tu
@@ -200,9 +194,9 @@ de datos y **no requiere tu consentimiento**, pero te lo informamos:
 
 | Proveedor | Para qué | Dónde |
 |---|---|---|
-| `[[VERCEL INC.]]` | Alojamiento de la aplicación y almacenamiento de las imágenes que se cargan | Estados Unidos |
-| `[[TURSO / PROVEEDOR DE BASE DE DATOS]]` | Base de datos donde viven las cuentas, las páginas y las reservas | Estados Unidos |
-| `[[RESEND]]` | Envío de los correos del servicio (verificación de cuenta, restablecimiento de contraseña) | Estados Unidos |
+| \`[[VERCEL INC.]]\` | Alojamiento de la aplicación y almacenamiento de las imágenes que se cargan | Estados Unidos |
+| \`[[TURSO / PROVEEDOR DE BASE DE DATOS]]\` | Base de datos donde viven las cuentas, las páginas y las reservas | Estados Unidos |
+| \`[[RESEND]]\` | Envío de los correos del servicio (verificación de cuenta, restablecimiento de contraseña) | Estados Unidos |
 
 Estos proveedores están fuera de México, de modo que tus datos se
 almacenan y procesan en el extranjero. Elegimos proveedores que ofrecen
@@ -276,7 +270,7 @@ Además de tus derechos de la sección 8, puedes:
 - **Limitar** el uso o divulgación de tus datos.
 
 **8.2. Cómo solicitarlo.** Envía tu solicitud a
-`[[CORREO DE PRIVACIDAD]]`. Para poder atenderla necesitamos que
+\`[[CORREO DE PRIVACIDAD]]\`. Para poder atenderla necesitamos que
 incluyas:
 
 a) tu nombre y un medio para comunicarte la respuesta;
@@ -314,10 +308,10 @@ procedimiento. En ese caso te explicaremos por qué.
 | Dato | Plazo de conservación |
 |---|---|
 | Cuenta y contenido de tu página | Mientras tu cuenta esté activa |
-| Después de la baja de tu cuenta | `[[PLAZO]]` para permitirte reactivarla, tras lo cual se eliminan o se anonimizan |
-| Imágenes de verificación de identidad | `[[PLAZO]]` a partir de la resolución de la verificación, o hasta que revoques tu consentimiento |
-| Mensajes y reservas | `[[PLAZO]]`, por si surge una reclamación entre las partes |
-| Rutas de paseos | `[[PLAZO]]` |
+| Después de la baja de tu cuenta | \`[[PLAZO]]\` para permitirte reactivarla, tras lo cual se eliminan o se anonimizan |
+| Imágenes de verificación de identidad | \`[[PLAZO]]\` a partir de la resolución de la verificación, o hasta que revoques tu consentimiento |
+| Mensajes y reservas | \`[[PLAZO]]\`, por si surge una reclamación entre las partes |
+| Rutas de paseos | \`[[PLAZO]]\` |
 | Información fiscal y de facturación de la suscripción | El plazo que exige la legislación fiscal |
 | Registro de aceptación de términos y de este Aviso | Mientras pueda ser necesario para acreditar el consentimiento |
 
@@ -380,7 +374,7 @@ diseñado para recabar datos de menores**. No aceptamos registros de
 menores de edad. Si detectamos una cuenta de un menor, la
 suspenderemos y eliminaremos sus datos. Si eres madre, padre o tutor y
 consideras que un menor nos proporcionó datos, escríbenos a
-`[[CORREO DE PRIVACIDAD]]` y los eliminaremos.
+\`[[CORREO DE PRIVACIDAD]]\` y los eliminaremos.
 
 ---
 
@@ -393,7 +387,7 @@ Te comunicaremos cualquier cambio **por correo electrónico a la
 dirección registrada en tu cuenta y mediante aviso visible en la
 aplicación**, con al menos **quince días naturales** de anticipación a
 su entrada en vigor. La versión vigente, con su fecha, estará siempre
-disponible en `[[URL DEL AVISO]]`.
+disponible en \`[[URL DEL AVISO]]\`.
 
 Si un cambio implicara una finalidad nueva que requiera tu
 consentimiento, te lo solicitaremos por separado antes de aplicarla.
@@ -406,10 +400,10 @@ Si consideras que tu derecho a la protección de datos personales fue
 vulnerado, o que en el tratamiento existe alguna violación a la ley,
 puedes presentar tu inconformidad ante la autoridad competente en
 materia de protección de datos personales, que a la fecha de este Aviso
-es `[[AUTORIDAD COMPETENTE]]`, en `[[MEDIO / SITIO DE LA AUTORIDAD]]`.
+es \`[[AUTORIDAD COMPETENTE]]\`, en \`[[MEDIO / SITIO DE LA AUTORIDAD]]\`.
 
 Te agradeceríamos la oportunidad de resolverlo primero contigo:
-escríbenos a `[[CORREO DE PRIVACIDAD]]`.
+escríbenos a \`[[CORREO DE PRIVACIDAD]]\`.
 
 ---
 
@@ -421,138 +415,4 @@ consientes el tratamiento de tus datos para las finalidades
 necesarias de la sección 5.1.
 
 El consentimiento para las **imágenes de verificación de identidad** se
-solicita por separado y de forma expresa, conforme a la sección 4.
-
----
----
-
-# Aviso de Privacidad simplificado
-
-*Para mostrar en la pantalla de registro, junto a la casilla de
-aceptación y con un enlace al Aviso completo.*
-
-> **Tus datos en PawMates.** `[[RAZÓN SOCIAL]]` es responsable de tus
-> datos personales. Usamos tu nombre y correo para tu cuenta; si eres un
-> negocio, publicamos la información y las fotos que tú cargues en tu
-> página pública; si eres paseador, registramos tu ubicación solo
-> mientras un paseo está en curso. No vendemos tus datos y no usamos
-> rastreo publicitario. Tratamos tus datos también para finalidades
-> adicionales, como enviarte novedades, a las que puedes negarte.
-> Conoce cómo acceder, rectificar, cancelar u oponerte al tratamiento de
-> tus datos en nuestro **[Aviso de Privacidad completo]([[URL]])**.
-
----
-
-# Consentimiento expreso para la verificación de identidad
-
-*Para mostrar en la pantalla donde se suben las dos fotografías, con una
-casilla propia, distinta de la del registro.*
-
-> La verificación de identidad es **opcional**. Si decides continuar,
-> nos entregas una fotografía de tu rostro y una de tu documento oficial
-> de identificación. Una persona de nuestro equipo las revisará
-> visualmente para confirmar que corresponden a la misma persona. **No
-> las publicamos, no las usamos para reconocimiento facial automatizado
-> y no las compartimos con otros usuarios.** Puedes retirarlas cuando
-> quieras escribiendo a `[[CORREO DE PRIVACIDAD]]`.
->
-> `[ ]` **Consiento expresamente** el tratamiento de estas dos imágenes
-> para la finalidad descrita, en los términos de la sección 4 del Aviso
-> de Privacidad.
-
----
----
-
-# Notas para tu abogado (no forman parte del Aviso)
-
-Borra esta sección antes de publicar.
-
-## ⚠️ Un paso pendiente sobre las imágenes ya subidas
-
-Las imágenes de verificación **ya se guardan en almacenamiento privado**
-y solo se leen mediante enlaces firmados que caducan en diez minutos
-(`libs/common/src/storage/private-blob-storage.ts`). La sección 10 lo
-afirma porque ahora es cierto.
-
-Falta una cosa: **las imágenes subidas antes de ese cambio siguen en el
-almacenamiento público**, con direcciones no adivinables y no indexadas,
-pero abribles por cualquiera que tenga el enlace. Para moverlas hay un
-proceso de limpieza que un administrador ejecuta una sola vez:
-
-    POST /v1/admin/provider-verifications/secure-legacy-photos
-
-Es idempotente y va fila por fila; responde cuántas movió, cuántas
-omitió y cuáles fallaron. **Ejecútalo en producción y confirma que
-`failed` viene vacío antes de publicar este Aviso**, porque hasta
-entonces la sección 10 describe algo que no aplica a la totalidad de las
-imágenes.
-
-## ⚠️ Confirma cuál es la ley y la autoridad vigentes
-
-**No copies un aviso de internet y no des por hecho que la referencia al
-INAI sigue siendo correcta.** La reforma constitucional de diciembre de
-2024 eliminó los organismos autónomos, incluido el INAI, y sus funciones
-en materia de datos personales del sector privado se transfirieron al
-ejecutivo federal; en 2025 se expidió una nueva Ley Federal de
-Protección de Datos Personales en Posesión de los Particulares que
-sustituyó a la de 2010.
-
-Por eso dejé `[[AUTORIDAD COMPETENTE]]` como marcador en la sección 14
-en lugar de escribir un nombre: **es exactamente el dato que casi
-cualquier plantilla que encuentres tendrá desactualizado.** Pídele a tu
-abogado que confirme, a la fecha en que publiques:
-
-1. el nombre y los medios de la autoridad ante la que se presentan las
-   inconformidades;
-2. si los plazos de la sección 8.3 (veinte días para responder, quince
-   para hacer efectivo el derecho) siguen siendo los vigentes;
-3. si cambió el contenido mínimo exigido al aviso de privacidad; y
-4. si la nueva ley modificó el régimen de remisiones y transferencias de
-   la sección 6.
-
-Yo redacté el documento sobre la estructura de contenido mínimo que la
-legislación mexicana ha exigido tradicionalmente, que es la que
-razonablemente subsiste, pero **esto tiene que verificarse contra el
-texto en vigor**, y es la razón principal por la que este documento no
-debe publicarse sin revisión.
-
-## Preguntas concretas para tu abogado
-
-1. **¿La fotografía del rostro es dato sensible?** Un retrato usado para
-   identificar a alguien se acerca al dato biométrico, que sí es
-   sensible. PawMates no hace reconocimiento facial automatizado —es una
-   persona comparando dos imágenes—, así que hay argumento para decir
-   que no lo es. Redacté el Aviso **asumiendo el escenario más
-   exigente**: consentimiento expreso, por separado, y finalidad
-   acotada. Es la postura conservadora y te recomiendo conservarla
-   aunque tu abogado opine que no es estrictamente necesaria.
-2. **Plazos de conservación.** Los dejé como marcadores porque son una
-   decisión tuya, no mía. El más delicado es el de las imágenes de
-   verificación: conservarlas indefinidamente es difícil de justificar
-   frente al principio de proporcionalidad. Una opción razonable es
-   eliminarlas poco después de resolver la verificación y conservar solo
-   el resultado y su fecha.
-3. **Ubicación de los paseadores.** El Aviso afirma que solo se registra
-   mientras hay un paseo en curso. Eso es lo que hace la app hoy.
-   Conviene que se mantenga así, porque es lo que hace defendible el
-   tratamiento.
-4. **Datos de mascotas.** No son datos personales de una persona física,
-   pero van asociados a la cuenta del dueño. Los traté como datos
-   personales del dueño, que es la postura prudente.
-5. **Proveedores en el extranjero.** Confirma si basta con informarlo,
-   como hace la sección 6.1, o si se requiere algo más de los contratos
-   con Vercel, la base de datos y el proveedor de correo.
-
-## Lo que falta para cerrar el paquete legal
-
-- **Términos y Condiciones para dueños de mascotas.** Es el único de los
-  tres documentos que todavía no existe. El Acuerdo de Prestadores ya
-  está en `docs/legal/acuerdo-prestadores.md`.
-- **Casilla de aceptación en el registro.** Sigue sin existir. La
-  sección 15 de este Aviso y la cláusula 23 del Acuerdo describen un
-  mecanismo que aún no está programado: hay que guardar fecha, hora y
-  versión aceptada, y **el consentimiento de la verificación de
-  identidad debe registrarse por separado**, porque la ley pide que sea
-  expreso.
-- **Pantalla que muestre ambos documentos** dentro de la app, y el
-  enlace público del Aviso, que la sección 13 promete.
+solicita por separado y de forma expresa, conforme a la sección 4.`;

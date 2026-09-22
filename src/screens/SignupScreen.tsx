@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { ChevronLeft } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -13,7 +13,17 @@ import Card from '../components/Card';
 import Tag from '../components/Tag';
 import { CardBody } from '../components/CardText';
 import { colors, fonts, space } from '../theme/tokens';
-import { CATEGORY_LABELS_SINGULAR, SERVICE_CATEGORIES, ServiceCategory } from '../api/client';
+import LegalAcceptRow, { LegalLink } from '../components/LegalAcceptRow';
+import { CardMeta } from '../components/CardText';
+import {
+  AcceptedLegal,
+  api,
+  CATEGORY_LABELS_SINGULAR,
+  LegalDocument,
+  LegalDocumentType,
+  SERVICE_CATEGORIES,
+  ServiceCategory,
+} from '../api/client';
 import { useAppState } from '../state/AppState';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Signup'>;
@@ -31,10 +41,51 @@ export default function SignupScreen({ navigation, route }: Props) {
   const [profilePhoto, setProfilePhoto] = useState<PhotoResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  // The versions come from the backend so the acceptance record can name
+  // the exact text that was on screen — see legal-document.ts. Until they
+  // load there's nothing to accept, so the button stays disabled.
+  const [documents, setDocuments] = useState<LegalDocument[] | null>(null);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [acceptedVerification, setAcceptedVerification] = useState(false);
+
+  useEffect(() => {
+    api.getLegalDocuments().then(setDocuments).catch(() => setDocuments([]));
+  }, []);
+
+  const versionOf = (type: LegalDocumentType) =>
+    documents?.find((d) => d.type === type)?.version;
+
+  const generalDocuments: LegalDocumentType[] =
+    role === 'provider'
+      ? ['privacy_notice', 'provider_agreement']
+      : ['privacy_notice', 'owner_terms'];
+
+  const openDocument = (type: LegalDocumentType) =>
+    navigation.navigate('LegalDocument', { type });
+
   const missingProviderPhotos = role === 'provider' && (!facePhoto?.base64 || !idPhoto?.base64);
-  const canSubmit = !!email && password.length >= 8 && !missingProviderPhotos;
+  // A provider sending identity photos has to consent to those two
+  // images separately — the law wants that one expressed on its own, not
+  // folded into the general acceptance.
+  const needsVerificationConsent = role === 'provider';
+  const legalReady =
+    !!documents &&
+    documents.length > 0 &&
+    acceptedTerms &&
+    (!needsVerificationConsent || acceptedVerification) &&
+    generalDocuments.every((t) => versionOf(t));
+  const canSubmit =
+    !!email && password.length >= 8 && !missingProviderPhotos && legalReady;
 
   const handleSubmit = async () => {
+    const acceptedLegal: AcceptedLegal[] = generalDocuments
+      .map((type) => ({ type, version: versionOf(type)! }))
+      .filter((a) => a.version);
+    if (needsVerificationConsent && acceptedVerification) {
+      const version = versionOf('identity_verification_consent');
+      if (version) acceptedLegal.push({ type: 'identity_verification_consent', version });
+    }
+
     setSubmitting(true);
     try {
       await s.signup({
@@ -47,6 +98,7 @@ export default function SignupScreen({ navigation, route }: Props) {
         facePhoto: facePhoto?.base64 ?? undefined,
         idDocumentPhoto: idPhoto?.base64 ?? undefined,
         profilePhoto: profilePhoto?.base64 ?? undefined,
+        acceptedLegal,
       });
     } catch {
       // s.authError is already set for display below.
@@ -166,6 +218,47 @@ export default function SignupScreen({ navigation, route }: Props) {
             </View>
           </View>
         )}
+
+        <Card>
+          <CardBody style={{ margin: 0 }}>Antes de crear tu cuenta</CardBody>
+          <LegalAcceptRow checked={acceptedTerms} onToggle={() => setAcceptedTerms((v) => !v)}>
+            He leído y acepto el{' '}
+            <LegalLink onPress={() => openDocument('privacy_notice')}>
+              Aviso de Privacidad
+            </LegalLink>
+            {' y '}
+            {role === 'provider' ? (
+              <LegalLink onPress={() => openDocument('provider_agreement')}>
+                el Acuerdo de Prestadores de Servicios
+              </LegalLink>
+            ) : (
+              <LegalLink onPress={() => openDocument('owner_terms')}>
+                los Términos y Condiciones
+              </LegalLink>
+            )}
+            .
+          </LegalAcceptRow>
+
+          {needsVerificationConsent && (
+            <LegalAcceptRow
+              checked={acceptedVerification}
+              onToggle={() => setAcceptedVerification((v) => !v)}
+            >
+              Consiento expresamente que se traten mi fotografía y la de mi documento de
+              identificación para verificar mi identidad, conforme al{' '}
+              <LegalLink onPress={() => openDocument('identity_verification_consent')}>
+                consentimiento de verificación
+              </LegalLink>
+              .
+            </LegalAcceptRow>
+          )}
+
+          {documents?.length === 0 && (
+            <CardMeta>
+              No pudimos cargar los documentos legales. Revisa tu conexión e inténtalo de nuevo.
+            </CardMeta>
+          )}
+        </Card>
 
         {s.authError && (
           <Card>

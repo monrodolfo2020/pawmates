@@ -225,6 +225,20 @@ function NewCodeForm({ onCreated }: { onCreated: () => void }) {
   );
 }
 
+/** The two identity photos come as signed links that expire, so one can
+ * legitimately be missing — an empty frame with an explanation beats a
+ * broken image, and beats the whole list failing. */
+function VerificationPhoto({ uri }: { uri: string | null }) {
+  if (!uri) {
+    return (
+      <View style={[styles.verificationPhoto, styles.photoMissing]}>
+        <Text style={styles.photoMissingText}>No disponible</Text>
+      </View>
+    );
+  }
+  return <Image source={{ uri }} style={styles.verificationPhoto} resizeMode="cover" />;
+}
+
 /** One business with its plan, and the switch that turns VIP on or off
  * — the only way a business gets the design editor today (see the
  * backend's business-plan.ts). */
@@ -316,11 +330,11 @@ function VerificationRow({ verification: v, onChange }: { verification: AdminVer
       <View style={styles.photoRow}>
         <View style={{ flex: 1, gap: 4 }}>
           <CardMeta>Rostro</CardMeta>
-          <Image source={{ uri: v.facePhoto }} style={styles.verificationPhoto} resizeMode="cover" />
+          <VerificationPhoto uri={v.facePhoto} />
         </View>
         <View style={{ flex: 1, gap: 4 }}>
           <CardMeta>Documento</CardMeta>
-          <Image source={{ uri: v.idDocumentPhoto }} style={styles.verificationPhoto} resizeMode="cover" />
+          <VerificationPhoto uri={v.idDocumentPhoto} />
         </View>
       </View>
       {error && <CardMeta style={{ color: colors.accent }}>{error}</CardMeta>}
@@ -360,6 +374,8 @@ const styles = StyleSheet.create({
   wrapRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   photoRow: { flexDirection: 'row', gap: space.s2 },
   verificationPhoto: { width: '100%', aspectRatio: 1, backgroundColor: colors.accent100 },
+  photoMissing: { alignItems: 'center', justifyContent: 'center', padding: space.s2 },
+  photoMissingText: { fontFamily: fonts.body, fontSize: 11.5, color: colors.textMuted70, textAlign: 'center' },
   codeText: { fontFamily: fonts.heading, fontSize: 20, letterSpacing: 2, color: colors.text },
   noteInput: {
     paddingHorizontal: space.s3, paddingVertical: 10,

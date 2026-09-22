@@ -75,6 +75,28 @@ export default function ProfileScreen({ navigation }: Props) {
               <Text style={styles.primaryBtnText}>Salir</Text>
             </Pressable>
           </View>
+
+          {/* The documents have to stay reachable after signup, not only
+              on the screen where they were accepted. */}
+          <View style={styles.legalRow}>
+            <Text
+              style={styles.legalLink}
+              onPress={() => navigation.navigate('LegalDocument', { type: 'privacy_notice' })}
+            >
+              Aviso de Privacidad
+            </Text>
+            <Text style={styles.legalSeparator}>·</Text>
+            <Text
+              style={styles.legalLink}
+              onPress={() =>
+                navigation.navigate('LegalDocument', {
+                  type: s.roles.includes('provider') ? 'provider_agreement' : 'owner_terms',
+                })
+              }
+            >
+              {s.roles.includes('provider') ? 'Acuerdo de Prestadores' : 'Términos y Condiciones'}
+            </Text>
+          </View>
         </ScrollView>
       </View>
     </ScreenContainer>
@@ -97,6 +119,9 @@ const styles = StyleSheet.create({
   wrapRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 6 },
   roleTag: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: vr.pill, borderWidth: 1, borderColor: v.line, backgroundColor: v.panel },
   roleTagText: { fontFamily: vf.bodySemiBold, fontSize: 11, color: v.mute },
+  legalRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8, paddingTop: 4 },
+  legalLink: { fontFamily: vf.body, fontSize: 12.5, color: v.mute, textDecorationLine: 'underline' },
+  legalSeparator: { fontFamily: vf.body, fontSize: 12.5, color: v.muted2 },
   petRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: v.line, marginTop: 4 },
   addPetRow: { paddingTop: 10, marginTop: 4, borderTopWidth: 1, borderTopColor: v.line },
   linkText: { fontFamily: vf.bodySemiBold, fontSize: 13.5, color: v.coral },

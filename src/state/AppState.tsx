@@ -1,6 +1,16 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { api, AuthResult, ChatMessage, MeResult, Pet, Role, ServiceCategory, TripDetail } from '../api/client';
+import {
+  api,
+  AcceptedLegal,
+  AuthResult,
+  ChatMessage,
+  MeResult,
+  Pet,
+  Role,
+  ServiceCategory,
+  TripDetail,
+} from '../api/client';
 import { BASE_PRICE } from './mockData';
 
 export type BookingStatus =
@@ -81,6 +91,7 @@ type Ctx = State & {
     facePhoto?: string;
     idDocumentPhoto?: string;
     profilePhoto?: string;
+    acceptedLegal: AcceptedLegal[];
   }) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -91,6 +102,7 @@ type Ctx = State & {
     facePhoto?: string;
     idDocumentPhoto?: string;
     profilePhoto?: string;
+    acceptedLegal: AcceptedLegal[];
   }) => Promise<void>;
   sendVerificationEmail: () => Promise<void>;
   verifyEmail: (code: string) => Promise<void>;
@@ -229,6 +241,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       facePhoto?: string;
       idDocumentPhoto?: string;
       profilePhoto?: string;
+      acceptedLegal: AcceptedLegal[];
     }) => {
       setState((s) => ({ ...s, authError: null }));
       try {
@@ -286,6 +299,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       facePhoto?: string;
       idDocumentPhoto?: string;
       profilePhoto?: string;
+      acceptedLegal: AcceptedLegal[];
     }) => {
       const token = stateRef.current.token;
       if (!token) return;

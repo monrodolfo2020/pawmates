@@ -149,8 +149,11 @@ export interface AdminVerification {
   id: string;
   accountId: string;
   status: 'pending' | 'verified' | 'rejected';
-  facePhoto: string;
-  idDocumentPhoto: string;
+  /** A short-lived signed URL: these live in private storage, so the
+   * link expires and a fresh one comes with each listing. null when it
+   * couldn't be signed (missing object, expired credentials). */
+  facePhoto: string | null;
+  idDocumentPhoto: string | null;
   /** Independent from `status` — this reflects whether the paseador has
    * finished their own page (bio + price, see ProviderProfile), which is
    * what actually makes them show up in the shopper-facing directory.
@@ -222,6 +225,40 @@ export interface ProviderListing {
 
 export const BUSINESS_PLANS = ['free', 'vip'] as const;
 export type BusinessPlan = (typeof BUSINESS_PLANS)[number];
+
+// --- Legal documents (see the backend's legal-document.ts — this list
+// and the texts in src/legal must stay in sync with it). ---
+
+export const LEGAL_DOCUMENTS = [
+  'privacy_notice',
+  'provider_agreement',
+  'owner_terms',
+  'identity_verification_consent',
+] as const;
+export type LegalDocumentType = (typeof LEGAL_DOCUMENTS)[number];
+
+export interface LegalDocument {
+  type: LegalDocumentType;
+  title: string;
+  /** The version in force, decided by the backend. It's echoed back on
+   * acceptance so the record can never claim someone agreed to a text
+   * their screen didn't show. */
+  version: string;
+  requiredForOwner: boolean;
+  requiredForProvider: boolean;
+}
+
+export interface MyLegalAcceptances {
+  accepted: {
+    type: LegalDocumentType;
+    version: string;
+    acceptedAt: string;
+    isCurrent: boolean;
+  }[];
+  pending: LegalDocumentType[];
+}
+
+export type AcceptedLegal = { type: LegalDocumentType; version: string };
 
 export const BILLING_PERIODS = ['monthly', 'annual'] as const;
 export type BillingPeriod = (typeof BILLING_PERIODS)[number];
@@ -414,6 +451,9 @@ export const api = {
     facePhoto?: string;
     idDocumentPhoto?: string;
     profilePhoto?: string;
+    /** Required: the backend refuses to create an account without it.
+     * Each entry must carry the version the screen actually showed. */
+    acceptedLegal: AcceptedLegal[];
   }) {
     return request<AuthResult>('/v1/auth/signup', { method: 'POST', body: params });
   },
@@ -431,6 +471,7 @@ export const api = {
       facePhoto?: string;
       idDocumentPhoto?: string;
       profilePhoto?: string;
+      acceptedLegal: AcceptedLegal[];
     },
   ) {
     return request<AuthResult>('/v1/auth/roles', { method: 'POST', token, body: params });
@@ -495,6 +536,22 @@ export const api = {
     return request<MyProviderProfile>('/v1/providers/me/design/publish', {
       method: 'POST',
       token,
+    });
+  },
+
+  getLegalDocuments() {
+    return request<LegalDocument[]>('/v1/legal/documents');
+  },
+
+  getMyLegalAcceptances(token: string) {
+    return request<MyLegalAcceptances>('/v1/legal/me', { token });
+  },
+
+  acceptLegalDocument(token: string, type: LegalDocumentType, version: string) {
+    return request<{ type: LegalDocumentType; version: string }>('/v1/legal/accept', {
+      method: 'POST',
+      token,
+      body: { type, version },
     });
   },
 
