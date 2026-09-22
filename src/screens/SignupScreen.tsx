@@ -36,6 +36,7 @@ export default function SignupScreen({ navigation, route }: Props) {
   const [businessName, setBusinessName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [facePhoto, setFacePhoto] = useState<PhotoResult | null>(null);
   const [idPhoto, setIdPhoto] = useState<PhotoResult | null>(null);
   const [profilePhoto, setProfilePhoto] = useState<PhotoResult | null>(null);
@@ -63,6 +64,11 @@ export default function SignupScreen({ navigation, route }: Props) {
   const openDocument = (type: LegalDocumentType) =>
     navigation.navigate('LegalDocument', { type });
 
+  // Shown only once they've started typing the second one, so the form
+  // doesn't accuse them of a mismatch before they've had a chance.
+  const passwordsMismatch = confirmPassword.length > 0 && password !== confirmPassword;
+  const passwordsReady = password.length >= 8 && password === confirmPassword;
+
   const missingProviderPhotos = role === 'provider' && (!facePhoto?.base64 || !idPhoto?.base64);
   // A provider sending identity photos has to consent to those two
   // images separately — the law wants that one expressed on its own, not
@@ -74,8 +80,7 @@ export default function SignupScreen({ navigation, route }: Props) {
     acceptedTerms &&
     (!needsVerificationConsent || acceptedVerification) &&
     generalDocuments.every((t) => versionOf(t));
-  const canSubmit =
-    !!email && password.length >= 8 && !missingProviderPhotos && legalReady;
+  const canSubmit = !!email && passwordsReady && !missingProviderPhotos && legalReady;
 
   const handleSubmit = async () => {
     const acceptedLegal: AcceptedLegal[] = generalDocuments
@@ -158,6 +163,16 @@ export default function SignupScreen({ navigation, route }: Props) {
           secureTextEntry
           placeholder="Mínimo 8 caracteres"
         />
+        <TextField
+          label="Confirma la contraseña"
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry
+          placeholder="Escríbela otra vez"
+        />
+        {passwordsMismatch && (
+          <Text style={styles.mismatch}>Las contraseñas no coinciden.</Text>
+        )}
 
         {role === 'provider' && (
           <View style={{ gap: space.s2 }}>
@@ -283,6 +298,7 @@ const styles = StyleSheet.create({
   title: { fontFamily: fonts.heading, fontSize: 20, color: colors.text },
   body: { paddingHorizontal: space.s4, gap: space.s4, paddingBottom: space.s4 },
   note: { fontFamily: fonts.body, fontSize: 12, color: colors.text, opacity: 0.7 },
+  mismatch: { fontFamily: fonts.bodyMedium, fontSize: 12.5, color: colors.accent, marginTop: -6 },
   photoRow: { flexDirection: 'row', gap: space.s3 },
   categoryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   photoBox: { width: '100%', aspectRatio: 1 },

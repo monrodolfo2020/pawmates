@@ -171,7 +171,6 @@ export const SERVICE_CATEGORIES = [
   'grooming',
   'boarding',
   'training',
-  'shop',
   'other',
 ] as const;
 
@@ -183,7 +182,6 @@ export const CATEGORY_LABELS: Record<ServiceCategory, string> = {
   grooming: 'Estética',
   boarding: 'Hotel y guardería',
   training: 'Entrenamiento',
-  shop: 'Tiendas',
   other: 'Otros servicios',
 };
 
@@ -194,7 +192,6 @@ export const CATEGORY_LABELS_SINGULAR: Record<ServiceCategory, string> = {
   grooming: 'Estética canina',
   boarding: 'Hotel y guardería',
   training: 'Entrenamiento',
-  shop: 'Tienda de mascotas',
   other: 'Otro servicio',
 };
 
@@ -577,6 +574,15 @@ export const api = {
     return request<{ plan: BusinessPlan; isVip: boolean; expiresAt: string }>(
       '/v1/billing/redeem',
       { method: 'POST', token, body: { code } },
+    );
+  },
+
+  /** Moves the identity photos uploaded before private storage existed
+   * out of the public blob store. One-off; safe to run again. */
+  adminSecureLegacyPhotos(token: string) {
+    return request<{ total: number; moved: number; skipped: number; failed: string[] }>(
+      '/v1/admin/provider-verifications/secure-legacy-photos',
+      { method: 'POST', token },
     );
   },
 

@@ -151,6 +151,7 @@ export default function AdminScreen({ navigation }: Props) {
         {section === 'verificaciones' && (
           <View style={{ gap: space.s2 }}>
             <Text style={styles.h5}>Verificaciones de negocios</Text>
+            <SecureLegacyPhotosCard />
             {verifications?.length === 0 && <CardMeta>No hay verificaciones registradas.</CardMeta>}
             {verifications?.map((v) => (
               <VerificationRow key={v.id} verification={v} onChange={load} />
@@ -159,6 +160,70 @@ export default function AdminScreen({ navigation }: Props) {
         )}
       </ScrollView>
     </ScreenContainer>
+  );
+}
+
+/**
+ * Runs the one-off cleanup that pulls the identity photos out of the
+ * public blob store (see private-blob-storage.ts). It lives here rather
+ * than in a script because it needs an admin session, and asking someone
+ * to hand-craft a request with a token is how a security fix quietly
+ * never gets applied.
+ */
+function SecureLegacyPhotosCard() {
+  const s = useAppState();
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<{
+    total: number;
+    moved: number;
+    skipped: number;
+    failed: string[];
+  } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const run = async () => {
+    if (!s.token) return;
+    setBusy(true);
+    setError(null);
+    try {
+      setResult(await api.adminSecureLegacyPhotos(s.token));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo ejecutar la limpieza.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardBody style={{ margin: 0 }}>Resguardar fotos de identificación antiguas</CardBody>
+      <CardMeta>
+        Las fotos de rostro y documento subidas antes del cambio a almacenamiento privado quedaron
+        en direcciones públicas: no son adivinables, pero cualquiera con el enlace las abre. Esto las
+        mueve a almacenamiento privado y borra la copia pública. Se puede ejecutar varias veces sin
+        problema.
+      </CardMeta>
+      {result && (
+        <CardMeta>
+          {result.moved} movidas · {result.skipped} ya estaban resguardadas · {result.total} revisadas
+          {result.failed.length > 0 ? ` · ${result.failed.length} fallaron` : ''}
+        </CardMeta>
+      )}
+      {result && result.failed.length === 0 && result.moved + result.skipped === result.total && (
+        <CardMeta style={{ color: colors.text }}>
+          Listo: ninguna foto de identificación queda en una dirección pública.
+        </CardMeta>
+      )}
+      {result && result.failed.length > 0 && (
+        <CardMeta style={{ color: colors.accent }}>
+          Vuelve a ejecutarlo: las que fallaron siguen siendo públicas.
+        </CardMeta>
+      )}
+      {error && <CardMeta style={{ color: colors.accent }}>{error}</CardMeta>}
+      <Button variant="secondary" disabled={busy} onPress={() => void run()}>
+        {busy ? 'Resguardando…' : 'Ejecutar limpieza'}
+      </Button>
+    </Card>
   );
 }
 

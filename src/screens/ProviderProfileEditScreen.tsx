@@ -9,6 +9,11 @@ import Button from '../components/Button';
 import TextField from '../components/TextField';
 import PhotoPicker, { PhotoResult } from '../components/PhotoPicker';
 import GalleryPicker from '../components/GalleryPicker';
+import {
+  CATEGORY_PROFILE_FIELDS,
+  ProfileFieldId,
+  showsField,
+} from '../config/categoryFields';
 import Tag from '../components/Tag';
 import { CardBody } from '../components/CardText';
 import { colors, fonts, space } from '../theme/tokens';
@@ -88,21 +93,27 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
     try {
       const priceAmount = priceMxn.trim() ? Math.round(Number(priceMxn) * 100) : undefined;
       const ageValue = age.trim() ? Number(age) : undefined;
+      // A field this category doesn't ask for is sent empty rather than
+      // left alone: a paseador who becomes a veterinaria must stop
+      // publishing "Parque México" on their page, and '' is how the API
+      // clears a field.
+      const forCategory = (field: ProfileFieldId, value: string) =>
+        showsField(category, field) ? value.trim() : '';
       const saved = await api.saveMyProviderProfile(s.token, {
         category,
         businessName: businessName.trim(),
         photos,
-        publicAddress: publicAddress.trim(),
-        hours: hours.trim(),
+        publicAddress: forCategory('publicAddress', publicAddress),
+        hours: forCategory('hours', hours),
         whatsapp: whatsapp.trim(),
         bio: bio.trim(),
-        serviceArea: serviceArea.trim(),
-        specialty: specialty.trim(),
+        serviceArea: forCategory('serviceArea', serviceArea),
+        specialty: forCategory('specialty', specialty),
         photo: photo?.base64 ?? undefined,
         priceAmount,
         priceCurrency: priceAmount !== undefined ? 'MXN' : undefined,
-        plansOffered: plansOffered.trim(),
-        walkingSpots: walkingSpots.trim(),
+        plansOffered: forCategory('plansOffered', plansOffered),
+        walkingSpots: forCategory('walkingSpots', walkingSpots),
         address: address.trim(),
         idNumber: idNumber.trim(),
         age: ageValue,
@@ -121,6 +132,8 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
   };
 
   const previewUri = photo?.uri ?? existingPhotoUrl;
+  const categoryConfig = CATEGORY_PROFILE_FIELDS[category];
+  const field = (id: ProfileFieldId) => categoryConfig.fields[id];
 
   return (
     <ScreenContainer>
@@ -175,45 +188,54 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
           label="Descripción"
           value={bio}
           onChangeText={setBio}
-          placeholder="Cuéntale a los dueños qué ofreces y por qué confiar en ti."
+          placeholder={categoryConfig.bioPlaceholder}
           multiline
           numberOfLines={4}
         />
-        <TextField
-          label="Zona de servicio"
-          value={serviceArea}
-          onChangeText={setServiceArea}
-          placeholder="Ej. Roma Norte, CDMX"
-        />
-        <TextField
-          label="Especialidad"
-          value={specialty}
-          onChangeText={setSpecialty}
-          placeholder="Ej. Perros grandes y energéticos"
-        />
+
+        {/* Which of these appear, and what they're called, depends on the
+            category — see config/categoryFields.ts. */}
+        {field('serviceArea') && (
+          <TextField
+            label={field('serviceArea')!.label}
+            value={serviceArea}
+            onChangeText={setServiceArea}
+            placeholder={field('serviceArea')!.placeholder}
+          />
+        )}
+        {field('specialty') && (
+          <TextField
+            label={field('specialty')!.label}
+            value={specialty}
+            onChangeText={setSpecialty}
+            placeholder={field('specialty')!.placeholder}
+          />
+        )}
         {isBookable(category) && (
           <TextField
             label="Precio por paseo (MXN)"
             value={priceMxn}
             onChangeText={setPriceMxn}
-            placeholder="Ej. 850"
+            placeholder="Ej. 250"
             keyboardType="numeric"
           />
         )}
-        <TextField
-          label="Servicios que ofreces"
-          value={plansOffered}
-          onChangeText={setPlansOffered}
-          placeholder="Ej. Consulta general, vacunas, baño y corte"
-          multiline
-          numberOfLines={2}
-        />
-        {isBookable(category) && (
+        {field('plansOffered') && (
           <TextField
-            label="Parques o sitios donde paseas"
+            label={field('plansOffered')!.label}
+            value={plansOffered}
+            onChangeText={setPlansOffered}
+            placeholder={field('plansOffered')!.placeholder}
+            multiline={field('plansOffered')!.multiline}
+            numberOfLines={field('plansOffered')!.multiline ? 2 : 1}
+          />
+        )}
+        {field('walkingSpots') && (
+          <TextField
+            label={field('walkingSpots')!.label}
             value={walkingSpots}
             onChangeText={setWalkingSpots}
-            placeholder="Ej. Parque México, Bosque de Chapultepec"
+            placeholder={field('walkingSpots')!.placeholder}
           />
         )}
 
@@ -227,18 +249,22 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
           <Text style={styles.fieldLabel}>Fotos del negocio</Text>
           <GalleryPicker photos={photos} onChange={setPhotos} />
         </View>
-        <TextField
-          label="Dirección del negocio (pública)"
-          value={publicAddress}
-          onChangeText={setPublicAddress}
-          placeholder="Ej. Av. Revolución 1200, CDMX"
-        />
-        <TextField
-          label="Horarios"
-          value={hours}
-          onChangeText={setHours}
-          placeholder="Ej. Lun a Sáb de 9:00 a 19:00"
-        />
+        {field('publicAddress') && (
+          <TextField
+            label={field('publicAddress')!.label}
+            value={publicAddress}
+            onChangeText={setPublicAddress}
+            placeholder={field('publicAddress')!.placeholder}
+          />
+        )}
+        {field('hours') && (
+          <TextField
+            label={field('hours')!.label}
+            value={hours}
+            onChangeText={setHours}
+            placeholder={field('hours')!.placeholder}
+          />
+        )}
         <TextField
           label="WhatsApp"
           value={whatsapp}
@@ -255,7 +281,7 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
           </Text>
         </View>
         <TextField
-          label="Dirección"
+          label="Dirección particular"
           value={address}
           onChangeText={setAddress}
           placeholder="Tu dirección actual"
