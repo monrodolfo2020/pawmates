@@ -9,6 +9,7 @@ import Button from '../components/Button';
 import TextField from '../components/TextField';
 import PhotoPicker, { PhotoResult } from '../components/PhotoPicker';
 import GalleryPicker from '../components/GalleryPicker';
+import LocationPicker from '../components/LocationPicker';
 import {
   CATEGORY_PROFILE_FIELDS,
   ProfileFieldId,
@@ -52,6 +53,7 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
   const [phone, setPhone] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [point, setPoint] = useState<{ latitude: number; longitude: number } | null>(null);
 
   useEffect(() => {
     if (!s.token) return;
@@ -65,6 +67,11 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
           setBusinessName(profile.businessName ?? '');
           setPhotos(profile.photos);
           setPublicAddress(profile.publicAddress ?? '');
+          setPoint(
+            profile.latitude !== null && profile.longitude !== null
+              ? { latitude: profile.latitude, longitude: profile.longitude }
+              : null,
+          );
           setHours(profile.hours ?? '');
           setWhatsapp(profile.whatsapp ?? '');
           setBio(profile.bio ?? '');
@@ -114,6 +121,8 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
         priceCurrency: priceAmount !== undefined ? 'MXN' : undefined,
         plansOffered: forCategory('plansOffered', plansOffered),
         walkingSpots: forCategory('walkingSpots', walkingSpots),
+        latitude: point?.latitude ?? null,
+        longitude: point?.longitude ?? null,
         address: address.trim(),
         idNumber: idNumber.trim(),
         age: ageValue,
@@ -265,6 +274,12 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
             placeholder={field('hours')!.placeholder}
           />
         )}
+        <LocationPicker
+          latitude={point?.latitude ?? null}
+          longitude={point?.longitude ?? null}
+          addressHint={publicAddress || serviceArea}
+          onChange={setPoint}
+        />
         <TextField
           label="WhatsApp"
           value={whatsapp}

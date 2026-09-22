@@ -362,6 +362,8 @@ export interface ProviderDetail extends ProviderListing {
   publicAddress: string | null;
   hours: string | null;
   whatsapp: string | null;
+  latitude: number | null;
+  longitude: number | null;
   plan: BusinessPlan;
   /** What this page should actually render — already resolved by the
    * backend, so a free page comes back with PawMates' own design. */
@@ -372,6 +374,12 @@ export interface ProviderDetail extends ProviderListing {
 // shape — the provider looking at their own page — never on
 // ProviderListing/ProviderDetail (the backend never serializes them into
 // a public response; see ProvidersController's comment).
+export interface GeoSuggestion {
+  label: string;
+  latitude: number;
+  longitude: number;
+}
+
 export interface MyProviderProfile {
   accountId: string;
   category: ServiceCategory;
@@ -383,6 +391,8 @@ export interface MyProviderProfile {
   publicAddress: string | null;
   hours: string | null;
   whatsapp: string | null;
+  latitude: number | null;
+  longitude: number | null;
   serviceArea: string | null;
   specialty: string | null;
   price: { amount: number; currency: string } | null;
@@ -534,6 +544,16 @@ export const api = {
       method: 'POST',
       token,
     });
+  },
+
+  /** Address search for placing a business on the map. Goes through our
+   * own backend, which identifies the app to the geocoder as its usage
+   * policy asks. `available: false` means the geocoder didn't answer —
+   * the business can still type its address by hand. */
+  searchPlaces(query: string) {
+    return request<{ available: boolean; results: GeoSuggestion[] }>(
+      `/v1/geo/search?q=${encodeURIComponent(query)}`,
+    );
   },
 
   getLegalDocuments() {
@@ -793,6 +813,8 @@ export const api = {
       publicAddress: string;
       hours: string;
       whatsapp: string;
+      latitude: number | null;
+      longitude: number | null;
       bio: string;
       serviceArea: string;
       specialty: string;

@@ -33,9 +33,15 @@ export default function MicrositeView({ business, design, compact = false }: Pro
   // Whichever photo became the cover shouldn't repeat inside the gallery.
   const gallery = business.photos.filter((uri) => uri !== cover);
   const waUrl = business.whatsapp ? whatsappUrl(business.whatsapp, business.name) : null;
-  const mapUrl = business.publicAddress
-    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.publicAddress)}`
-    : null;
+  // Exact coordinates when the business placed itself on the map, and a
+  // text search as the fallback — the point of storing the coordinate is
+  // that "Cómo llegar" stops guessing.
+  const mapUrl =
+    business.latitude !== null && business.longitude !== null
+      ? `https://www.google.com/maps/search/?api=1&query=${business.latitude},${business.longitude}`
+      : business.publicAddress
+        ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.publicAddress)}`
+        : null;
 
   const muted = (opacity: number) => ({ color: design.textColor, opacity });
   const enabled = (id: PageSection) =>

@@ -45,6 +45,8 @@ function asBusiness(profile: MyProviderProfile): ProviderDetail {
     publicAddress: profile.publicAddress,
     hours: profile.hours,
     whatsapp: profile.whatsapp,
+    latitude: profile.latitude,
+    longitude: profile.longitude,
     plan: profile.plan,
     design: profile.design,
   };
