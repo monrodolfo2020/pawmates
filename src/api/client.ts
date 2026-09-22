@@ -374,6 +374,16 @@ export interface ProviderDetail extends ProviderListing {
 // shape — the provider looking at their own page — never on
 // ProviderListing/ProviderDetail (the backend never serializes them into
 // a public response; see ProvidersController's comment).
+export type VerificationStatus = 'none' | 'pending' | 'verified' | 'rejected';
+
+export interface MyVerification {
+  status: VerificationStatus;
+  submittedAt: string | null;
+  photosDeletedAt: string | null;
+  /** The version of the consent the app must show and echo back. */
+  consentVersion: string;
+}
+
 export interface GeoSuggestion {
   label: string;
   latitude: number;
@@ -794,6 +804,24 @@ export const api = {
    * whoever the business sends the link to has no account. */
   getProviderBySlug(slug: string) {
     return request<ProviderDetail>(`/v1/providers/by-slug/${encodeURIComponent(slug)}`);
+  },
+
+  getMyVerification(token: string) {
+    return request<MyVerification>('/v1/providers/me/verification', { token });
+  },
+
+  /** Sends the two identity photos for review. Also works after signup,
+   * which is the only way a provider whose signup half-failed can be
+   * verified at all. */
+  submitVerification(
+    token: string,
+    params: { facePhoto: string; idDocumentPhoto: string; consentVersion: string },
+  ) {
+    return request<{ status: VerificationStatus }>('/v1/providers/me/verification', {
+      method: 'POST',
+      token,
+      body: params,
+    });
   },
 
   getMyProviderProfile(token: string) {

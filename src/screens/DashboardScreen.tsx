@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { View, Text, Image, ScrollView, StyleSheet, Pressable, Linking } from 'react-native';
 import { Check } from 'lucide-react-native';
+import VerificationCard from '../components/VerificationCard';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
@@ -199,6 +200,15 @@ export default function DashboardScreen({ navigation }: Props) {
               </Text>
             </Pressable>
           )}
+
+          {/* Shown to every provider, in both layouts: an account whose
+              signup half-failed has no verification and no page, and this
+              is the only way back from that. */}
+          <VerificationCard
+            onOpenConsent={() =>
+              navigation.navigate('LegalDocument', { type: 'identity_verification_consent' })
+            }
+          />
 
           {profile === undefined && <Text style={styles.mutedBody}>Cargando…</Text>}
 
