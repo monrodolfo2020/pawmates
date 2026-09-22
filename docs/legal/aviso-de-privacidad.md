@@ -469,10 +469,9 @@ Borra esta sección antes de publicar.
 ## ⚠️ Un paso pendiente sobre las imágenes ya subidas
 
 Las imágenes de verificación **ya no quedan en direcciones públicas**.
-Se guardan en almacenamiento privado, que se lee mediante enlaces
-firmados con diez minutos de vigencia, y si ese almacenamiento no está
-disponible se conservan dentro de nuestra propia base de datos, donde
-solo las alcanza el panel de administración autenticado
+Las nuevas se guardan dentro de nuestra propia base de datos, donde solo
+las alcanza el panel de administración autenticado, o en un
+almacenamiento de objetos privado cuando está configurado
 (`libs/common/src/storage/private-blob-storage.ts`). La sección 10 está
 redactada para ser cierta en ambos casos: en ninguno de los dos existe
 una dirección de internet que las abra.
@@ -484,11 +483,25 @@ proceso de limpieza que un administrador ejecuta una sola vez:
 
     POST /v1/admin/provider-verifications/secure-legacy-photos
 
-Es idempotente y va fila por fila; responde cuántas movió, cuántas
-omitió y cuáles fallaron. **Ejecútalo en producción y confirma que
-`failed` viene vacío antes de publicar este Aviso**, porque hasta
-entonces la sección 10 describe algo que no aplica a la totalidad de las
-imágenes.
+Descarga cada imagen, la guarda en privado y borra la copia pública. Es
+idempotente y va fila por fila; responde cuántas movió, cuántas omitió y
+cuáles fallaron. **Ejecútalo en producción y confirma que `failed` viene
+vacío antes de publicar este Aviso**, porque hasta entonces la sección
+10 describe algo que no aplica a la totalidad de las imágenes.
+
+### Sobre el almacenamiento de objetos privado (opcional)
+
+En Vercel Blob el acceso privado es una propiedad **del store**, no de
+cada archivo: un store público rechaza cualquier escritura privada. Las
+fotos de los negocios tienen que seguir siendo públicas —se publican en
+páginas abiertas—, así que las imágenes de identificación necesitan un
+segundo store creado con acceso privado.
+
+Si lo creas, conéctalo al proyecto y define la variable de entorno
+`BLOB_PRIVATE_READ_WRITE_TOKEN` con su token de lectura y escritura. Las
+imágenes pasarán a ese store, sin cambios de código. Sin la variable
+todo sigue funcionando, guardándolas en la base de datos, que es
+igualmente privado pero hace crecer las filas.
 
 ## ⚠️ Confirma cuál es la ley y la autoridad vigentes
 
