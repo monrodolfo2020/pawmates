@@ -212,6 +212,14 @@ export interface AdminVerification {
    * what actually makes them show up in the shopper-facing directory.
    * An admin can approve identity and this can still be false. */
   profilePublished: boolean;
+  /** Who it is: the business's own name, else the person's, else the
+   * email — for the card's title. */
+  businessName: string | null;
+  accountName: string | null;
+  email: string | null;
+  /** Set when the admin decided: the photos are destroyed right then, so
+   * it doubles as "resolved on". */
+  photosDeletedAt: string | null;
   createdAt: string;
 }
 

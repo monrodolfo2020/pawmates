@@ -26,11 +26,14 @@ import { useAppState } from '../state/AppState';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Admin'>;
 
-const VERIFICATION_VARIANT: Record<string, 'accent' | 'outline'> = {
-  pending: 'outline',
-  verified: 'accent',
-  rejected: 'outline',
+const VERIFICATION_LABEL: Record<AdminVerification['status'], { text: string; variant: 'accent' | 'outline' }> = {
+  pending: { text: 'Por revisar', variant: 'accent' },
+  verified: { text: 'Verificada ✓', variant: 'outline' },
+  rejected: { text: 'Rechazada', variant: 'outline' },
 };
+
+const formatDate = (iso: string) =>
+  new Date(iso).toLocaleString('es-MX', { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' });
 
 type Section = 'cuentas' | 'negocios' | 'codigos' | 'verificaciones';
 
@@ -166,9 +169,11 @@ export default function AdminScreen({ navigation }: Props) {
             <Text style={styles.h5}>Verificaciones de negocios</Text>
             <SecureLegacyPhotosCard />
             {verifications?.length === 0 && <CardMeta>No hay verificaciones registradas.</CardMeta>}
-            {verifications?.map((v) => (
-              <VerificationRow key={v.id} verification={v} onChange={load} />
-            ))}
+            {/* The ones waiting on a decision first; the rest is history. */}
+            {verifications &&
+              [...verifications]
+                .sort((a, b) => Number(b.status === 'pending') - Number(a.status === 'pending'))
+                .map((v) => <VerificationRow key={v.id} verification={v} onChange={load} />)}
           </View>
         )}
       </ScrollView>
@@ -421,14 +426,18 @@ function BusinessRow({ business: b, onChange }: { business: AdminBusiness; onCha
   );
 }
 
-/** Shows both photos an admin needs to actually make the call, plus
- * Aprobar/Rechazar — the decision PATCH /v1/admin/provider-verifications/:id
- * turns into the "Identidad verificada" badge visitors see on that
- * business's page (see BusinessProfileScreen). */
+/**
+ * One identity check. While pending: both photos and Aprobar/Rechazar —
+ * the decision PATCH /v1/admin/provider-verifications/:id turns into the
+ * "Identidad verificada" badge on the business's page. Deciding destroys
+ * the photos, so a resolved check shows the outcome and its date instead
+ * of two empty frames; a verified one can still be withdrawn.
+ */
 function VerificationRow({ verification: v, onChange }: { verification: AdminVerification; onChange: () => void }) {
   const s = useAppState();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmWithdraw, setConfirmWithdraw] = useState(false);
 
   const decide = async (status: 'verified' | 'rejected') => {
     if (!s.token) return;
@@ -444,46 +453,79 @@ function VerificationRow({ verification: v, onChange }: { verification: AdminVer
     }
   };
 
+  const label = VERIFICATION_LABEL[v.status];
+  const who = v.businessName ?? v.accountName ?? v.email ?? `Cuenta ${v.accountId.slice(0, 8)}…`;
+  const pending = v.status === 'pending';
+
   return (
     <Card>
       <View style={styles.row}>
-        <CardKicker style={{ margin: 0 }}>Cuenta {v.accountId.slice(0, 8)}…</CardKicker>
-        <Tag variant={VERIFICATION_VARIANT[v.status] ?? 'outline'}>{v.status}</Tag>
+        <CardBody style={{ margin: 0, flex: 1 }}>{who}</CardBody>
+        <Tag variant={label.variant}>{label.text}</Tag>
       </View>
-      <CardMeta>Enviada {new Date(v.createdAt).toLocaleString()}</CardMeta>
+      {v.email && v.email !== who && <CardMeta>{v.email}</CardMeta>}
+      <CardMeta>
+        Enviada el {formatDate(v.createdAt)}
+        {!pending && v.photosDeletedAt ? ` · resuelta el ${formatDate(v.photosDeletedAt)}` : ''}
+      </CardMeta>
       <Tag variant={v.profilePublished ? 'accent' : 'outline'}>
-        {v.profilePublished ? 'Página publicada ✓' : 'Página sin publicar todavía'}
+        {v.profilePublished ? 'Página completa ✓' : 'Página sin completar todavía'}
       </Tag>
-      <View style={styles.photoRow}>
-        <View style={{ flex: 1, gap: 4 }}>
-          <CardMeta>Rostro</CardMeta>
-          <VerificationPhoto uri={v.facePhoto} />
-        </View>
-        <View style={{ flex: 1, gap: 4 }}>
-          <CardMeta>Documento</CardMeta>
-          <VerificationPhoto uri={v.idDocumentPhoto} />
-        </View>
-      </View>
-      {error && <CardMeta style={{ color: colors.accent }}>{error}</CardMeta>}
-      <View style={{ flexDirection: 'row', gap: space.s2 }}>
-        <Button
-          variant="secondary"
-          style={{ flex: 1 }}
-          disabled={busy || v.status === 'rejected'}
-          onPress={() => decide('rejected')}
-        >
-          Rechazar
-        </Button>
-        <Button
-          variant="primary"
-          blueprint
-          style={{ flex: 1 }}
-          disabled={busy || v.status === 'verified'}
-          onPress={() => decide('verified')}
-        >
-          {busy ? 'Guardando…' : 'Aprobar'}
-        </Button>
-      </View>
+
+      {pending ? (
+        <>
+          <View style={styles.photoRow}>
+            <View style={{ flex: 1, gap: 4 }}>
+              <CardMeta>Rostro</CardMeta>
+              <VerificationPhoto uri={v.facePhoto} />
+            </View>
+            <View style={{ flex: 1, gap: 4 }}>
+              <CardMeta>Documento</CardMeta>
+              <VerificationPhoto uri={v.idDocumentPhoto} />
+            </View>
+          </View>
+          <CardMeta>Al decidir, las dos fotos se borran definitivamente.</CardMeta>
+          {error && <CardMeta style={{ color: colors.accent }}>{error}</CardMeta>}
+          <View style={{ flexDirection: 'row', gap: space.s2 }}>
+            <Button variant="secondary" style={{ flex: 1 }} disabled={busy} onPress={() => void decide('rejected')}>
+              Rechazar
+            </Button>
+            <Button variant="primary" blueprint style={{ flex: 1 }} disabled={busy} onPress={() => void decide('verified')}>
+              {busy ? 'Guardando…' : 'Aprobar'}
+            </Button>
+          </View>
+        </>
+      ) : (
+        <>
+          <CardMeta>
+            {v.status === 'verified'
+              ? 'Su página muestra "Identidad verificada". Las fotos ya se borraron.'
+              : 'Las fotos ya se borraron. El negocio puede enviar unas nuevas desde su panel; aparecerán aquí como una revisión nueva.'}
+          </CardMeta>
+          {error && <CardMeta style={{ color: colors.accent }}>{error}</CardMeta>}
+          {v.status === 'verified' &&
+            (confirmWithdraw ? (
+              <View style={{ flexDirection: 'row', gap: space.s2 }}>
+                <Button variant="secondary" style={{ flex: 1 }} disabled={busy} onPress={() => setConfirmWithdraw(false)}>
+                  No
+                </Button>
+                <Button variant="primary" blueprint style={{ flex: 1 }} disabled={busy} onPress={() => void decide('rejected')}>
+                  {busy ? 'Guardando…' : 'Sí, retirarla'}
+                </Button>
+              </View>
+            ) : (
+              <Button variant="secondary" block onPress={() => setConfirmWithdraw(true)}>
+                Retirar la verificación
+              </Button>
+            ))}
+          {confirmWithdraw && (
+            <CardMeta>
+              Su página dejará de mostrar "Identidad verificada". Para recuperarla tendrá que enviar
+              fotos nuevas.
+            </CardMeta>
+          )}
+        </>
+      )}
     </Card>
   );
 }
