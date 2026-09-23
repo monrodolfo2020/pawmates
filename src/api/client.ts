@@ -129,9 +129,38 @@ export interface TripPoint {
   recordedAt: string;
 }
 
+// The lists below are checked against the backend's by
+// scripts/check-shared-lists.mjs.
+
+export const WALK_EVENT_TYPES = ['photo', 'pee', 'poop'] as const;
+export type WalkEventType = (typeof WALK_EVENT_TYPES)[number];
+
+export const BOOKING_STATUSES = [
+  'requested',
+  'accepted',
+  'confirmed',
+  'in_progress',
+  'completed',
+  'cancelled',
+  'disputed',
+] as const;
+export type BookingStatusCode = (typeof BOOKING_STATUSES)[number];
+
+/** Typed on BOOKING_STATUSES so a status added to the list can't go
+ * without its Spanish label. */
+export const BOOKING_STATUS_LABELS: Record<BookingStatusCode, string> = {
+  requested: 'Solicitado',
+  accepted: 'Aceptado',
+  confirmed: 'Confirmado',
+  in_progress: 'En curso',
+  completed: 'Completado',
+  cancelled: 'Cancelado',
+  disputed: 'En revisión',
+};
+
 export interface WalkEvent {
   id: string;
-  type: 'photo' | 'pee' | 'poop';
+  type: WalkEventType;
   photoBase64: string | null;
   note: string | null;
   recordedAt: string;
@@ -186,9 +215,9 @@ export interface AdminVerification {
   createdAt: string;
 }
 
-// Must stay in sync with SERVICE_CATEGORIES in the backend's
-// providers/domain/value-objects/service-category.ts (same manual-sync
-// convention as MEET_GREET_SERVICE_TYPE_CODE below).
+// Must match SERVICE_CATEGORIES in the backend's
+// providers/domain/value-objects/service-category.ts — checked by
+// scripts/check-shared-lists.mjs, like every list shared with it.
 export const SERVICE_CATEGORIES = [
   'walker',
   'vet',
@@ -842,7 +871,7 @@ export const api = {
   logWalkEvent(
     token: string,
     bookingId: string,
-    params: { type: 'photo' | 'pee' | 'poop'; photoBase64?: string; note?: string },
+    params: { type: WalkEventType; photoBase64?: string; note?: string },
   ) {
     return request<{ id: string }>(`/v1/trips/${bookingId}/events`, {
       method: 'POST',

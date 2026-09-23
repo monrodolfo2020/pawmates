@@ -4,31 +4,27 @@ import { ChevronLeft } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
-import { api, BookingSummary, MEET_GREET_SERVICE_TYPE_CODE } from '../api/client';
+import {
+  api,
+  BOOKING_STATUS_LABELS,
+  BookingStatusCode,
+  BookingSummary,
+  MEET_GREET_SERVICE_TYPE_CODE,
+} from '../api/client';
 import { vividColors as v, vividFonts as vf, vividRadius as vr } from '../theme/vividTokens';
 import { useAppState } from '../state/AppState';
 import { formatWhen } from '../utils/bookingSlots';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Bookings'>;
 
-const STATUS_LABEL: Record<string, string> = {
-  requested: 'Solicitado',
-  confirmed: 'Confirmado',
-  in_progress: 'En curso',
-  completed: 'Completado',
-  cancelled: 'Cancelado',
-  rejected: 'Rechazado',
-};
-
 // Confirmed/in-progress/completed read as "on the books" (mint tint);
-// cancelled/rejected as a soft stop (rose tint); requested — still
+// cancelled as a soft stop (rose tint); requested — still
 // waiting on the paseador — stays neutral.
 const STATUS_TINT: Record<string, { bg: string; border: string; text: string }> = {
   confirmed: { bg: v.mintTint, border: v.mintTintLine, text: v.mintDark },
   in_progress: { bg: v.mintTint, border: v.mintTintLine, text: v.mintDark },
   completed: { bg: v.mintTint, border: v.mintTintLine, text: v.mintDark },
   cancelled: { bg: v.roseTint, border: v.roseTintLine, text: v.rose },
-  rejected: { bg: v.roseTint, border: v.roseTintLine, text: v.rose },
 };
 
 const money = (cents: number, currency: string) =>
@@ -95,7 +91,7 @@ export default function BookingsScreen({ navigation }: Props) {
                   <Text style={styles.date}>{formatWhen(b.scheduledAt)}</Text>
                   <View style={[styles.statusTag, { backgroundColor: tint.bg, borderColor: tint.border }]}>
                     <Text style={[styles.statusTagText, { color: tint.text }]}>
-                      {STATUS_LABEL[b.status] ?? b.status}
+                      {BOOKING_STATUS_LABELS[b.status as BookingStatusCode] ?? b.status}
                     </Text>
                   </View>
                 </View>

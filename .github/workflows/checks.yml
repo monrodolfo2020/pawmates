@@ -1,0 +1,48 @@
+name: Checks
+
+# Runs on every change to this repo. pawmates-backend runs the same
+# shared-lists check from its side, so a change in either repo is caught.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch: {}
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+
+  shared-lists:
+    name: Listas compartidas con el backend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: monrodolfo2020/pawmates-backend
+          path: pawmates-backend
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node scripts/check-shared-lists.mjs --backend pawmates-backend
+
+  legal-texts:
+    name: Textos legales generados al día
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      # src/legal is generated from docs/legal; editing one without
+      # regenerating the other ships a text nobody reviewed.
+      - run: node scripts/sync-legal-text.mjs
+      - run: git diff --exit-code -- src/legal
