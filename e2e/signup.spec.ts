@@ -17,7 +17,7 @@ test.describe('Registro de un dueño', () => {
     await create.click();
 
     // Owners go straight to their pet; only businesses verify their email first.
-    await expect(page.getByText('Cuéntanos de tu perro')).toBeVisible();
+    await expect(page.getByText('Cuéntanos de tu mascota')).toBeVisible();
     await page.getByPlaceholder('Rocky').fill('Rocky');
     await page.getByPlaceholder('Labrador retriever').fill('Labrador');
     await page.getByText('Guardar y continuar').click();
@@ -37,6 +37,6 @@ test.describe('Registro de un dueño', () => {
 
     await expect(page.getByText('Las contraseñas no coinciden.')).toBeVisible();
     await page.getByText('Crear cuenta', { exact: true }).last().click();
-    await expect(page.getByText('Cuéntanos de tu perro')).toHaveCount(0);
+    await expect(page.getByText('Cuéntanos de tu mascota')).toHaveCount(0);
   });
 });

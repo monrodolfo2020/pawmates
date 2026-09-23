@@ -13,6 +13,8 @@ import { CardBody, CardMeta } from '../components/CardText';
 import { colors, fonts, space } from '../theme/tokens';
 import { api, ProviderDetail } from '../api/client';
 import { useAppState } from '../state/AppState';
+import WhenPicker, { chosenSlot, initialWhen } from '../components/WhenPicker';
+import { atSlot, formatWhen } from '../utils/bookingSlots';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MeetGreet'>;
 
@@ -24,6 +26,9 @@ export default function MeetGreetScreen({ navigation, route }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sentBookingId, setSentBookingId] = useState<string | null>(null);
+  const [when, setWhen] = useState(initialWhen);
+  const slot = chosenSlot(when);
+  const scheduledAt = slot === null ? null : atSlot(when.day, slot).toISOString();
 
   useEffect(() => {
     api.getProvider(s.token, walkerId).then(setProvider).catch(() => {});
@@ -34,11 +39,11 @@ export default function MeetGreetScreen({ navigation, route }: Props) {
       navigation.navigate('Login');
       return;
     }
-    if (!s.token || !petId) return;
+    if (!s.token || !petId || !scheduledAt) return;
     setError(null);
     setSubmitting(true);
     try {
-      const booking = await api.requestMeetGreet(s.token, petId, walkerId);
+      const booking = await api.requestMeetGreet(s.token, petId, walkerId, scheduledAt);
       setSentBookingId(booking.id);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo enviar la solicitud.');
@@ -56,10 +61,11 @@ export default function MeetGreetScreen({ navigation, route }: Props) {
         <View style={styles.sentBody}>
           <Handshake size={40} strokeWidth={1.5} color={colors.accent} />
           <Text style={styles.sentTitle}>
-            Le avisamos a {provider?.name ?? 'el paseador'}
+            Le avisamos a {provider?.name ?? 'el negocio'}
           </Text>
           <Text style={styles.sentBody2}>
-            En cuanto confirme el Meet &amp; Greet, lo verás en "Tus reservas". No tiene costo.
+            Pediste conocerse el {scheduledAt ? formatWhen(scheduledAt) : ''}. En cuanto lo confirme,
+            lo verás en "Tus reservas". No tiene costo.
           </Text>
           <Text style={styles.sentBody2}>
             Mientras tanto, pueden escribirse para acordar el punto de encuentro.
@@ -93,7 +99,7 @@ export default function MeetGreetScreen({ navigation, route }: Props) {
         <Card>
           <CardBody>
             Un Meet &amp; Greet es una sesión breve y sin costo para que tú, tu mascota y{' '}
-            {provider?.name ?? 'el paseador'} se conozcan antes de reservar paseos regulares.
+            {provider?.name ?? 'el negocio'} se conozcan antes de reservar paseos. Elige cuándo te gustaría.
           </CardBody>
         </Card>
 
@@ -112,6 +118,8 @@ export default function MeetGreetScreen({ navigation, route }: Props) {
           </Field>
         )}
 
+        <WhenPicker value={when} onChange={setWhen} />
+
         {error && (
           <Card>
             <CardBody style={{ color: colors.accent }}>{error}</CardBody>
@@ -126,7 +134,7 @@ export default function MeetGreetScreen({ navigation, route }: Props) {
         <Button
           variant="primary"
           block
-          disabled={submitting || s.pets.length === 0}
+          disabled={submitting || s.pets.length === 0 || !scheduledAt}
           onPress={handleSubmit}
         >
           {submitting ? 'Enviando…' : 'Solicitar Meet & Greet'}

@@ -4,13 +4,11 @@ import { Plus, Search } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
-import Segmented from '../components/Segmented';
 import Card from '../components/Card';
 import { CardTitle, CardBody } from '../components/CardText';
 import Tag from '../components/Tag';
 import ImagePlaceholder from '../components/ImagePlaceholder';
 import AppNav from '../components/AppNav';
-import MapMock from '../components/MapMock';
 import {
   api,
   CATEGORY_LABELS,
@@ -24,13 +22,12 @@ import { useAppState } from '../state/AppState';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
-const MAP_POSITIONS = [
-  { top: 34, left: 28 },
-  { top: 58, left: 52 },
-  { top: 22, left: 66 },
-];
 
 const money = (cents: number, currency: string) => '$' + (cents / 100).toFixed(0) + ' ' + currency;
+
+/** Where to find a business: the area a walker covers, or the address
+ * of a place you visit (a vet, a groomer). */
+const where = (p: ProviderListing) => p.serviceArea ?? p.publicAddress;
 
 export default function HomeScreen({ navigation }: Props) {
   const s = useAppState();
@@ -57,7 +54,7 @@ export default function HomeScreen({ navigation }: Props) {
     const q = search.trim().toLowerCase();
     if (!providers || q === '') return providers;
     return providers.filter((p) =>
-      [p.name, p.serviceArea, p.specialty, CATEGORY_LABELS_SINGULAR[p.category]]
+      [p.name, p.serviceArea, p.publicAddress, p.specialty, CATEGORY_LABELS_SINGULAR[p.category]]
         .filter(Boolean)
         .some((field) => field!.toLowerCase().includes(q)),
     );
@@ -154,26 +151,6 @@ export default function HomeScreen({ navigation }: Props) {
         ))}
       </ScrollView>
 
-      <View style={styles.segRow}>
-        <Segmented
-          options={[{ label: 'Lista', value: 'lista' }, { label: 'Mapa', value: 'mapa' }]}
-          value={s.discoverView}
-          onChange={(v) => s.setDiscoverView(v as 'lista' | 'mapa')}
-        />
-      </View>
-
-      {s.discoverView === 'mapa' && results && results.length > 0 && (
-        <MapMock
-          pins={results.map((p, i) => ({
-            id: p.accountId,
-            name: p.name.split(' ')[0],
-            top: MAP_POSITIONS[i % MAP_POSITIONS.length].top,
-            left: MAP_POSITIONS[i % MAP_POSITIONS.length].left,
-            onPress: () => navigation.navigate('Business', { providerId: p.accountId }),
-          }))}
-        />
-      )}
-
       <ScrollView contentContainerStyle={styles.list}>
         {error && (
           <Card>
@@ -202,16 +179,21 @@ export default function HomeScreen({ navigation }: Props) {
             <View style={{ flex: 1, gap: 2 }}>
               <View style={styles.nameRow}>
                 <CardTitle style={{ fontSize: 15 }}>{p.name}</CardTitle>
-                {(p.emailVerified || p.identityVerified) && (
+                {/* Only an admin-reviewed identity earns the badge; a verified
+                    email says nothing an owner can rely on. */}
+                {p.identityVerified && (
                   <Tag variant="accent" style={{ paddingVertical: 1, paddingHorizontal: 6 }}>
-                    Verificado ✓
+                    Identidad verificada
                   </Tag>
                 )}
               </View>
-              <CardBody style={{ margin: 0 }}>
-                {p.serviceArea ?? 'Zona sin especificar'}
-                {p.price ? ` · ${money(p.price.amount, p.price.currency)}/paseo` : ''}
-              </CardBody>
+              {(where(p) || p.price) && (
+                <CardBody style={{ margin: 0 }}>
+                  {[where(p), p.price && `${money(p.price.amount, p.price.currency)}/paseo`]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </CardBody>
+              )}
               <View style={styles.tagsRow}>
                 <Tag variant="outline" style={{ paddingVertical: 1, paddingHorizontal: 6 }}>
                   {CATEGORY_LABELS_SINGULAR[p.category]}
@@ -255,7 +237,6 @@ const styles = StyleSheet.create({
   searchInput: { flex: 1, fontFamily: fonts.body, fontSize: 14, color: colors.text, paddingVertical: 10 },
   chipsRow: { flexGrow: 0 },
   chipsRowContent: { paddingHorizontal: space.s4, gap: 6, paddingBottom: space.s2 },
-  segRow: { paddingHorizontal: space.s4, paddingBottom: space.s2 },
   list: { paddingHorizontal: space.s4, gap: space.s3, paddingBottom: space.s4 },
   businessPhoto: { width: 56, height: 56, marginRight: space.s3 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },

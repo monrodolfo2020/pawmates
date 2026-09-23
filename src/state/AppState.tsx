@@ -30,7 +30,6 @@ type State = {
   size: string;
   temperament: string[];
   vaccines: string[];
-  discoverView: 'lista' | 'mapa';
   // Real session against pawmates-backend's Identity Bounded Context.
   authStatus: AuthStatus;
   accountId: string | null;
@@ -64,7 +63,6 @@ type Ctx = State & {
   setSize: (v: string) => void;
   toggleTemperament: (v: string) => void;
   toggleVaccine: (v: string) => void;
-  setDiscoverView: (v: 'lista' | 'mapa') => void;
   signup: (params: {
     email: string;
     password: string;
@@ -131,7 +129,6 @@ const initialState: State = {
   size: 'Mediano',
   temperament: [],
   vaccines: [],
-  discoverView: 'lista',
   authStatus: 'checking',
   accountId: null,
   token: null,
@@ -432,7 +429,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       setSize: (v) => setState((s) => ({ ...s, size: v })),
       toggleTemperament: (v) => setState((s) => ({ ...s, temperament: toggleIn(s.temperament, v) })),
       toggleVaccine: (v) => setState((s) => ({ ...s, vaccines: toggleIn(s.vaccines, v) })),
-      setDiscoverView: (v) => setState((s) => ({ ...s, discoverView: v })),
       pendingLegal: state.pendingLegal,
       refreshPendingLegal,
       signup,

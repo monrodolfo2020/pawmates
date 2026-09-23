@@ -62,14 +62,14 @@ export default function OnboardingScreen({ navigation, route }: Props) {
     }
   };
 
-  const title = isEditingExisting ? 'Tu mascota' : isForcedFirstTime ? 'Cuéntanos de tu perro' : 'Agregar mascota';
+  const title = isEditingExisting ? 'Tu mascota' : isForcedFirstTime ? 'Cuéntanos de tu mascota' : 'Agregar mascota';
   const saveLabel = isEditingExisting ? 'Guardar cambios' : isForcedFirstTime ? 'Guardar y continuar' : 'Agregar mascota';
 
   return (
     <ScreenContainer>
       <View style={styles.header}>
         {isForcedFirstTime ? (
-          <Text style={styles.kicker}>Paso 1 de 1</Text>
+          <Text style={styles.kicker}>Último paso</Text>
         ) : (
           <IconButton onPress={() => (navigation.canGoBack() ? navigation.goBack() : navigation.navigate('Home'))}>
             <ChevronLeft size={18} strokeWidth={1.5} color={colors.text} />
@@ -79,7 +79,8 @@ export default function OnboardingScreen({ navigation, route }: Props) {
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.subtitle}>
-          Con esto encontramos paseadores que encajen con su tamaño y temperamento.
+          Así los negocios que contactes saben a quién van a atender: su tamaño, su carácter y sus
+          vacunas.
         </Text>
 
         <View style={styles.petRow}>

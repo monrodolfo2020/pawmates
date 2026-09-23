@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { ChevronLeft } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -7,13 +7,13 @@ import ScreenContainer from '../components/ScreenContainer';
 import { IconButton } from '../components/Button';
 import Button from '../components/Button';
 import Field from '../components/Field';
-import Tag from '../components/Tag';
 import RadioRow from '../components/RadioRow';
 import Segmented from '../components/Segmented';
 import { CardMeta } from '../components/CardText';
 import { colors, fonts, space } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
-import { bookableDays, dayLabel, slotsFor, slotLabel, atSlot } from '../utils/bookingSlots';
+import { atSlot } from '../utils/bookingSlots';
+import WhenPicker, { chosenSlot, initialWhen } from '../components/WhenPicker';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Booking'>;
 
@@ -29,22 +29,17 @@ export default function BookingScreen({ navigation, route }: Props) {
   const [duration, setDuration] = useState('60');
   const [petId, setPetId] = useState(s.pets[0]?.id ?? '');
 
-  // Built once per visit: "today" shouldn't shift under the owner while
-  // they're choosing.
-  const days = useMemo(() => bookableDays(new Date()), []);
-  const [day, setDay] = useState(days[0]);
-  const slots = useMemo(() => slotsFor(day, new Date()), [day]);
-  const [slot, setSlot] = useState<number | null>(null);
-  const chosenSlot = slot !== null && slots.includes(slot) ? slot : null;
+  const [when, setWhen] = useState(initialWhen);
+  const slot = chosenSlot(when);
 
-  const canContinue = Boolean(petId) && chosenSlot !== null;
+  const canContinue = Boolean(petId) && slot !== null;
 
   const handleContinue = () => {
-    if (!canContinue || chosenSlot === null) return;
+    if (!canContinue || slot === null) return;
     navigation.navigate('Checkout', {
       walkerId,
       petId,
-      scheduledAt: atSlot(day, chosenSlot).toISOString(),
+      scheduledAt: atSlot(when.day, slot).toISOString(),
       durationMinutes: Number(duration),
     });
   };
@@ -79,38 +74,7 @@ export default function BookingScreen({ navigation, route }: Props) {
           </Field>
         )}
 
-        <Field label="Día">
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
-            {days.map((d) => (
-              <Tag
-                key={d.toISOString()}
-                variant={d.getTime() === day.getTime() ? 'accent' : 'outline'}
-                onPress={() => setDay(d)}
-              >
-                {dayLabel(d, new Date())}
-              </Tag>
-            ))}
-          </ScrollView>
-        </Field>
-
-        <Field label="Hora">
-          {slots.length === 0 ? (
-            <CardMeta>Ya no quedan horarios para hoy. Elige otro día.</CardMeta>
-          ) : (
-            <View style={styles.slotGrid}>
-              {slots.map((minutes) => (
-                <Tag
-                  key={minutes}
-                  variant={chosenSlot === minutes ? 'accent' : 'outline'}
-                  onPress={() => setSlot(minutes)}
-                  style={styles.slot}
-                >
-                  {slotLabel(minutes)}
-                </Tag>
-              ))}
-            </View>
-          )}
-        </Field>
+        <WhenPicker value={when} onChange={setWhen} />
 
         <Field label="Duración">
           <Segmented
@@ -141,8 +105,5 @@ const styles = StyleSheet.create({
   },
   title: { fontFamily: fonts.heading, fontSize: 20, color: colors.text },
   scroll: { paddingHorizontal: space.s4, gap: space.s4, paddingBottom: space.s4 },
-  chipRow: { gap: 6 },
-  slotGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  slot: { minWidth: 72, alignItems: 'center' },
   footer: { padding: space.s4 },
 });

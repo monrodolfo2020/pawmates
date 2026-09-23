@@ -103,6 +103,8 @@ export interface BookingSummary {
   ownerId: string;
   ownerName: string | null;
   providerId: string;
+  /** The business's name, for the owner's side of the list. */
+  providerName: string | null;
   status: string;
   scheduledAt: string;
   hasUnreadMessages: boolean;
@@ -270,6 +272,8 @@ export interface ProviderListing {
   slug: string | null;
   photo: string | null;
   serviceArea: string | null;
+  /** A place you visit (vet, groomer), when the business published one. */
+  publicAddress: string | null;
   specialty: string | null;
   price: { amount: number; currency: string } | null;
   plansOffered: string | null;
@@ -802,13 +806,14 @@ export const api = {
   /** Free intro session with a paseador before committing to paid walks —
    * same real request/accept pipeline as createBooking, just tagged with
    * MEET_GREET_SERVICE_TYPE_CODE so the backend prices it at $0. */
-  requestMeetGreet(token: string, petId: string, providerServiceId: string) {
+  requestMeetGreet(token: string, petId: string, providerServiceId: string, scheduledAt: string) {
     return request<BookingResult>('/v1/bookings', {
       method: 'POST',
       token,
       idempotencyKey: uuid(),
       body: {
         providerServiceId,
+        scheduledAt,
         lines: [
           {
             petId,

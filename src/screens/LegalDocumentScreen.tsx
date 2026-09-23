@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet, useWindowDimensions } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, useWindowDimensions, Platform } from 'react-native';
 import { ChevronLeft } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
@@ -63,12 +63,17 @@ export default function LegalDocumentScreen({ navigation, route }: Props) {
   return (
     <ScreenContainer>
       <View style={styles.header}>
-        {/* Opened straight from its own public URL there is nothing to go
-            back to, so the button only appears when there is. */}
-        {navigation.canGoBack() && (
+        {navigation.canGoBack() ? (
           <IconButton onPress={() => navigation.goBack()}>
             <ChevronLeft size={18} strokeWidth={1.5} color={colors.text} />
           </IconButton>
+        ) : (
+          Platform.OS === 'web' && (
+            // Opened from its own public link: the way out is the app.
+            <IconButton onPress={() => window.location.assign('/')}>
+              <ChevronLeft size={18} strokeWidth={1.5} color={colors.text} />
+            </IconButton>
+          )
         )}
         <Text style={styles.title} numberOfLines={1}>
           {document.title}
@@ -76,7 +81,8 @@ export default function LegalDocumentScreen({ navigation, route }: Props) {
       </View>
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={{ width: Math.min(width, READING_MAX_WIDTH) }}>
-          <LegalText markdown={document.body} />
+          {/* The header already names the document. */}
+          <LegalText markdown={document.body.replace(/^# .*\n+/, '')} />
         </View>
       </ScrollView>
     </ScreenContainer>

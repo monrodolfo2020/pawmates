@@ -26,4 +26,31 @@ test('la dueña solicita un paseo, el negocio lo acepta y ella ve la confirmaci�
 
   // The owner's screen notices on its own.
   await expect(page.getByText('¡Paseo confirmado!')).toBeVisible({ timeout: 20_000 });
+
+  // "Tus reservas" says with whom and for which pet.
+  await openAs(page, owner);
+  await page.getByText('Menú', { exact: true }).click();
+  await page.getByText('Reservas', { exact: true }).click();
+  await expect(page.getByText('Próximas')).toBeVisible();
+  await expect(page.getByText(businessName).filter({ visible: true })).toBeVisible();
+  await expect(page.getByText(/Paseo de Toby/).filter({ visible: true })).toBeVisible();
+});
+
+test('"Conócenos primero" pide día y hora, y el negocio la recibe a esa hora', async ({ page, browser }) => {
+  const businessName = uniqueName('Paseos Conocer');
+  const walker = await createWalker({ businessName });
+  const owner = await createOwner();
+
+  await openAs(page, owner);
+  await page.getByText(businessName).first().click();
+  await page.getByText('Conócenos primero').click();
+  const send = page.getByText('Solicitar Meet & Greet');
+  await page.getByText('Mañana', { exact: true }).click();
+  await page.getByText('17:30', { exact: true }).click();
+  await send.click();
+  await expect(page.getByText(/Pediste conocerse el .*17:30/)).toBeVisible();
+
+  const walkerPage = await openInNewContext(browser, walker);
+  await expect(walkerPage.getByText(/Meet & Greet/).first()).toBeVisible();
+  await expect(walkerPage.getByText(/17:30/).first()).toBeVisible();
 });

@@ -79,6 +79,14 @@ export default function BusinessProfileScreen({ navigation, route }: Props) {
 
   const bookable = provider ? isBookable(provider.category) : false;
   const waUrl = provider?.whatsapp ? whatsappUrl(provider.whatsapp, provider.name) : null;
+  // The same "take me there" link the public page has.
+  const mapUrl = provider
+    ? provider.latitude !== null && provider.longitude !== null
+      ? `https://www.google.com/maps/search/?api=1&query=${provider.latitude},${provider.longitude}`
+      : provider.publicAddress
+        ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(provider.publicAddress)}`
+        : null
+    : null;
 
   return (
     <ScreenContainer>
@@ -106,7 +114,6 @@ export default function BusinessProfileScreen({ navigation, route }: Props) {
             </View>
             <View style={styles.badges}>
               {provider.identityVerified && <Tag variant="accent">Identidad verificada ✓</Tag>}
-              {provider.emailVerified && <Tag variant="accent">Correo verificado ✓</Tag>}
               {provider.specialty && <Tag variant="accent">{provider.specialty}</Tag>}
               {provider.price && (
                 <Tag variant="outline">{money(provider.price.amount, provider.price.currency)}/paseo</Tag>
@@ -147,6 +154,11 @@ export default function BusinessProfileScreen({ navigation, route }: Props) {
                   <View style={styles.infoRow}>
                     <MapPin size={16} strokeWidth={1.5} color={colors.accent} />
                     <Text style={styles.infoText}>{provider.publicAddress}</Text>
+                    {mapUrl && (
+                      <Text style={styles.link} onPress={() => void Linking.openURL(mapUrl)}>
+                        Cómo llegar
+                      </Text>
+                    )}
                   </View>
                 )}
                 {provider.hours && (
@@ -181,11 +193,6 @@ export default function BusinessProfileScreen({ navigation, route }: Props) {
                 <Text style={styles.bio}>{provider.walkingSpots}</Text>
               </View>
             )}
-            <View style={styles.hr} />
-            <View style={{ gap: space.s2 }}>
-              <Text style={styles.h5}>Reseñas</Text>
-              <CardMeta>Este negocio todavía no tiene reseñas.</CardMeta>
-            </View>
           </>
         )}
       </ScrollView>
@@ -224,6 +231,7 @@ export default function BusinessProfileScreen({ navigation, route }: Props) {
 }
 
 const styles = StyleSheet.create({
+  link: { fontFamily: fonts.bodyBold, fontSize: 13, color: colors.accent },
   header: { paddingHorizontal: space.s3, paddingVertical: space.s2 },
   scroll: { paddingHorizontal: space.s4, gap: space.s4, paddingBottom: space.s4 },
   hero: {

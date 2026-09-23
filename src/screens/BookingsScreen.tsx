@@ -37,6 +37,9 @@ const WALK_LINK: Record<string, string> = {
   completed: 'Ver resumen',
 };
 
+/** Not over yet: listed under "Próximas". */
+const ACTIVE = new Set(['requested', 'accepted', 'confirmed', 'in_progress']);
+
 /** Still on the calendar — either side can call it off until it starts. */
 const CANCELLABLE = new Set(['requested', 'confirmed']);
 
@@ -70,6 +73,67 @@ export default function BookingsScreen({ navigation }: Props) {
     }
   };
 
+  // Still ahead (or happening now) first, soonest on top; then the rest,
+  // most recent first.
+  const upcoming = (bookings ?? [])
+    .filter((b) => ACTIVE.has(b.status))
+    .sort((x, y) => x.scheduledAt.localeCompare(y.scheduledAt));
+  const past = (bookings ?? [])
+    .filter((b) => !ACTIVE.has(b.status))
+    .sort((x, y) => y.scheduledAt.localeCompare(x.scheduledAt));
+
+  const renderCard = (b: BookingSummary) => {
+    const tint = STATUS_TINT[b.status] ?? { bg: colors.panel, border: colors.divider, text: colors.neutral600 };
+    const isMeetGreet = b.lines.some((l) => l.serviceTypeCode === MEET_GREET_SERVICE_TYPE_CODE);
+    // Whoever is on the other side of this booking.
+    const other = b.ownerId === s.accountId ? b.providerName : b.ownerName;
+    const pets = b.lines.map((l) => l.petName?.split(' · ')[0]).filter(Boolean).join(', ');
+    return (
+      <View key={b.id} style={styles.card}>
+        <View style={styles.rowBetween}>
+          <Text style={styles.who} numberOfLines={1}>
+            {other ?? 'Negocio'}
+          </Text>
+          <View style={[styles.statusTag, { backgroundColor: tint.bg, borderColor: tint.border }]}>
+            <Text style={[styles.statusTagText, { color: tint.text }]}>
+              {BOOKING_STATUS_LABELS[b.status as BookingStatusCode] ?? b.status}
+            </Text>
+          </View>
+        </View>
+        <Text style={styles.date}>
+          {isMeetGreet ? 'Meet & Greet' : 'Paseo'}
+          {pets ? ` de ${pets}` : ''} · {formatWhen(b.scheduledAt)}
+        </Text>
+        {isMeetGreet ? (
+          <Text style={styles.mutedBody}>Sin costo</Text>
+        ) : (
+          b.priceBreakdown && (
+            <Text style={styles.mutedBody}>
+              Tarifa: {money(b.priceBreakdown.rateAmount, b.priceBreakdown.currency)} · se paga directo al negocio
+            </Text>
+          )
+        )}
+        {!isMeetGreet && WALK_LINK[b.status] && (
+          <Pressable
+            style={[styles.cancelBtn, styles.walkBtn]}
+            onPress={() => navigation.navigate('Live', { bookingId: b.id })}
+          >
+            <Text style={[styles.cancelBtnText, styles.walkBtnText]}>{WALK_LINK[b.status]}</Text>
+          </Pressable>
+        )}
+        {CANCELLABLE.has(b.status) && (
+          <Pressable
+            style={styles.cancelBtn}
+            disabled={cancellingId === b.id}
+            onPress={() => void cancel(b.id)}
+          >
+            <Text style={styles.cancelBtnText}>{cancellingId === b.id ? 'Cancelando…' : 'Cancelar'}</Text>
+          </Pressable>
+        )}
+      </View>
+    );
+  };
+
   return (
     <ScreenContainer>
       <View style={styles.root}>
@@ -82,50 +146,10 @@ export default function BookingsScreen({ navigation }: Props) {
         <ScrollView contentContainerStyle={styles.body}>
           {error && <Text style={styles.error}>{error}</Text>}
           {bookings?.length === 0 && <Text style={styles.mutedBody}>Todavía no tienes reservas.</Text>}
-          {bookings?.map((b) => {
-            const tint = STATUS_TINT[b.status] ?? { bg: colors.panel, border: colors.divider, text: colors.neutral600 };
-            const isMeetGreet = b.lines.some((l) => l.serviceTypeCode === MEET_GREET_SERVICE_TYPE_CODE);
-            return (
-              <View key={b.id} style={styles.card}>
-                <View style={styles.rowBetween}>
-                  <Text style={styles.date}>{formatWhen(b.scheduledAt)}</Text>
-                  <View style={[styles.statusTag, { backgroundColor: tint.bg, borderColor: tint.border }]}>
-                    <Text style={[styles.statusTagText, { color: tint.text }]}>
-                      {BOOKING_STATUS_LABELS[b.status as BookingStatusCode] ?? b.status}
-                    </Text>
-                  </View>
-                </View>
-                {isMeetGreet ? (
-                  <Text style={styles.mutedBody}>Meet & Greet — sin costo</Text>
-                ) : (
-                  b.priceBreakdown && (
-                    <Text style={styles.mutedBody}>
-                      Tarifa: {money(b.priceBreakdown.rateAmount, b.priceBreakdown.currency)} · se paga directo al negocio
-                    </Text>
-                  )
-                )}
-                {!isMeetGreet && WALK_LINK[b.status] && (
-                  <Pressable
-                    style={[styles.cancelBtn, styles.walkBtn]}
-                    onPress={() => navigation.navigate('Live', { bookingId: b.id })}
-                  >
-                    <Text style={[styles.cancelBtnText, styles.walkBtnText]}>{WALK_LINK[b.status]}</Text>
-                  </Pressable>
-                )}
-                {CANCELLABLE.has(b.status) && (
-                  <Pressable
-                    style={styles.cancelBtn}
-                    disabled={cancellingId === b.id}
-                    onPress={() => void cancel(b.id)}
-                  >
-                    <Text style={styles.cancelBtnText}>
-                      {cancellingId === b.id ? 'Cancelando…' : 'Cancelar'}
-                    </Text>
-                  </Pressable>
-                )}
-              </View>
-            );
-          })}
+          {upcoming.length > 0 && <Text style={styles.sectionTitle}>Próximas</Text>}
+          {upcoming.map(renderCard)}
+          {past.length > 0 && <Text style={styles.sectionTitle}>Anteriores</Text>}
+          {past.map(renderCard)}
         </ScrollView>
       </View>
     </ScreenContainer>
@@ -145,7 +169,9 @@ const styles = StyleSheet.create({
   mutedBody: { fontFamily: fonts.body, fontSize: 13.5, color: colors.neutral600 },
   card: { padding: 16, borderRadius: radius.lg, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.divider, gap: 6 },
   rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  date: { fontFamily: fonts.bodySemiBold, fontSize: 14.5, color: colors.text },
+  who: { flex: 1, fontFamily: fonts.bodyBold, fontSize: 15.5, color: colors.text },
+  sectionTitle: { fontFamily: fonts.heading, fontSize: 17, color: colors.text, marginTop: 8 },
+  date: { fontFamily: fonts.bodyMedium, fontSize: 13.5, color: colors.text },
   statusTag: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: radius.pill, borderWidth: 1 },
   statusTagText: { fontFamily: fonts.bodySemiBold, fontSize: 11 },
   cancelBtn: {

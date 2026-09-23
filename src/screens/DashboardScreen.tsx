@@ -183,7 +183,7 @@ export default function DashboardScreen({ navigation }: Props) {
               </Pressable>
               <View>
                 <Text style={styles.kicker}>Mi negocio</Text>
-                <Text style={styles.title}>Hola, {businessName}</Text>
+                <Text style={styles.title}>{businessName}</Text>
               </View>
             </View>
             <View style={{ flexDirection: 'row', gap: 8 }}>
@@ -314,13 +314,13 @@ export default function DashboardScreen({ navigation }: Props) {
               </Pressable>
 
               <View style={styles.earningsCard}>
-                <Text style={styles.earningsKicker}>Ingresos esta semana</Text>
+                <Text style={styles.earningsKicker}>Ingresos estimados esta semana</Text>
                 <Text style={styles.earnings}>
                   {summary ? money(summary.earnings.amount, summary.earnings.currency) : '—'}
                 </Text>
                 <Text style={styles.earningsMeta}>
                   {summary
-                    ? `${summary.completedThisWeek} paseo${summary.completedThisWeek === 1 ? '' : 's'} completado${summary.completedThisWeek === 1 ? '' : 's'}`
+                    ? `${summary.completedThisWeek} paseo${summary.completedThisWeek === 1 ? '' : 's'} completado${summary.completedThisWeek === 1 ? '' : 's'} · según tu tarifa, te pagan directo`
                     : 'Cargando…'}
                 </Text>
               </View>
