@@ -43,6 +43,12 @@ export default function AdminScreen({ navigation }: Props) {
   const [codes, setCodes] = useState<PlanCode[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Waiting-for-approval first: those are the ones that need the admin.
+  const sortedBusinesses = [...(businesses ?? [])].sort(
+    (a, b) => Number(a.approvedAt !== null) - Number(b.approvedAt !== null),
+  );
+  const pendingBusinesses = (businesses ?? []).filter((b) => b.approvedAt === null).length;
+
   const load = () => {
     if (!s.token) return;
     Promise.all([
@@ -101,13 +107,27 @@ export default function AdminScreen({ navigation }: Props) {
         {section === 'negocios' && (
           <View style={{ gap: space.s2 }}>
             <Text style={styles.h5}>Negocios ({businesses?.length ?? '…'})</Text>
+            {pendingBusinesses > 0 && (
+              <Card style={styles.pendingBanner}>
+                <CardBody style={{ margin: 0 }}>
+                  {pendingBusinesses === 1
+                    ? '1 negocio espera tu aprobación'
+                    : `${pendingBusinesses} negocios esperan tu aprobación`}
+                </CardBody>
+                <CardMeta>
+                  Ya pueden entrar y preparar su página, pero no aparecen en el directorio y su enlace
+                  no abre hasta que los apruebes. Al aprobarlos les llega un correo con su enlace y su
+                  código QR.
+                </CardMeta>
+              </Card>
+            )}
             <CardMeta>
               Para un negocio que ya pagó, lo normal es generarle un código en la pestaña Códigos:
               queda registrado qué se vendió y por cuánto tiempo. Activar VIP desde aquí es una
               cortesía sin vencimiento. Quitarlo no borra su diseño, solo deja de mostrarlo.
             </CardMeta>
             {businesses?.length === 0 && <CardMeta>No hay negocios registrados.</CardMeta>}
-            {businesses?.map((b) => (
+            {sortedBusinesses.map((b) => (
               <BusinessRow key={b.accountId} business={b} onChange={load} />
             ))}
           </View>
@@ -308,6 +328,33 @@ function BusinessRow({ business: b, onChange }: { business: AdminBusiness; onCha
   // backend's effective answer and the button still offers to grant one.
   const vip = b.isVip;
   const lapsed = b.plan === 'vip' && !b.isVip;
+  const approved = b.approvedAt !== null;
+  const [emailNote, setEmailNote] = useState<string | null>(null);
+
+  const setApproval = async (next: boolean) => {
+    if (!s.token) return;
+    setBusy(true);
+    setError(null);
+    setEmailNote(null);
+    try {
+      const result = await api.adminSetBusinessApproval(s.token, b.accountId, next);
+      // The approval stands whether or not the email went out; this only
+      // tells the admin whether they need to pass the link on themselves.
+      if (result.email?.sent) {
+        setEmailNote(`Le enviamos a ${b.email} su enlace y su código QR.`);
+      } else if (result.email && !result.email.sent) {
+        setEmailNote(
+          `Quedó aprobado, pero el correo no salió: ${result.email.reason ?? 'error desconocido'} ` +
+            'Pásale su enlace por otro medio.',
+        );
+      }
+      onChange();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo cambiar la aprobación.');
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const setPlan = async () => {
     if (!s.token) return;
@@ -334,20 +381,42 @@ function BusinessRow({ business: b, onChange }: { business: AdminBusiness; onCha
       <CardBody>{b.name ?? 'Sin nombre'}</CardBody>
       <View style={styles.wrapRow}>
         <Tag variant="outline">{CATEGORY_LABELS_SINGULAR[b.category]}</Tag>
+        <Tag variant={approved ? 'accent' : 'outline'}>
+          {approved ? 'Aprobado ✓' : 'Pendiente de aprobación'}
+        </Tag>
         <Tag variant={b.isPublished ? 'accent' : 'outline'}>
-          {b.isPublished ? 'Publicada ✓' : 'Sin publicar'}
+          {b.isPublished ? 'Página completa' : 'Página incompleta'}
         </Tag>
         {b.slug && <Tag variant="outline">/s/{b.slug}</Tag>}
       </View>
+      {!approved && !b.isPublished && (
+        <CardMeta>
+          Puedes aprobarlo ya: su página aparecerá en cuanto la complete, y el correo le dirá qué le
+          falta.
+        </CardMeta>
+      )}
+      {!approved && (
+        <Button variant="primary" blueprint disabled={busy} onPress={() => void setApproval(true)}>
+          {busy ? 'Aprobando…' : 'Aprobar y enviarle su enlace'}
+        </Button>
+      )}
+      {emailNote && <CardMeta style={{ color: colors.text }}>{emailNote}</CardMeta>}
       {b.planExpiresAt && (
         <CardMeta>
           {vip ? 'Vence' : 'Venció'} el {new Date(b.planExpiresAt).toLocaleDateString('es-MX')}
         </CardMeta>
       )}
       {error && <CardMeta style={{ color: colors.accent }}>{error}</CardMeta>}
-      <Button variant={vip ? 'secondary' : 'primary'} blueprint={!vip} disabled={busy} onPress={() => void setPlan()}>
-        {busy ? 'Guardando…' : vip ? 'Quitar VIP' : 'Activar VIP'}
-      </Button>
+      {approved && (
+        <View style={{ flexDirection: 'row', gap: space.s2 }}>
+          <Button variant={vip ? 'secondary' : 'primary'} blueprint={!vip} style={{ flex: 1 }} disabled={busy} onPress={() => void setPlan()}>
+            {busy ? 'Guardando…' : vip ? 'Quitar VIP' : 'Activar VIP'}
+          </Button>
+          <Button variant="ghost" style={{ flex: 1 }} disabled={busy} onPress={() => void setApproval(false)}>
+            Retirar aprobación
+          </Button>
+        </View>
+      )}
     </Card>
   );
 }
@@ -434,6 +503,7 @@ const styles = StyleSheet.create({
   verificationPhoto: { width: '100%', aspectRatio: 1, backgroundColor: colors.accent100 },
   photoMissing: { alignItems: 'center', justifyContent: 'center', padding: space.s2 },
   photoMissingText: { fontFamily: fonts.body, fontSize: 11.5, color: colors.textMuted70, textAlign: 'center' },
+  pendingBanner: { borderColor: colors.accent, backgroundColor: colors.accent100 },
   codeText: { fontFamily: fonts.heading, fontSize: 20, letterSpacing: 2, color: colors.text },
   noteInput: {
     paddingHorizontal: space.s3, paddingVertical: 10,

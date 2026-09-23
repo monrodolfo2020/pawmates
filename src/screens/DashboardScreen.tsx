@@ -129,7 +129,9 @@ export default function DashboardScreen({ navigation }: Props) {
   const avatarTint = vividTintFor(businessName);
   const photo = profile?.photo ?? null;
   const url = profile?.slug ? micrositeUrl(profile.slug) : null;
-  const published = profile?.isPublished ?? false;
+  const approved = profile?.approvedAt != null;
+  // Visitors see the page only once it's complete and approved.
+  const published = (profile?.isPublished ?? false) && approved;
   const missing = profile ? missingToPublish(profile) : [];
 
   const copyLink = async () => {
@@ -231,15 +233,21 @@ export default function DashboardScreen({ navigation }: Props) {
             <>
               <View style={styles.pageCard}>
                 <Text style={styles.earningsKicker}>
-                  {published ? 'Tu página está en línea' : 'Tu página todavía no es visible'}
+                  {published
+                    ? 'Tu página está en línea'
+                    : !approved
+                      ? 'Tu negocio está en revisión'
+                      : 'Tu página todavía no es visible'}
                 </Text>
                 <Text style={styles.pageCardTitle}>{businessName}</Text>
                 <Text style={styles.earningsMeta}>
                   {published
                     ? url ?? ''
-                    : missing.length
-                      ? `Falta ${listInSpanish(missing)}.`
-                      : 'Completa tu página para publicarla.'}
+                    : !approved
+                      ? 'Prepara tu página mientras la revisamos. Te avisamos por correo, con tu enlace y tu QR, en cuanto esté en línea.'
+                      : missing.length
+                        ? `Falta ${listInSpanish(missing)}.`
+                        : 'Completa tu página para publicarla.'}
                 </Text>
               </View>
 

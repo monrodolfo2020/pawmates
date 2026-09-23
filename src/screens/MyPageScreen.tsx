@@ -14,6 +14,7 @@ import Tag from '../components/Tag';
 import MicrositeView from '../components/MicrositeView';
 import PageDesignEditor from '../components/PageDesignEditor';
 import PlanCard from '../components/PlanCard';
+import QrCard from '../components/QrCard';
 import { colors, fonts, radius, space } from '../theme/tokens';
 import { api, MyProviderProfile, PageDesign, ProviderDetail } from '../api/client';
 import { listInSpanish, missingToPublish } from '../utils/pageStatus';
@@ -83,7 +84,11 @@ export default function MyPageScreen({ navigation }: Props) {
 
   const url = profile?.slug ? micrositeUrl(profile.slug) : null;
   const isVip = profile?.isVip ?? false;
-  const published = profile?.isPublished ?? false;
+  const complete = profile?.isPublished ?? false;
+  const approved = profile?.approvedAt != null;
+  // What visitors see is complete *and* approved; the share link and the
+  // QR would lead to a page that doesn't open until both are true.
+  const published = complete && approved;
   const missing = profile ? missingToPublish(profile) : [];
   // Either an edit that hasn't been saved yet, or one saved as a draft
   // that hasn't been published — both mean "the live page is behind".
@@ -155,11 +160,18 @@ export default function MyPageScreen({ navigation }: Props) {
                 <View style={styles.rowStart}>
                   {isVip && <Tag variant="accent">VIP</Tag>}
                   <Tag variant={published ? 'accent' : 'outline'}>
-                    {published ? 'Publicada ✓' : 'Sin publicar'}
+                    {published ? 'Publicada ✓' : !approved ? 'En revisión' : 'Sin publicar'}
                   </Tag>
                 </View>
               </View>
-              {!published && (
+              {!approved && (
+                <CardMeta>
+                  Estamos revisando tu negocio. Mientras tanto puedes preparar tu página; nadie más la
+                  ve todavía. Te avisaremos por correo, con tu enlace y tu código QR, en cuanto esté en
+                  línea.
+                </CardMeta>
+              )}
+              {!complete && (
                 <CardMeta>
                   {missing.length
                     ? `Falta ${listInSpanish(missing)} para que tu página sea visible.`
@@ -221,6 +233,8 @@ export default function MyPageScreen({ navigation }: Props) {
                 </CardMeta>
               </Card>
             )}
+
+            {published && profile?.slug && <QrCard slug={profile.slug} />}
 
             <Button variant="secondary" block blueprint onPress={() => navigation.navigate('ProviderProfileEdit')}>
               Editar mi página

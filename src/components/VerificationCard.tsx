@@ -88,12 +88,16 @@ export default function VerificationCard({ onOpenConsent }: Props) {
       <Card>
         <View style={styles.row}>
           <Clock size={18} strokeWidth={1.5} color={colors.accent} />
-          <CardBody style={{ margin: 0, flex: 1 }}>Verificación en revisión</CardBody>
-          <Tag variant="outline">En revisión</Tag>
+          <CardBody style={{ margin: 0, flex: 1 }}>Identidad: fotos recibidas</CardBody>
+          <Tag variant="outline">Revisando</Tag>
         </View>
+        {/* Deliberately says nothing about whether the page is live: that
+            depends on the business being approved, which is a separate
+            review with its own card, and saying "your page works as
+            normal" here contradicted it. */}
         <CardMeta>
-          Recibimos tus fotos y una persona de nuestro equipo las está revisando. Tu página funciona
-          con normalidad mientras tanto.
+          Estamos revisando tus fotos de identificación. Cuando las aprobemos, tu página mostrará la
+          insignia de identidad verificada.
         </CardMeta>
       </Card>
     );

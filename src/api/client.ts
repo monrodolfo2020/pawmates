@@ -6,6 +6,12 @@ import { uuid } from './uuid';
 // `npm run start:pawmates-api:dev` there.
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'https://pawmates-backend-black.vercel.app';
 
+/** The PNG of a business's QR code — the same image the approval email
+ * links to, usable directly as an <Image> source or a download. */
+export function micrositeQrUrl(slug: string): string {
+  return `${API_URL}/v1/providers/by-slug/${encodeURIComponent(slug)}/qr.png`;
+}
+
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -431,6 +437,9 @@ export interface MyProviderProfile {
   age: number | null;
   phone: string | null;
   isPublished: boolean;
+  /** null while an admin hasn't approved the business yet: its page is
+   * complete or not, but nobody else can see it. */
+  approvedAt: string | null;
   plan: BusinessPlan;
   /** Whether VIP is actually in force — always prefer this over
    * `plan === 'vip'`, which stays 'vip' after a plan lapses. */
@@ -453,6 +462,8 @@ export interface AdminBusiness {
   isVip: boolean;
   planExpiresAt: string | null;
   isPublished: boolean;
+  /** null while the business waits for an admin's approval. */
+  approvedAt: string | null;
   createdAt: string;
 }
 
@@ -668,6 +679,22 @@ export const api = {
     params: { period: BillingPeriod; note?: string; maxUses?: number },
   ) {
     return request<PlanCode>('/v1/admin/plan-codes', { method: 'POST', token, body: params });
+  },
+
+  /** Approves a business to appear publicly, or takes that back. The
+   * business is emailed its link and QR on approval; `email` says whether
+   * that went out, and why not if it didn't. */
+  adminSetBusinessApproval(token: string, accountId: string, approved: boolean) {
+    return request<{
+      accountId: string;
+      approvedAt: string | null;
+      isPublished: boolean;
+      email: { sent: boolean; reason?: string } | null;
+    }>(`/v1/admin/businesses/${accountId}/approval`, {
+      method: 'PATCH',
+      token,
+      body: { approved },
+    });
   },
 
   adminListBusinesses(token: string) {
