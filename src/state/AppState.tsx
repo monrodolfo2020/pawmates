@@ -13,7 +13,6 @@ import {
   ServiceCategory,
   TripDetail,
 } from '../api/client';
-import { BASE_PRICE } from './mockData';
 
 export type BookingStatus =
   | 'idle'
@@ -39,10 +38,6 @@ type State = {
   temperament: string[];
   vaccines: string[];
   discoverView: 'lista' | 'mapa';
-  days: string[];
-  time: string;
-  tip: number;
-  payment: string;
   // Real session against pawmates-backend's Identity Bounded Context.
   authStatus: AuthStatus;
   accountId: string | null;
@@ -78,12 +73,6 @@ type Ctx = State & {
   toggleTemperament: (v: string) => void;
   toggleVaccine: (v: string) => void;
   setDiscoverView: (v: 'lista' | 'mapa') => void;
-  toggleDay: (v: string) => void;
-  setTime: (v: string) => void;
-  setTip: (v: number) => void;
-  setPayment: (v: string) => void;
-  tipAmount: number;
-  total: number;
   signup: (params: {
     email: string;
     password: string;
@@ -121,10 +110,14 @@ type Ctx = State & {
   /** Creates a new pet, or updates the one loadPetDraft() last pointed
    * at (editingPetId) — see that field's comment. */
   savePet: () => Promise<void>;
-  /** petId defaults to the owner's first pet when omitted — every
-   * existing caller before the pet selector (BookingScreen) relied on
-   * that, and it's still a sane fallback for a single-pet owner. */
-  createBooking: (durationMinutes: number, providerServiceId: string, petId?: string) => Promise<void>;
+  /** Sends the request to the business. petId defaults to the owner's
+   * first pet when omitted (a single-pet owner never sees the picker). */
+  createBooking: (params: {
+    providerServiceId: string;
+    durationMinutes: number;
+    scheduledAt: string;
+    petId?: string;
+  }) => Promise<void>;
   startTrip: () => Promise<void>;
   completeTrip: () => Promise<void>;
   refreshTrip: () => Promise<void>;
@@ -140,7 +133,7 @@ const toggleIn = (list: string[], value: string) =>
   list.includes(value) ? list.filter((x) => x !== value) : [...list, value];
 
 // Also used to wipe the slate on logout — without this, a booking/pet
-// draft typed by one account (name, breed, tip %, payment label, ...)
+// draft typed by one account (name, breed, photo, ...)
 // stayed in memory and showed up as if it belonged to the next account
 // signed into in the same browser tab.
 const initialState: State = {
@@ -152,10 +145,6 @@ const initialState: State = {
   temperament: [],
   vaccines: [],
   discoverView: 'lista',
-  days: ['Lun', 'Mié', 'Vie'],
-  time: '8:00 am',
-  tip: 15,
-  payment: 'Tarjeta •• 4482',
   authStatus: 'checking',
   accountId: null,
   token: null,
@@ -406,7 +395,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
-  const createBooking = useCallback(async (durationMinutes: number, providerServiceId: string, petId?: string) => {
+  const createBooking = useCallback<Ctx['createBooking']>(async ({ providerServiceId, durationMinutes, scheduledAt, petId }) => {
     setState((s) => ({ ...s, bookingStatus: 'creating', bookingError: null }));
     try {
       const { token, pets } = stateRef.current;
@@ -414,7 +403,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       if (!token || !resolvedPetId) {
         throw new Error('Agrega primero los datos de tu mascota.');
       }
-      const booking = await api.createBooking(token, resolvedPetId, providerServiceId, durationMinutes);
+      const booking = await api.createBooking(token, resolvedPetId, providerServiceId, durationMinutes, scheduledAt);
       setState((s) => ({ ...s, bookingId: booking.id, bookingStatus: 'created' }));
     } catch (err) {
       setState((s) => ({
@@ -517,8 +506,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   );
 
   const value = useMemo<Ctx>(() => {
-    const tipAmount = BASE_PRICE * (state.tip / 100);
-    const total = BASE_PRICE + tipAmount;
     return {
       ...state,
       setPetPhoto: (v) =>
@@ -529,10 +516,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       toggleTemperament: (v) => setState((s) => ({ ...s, temperament: toggleIn(s.temperament, v) })),
       toggleVaccine: (v) => setState((s) => ({ ...s, vaccines: toggleIn(s.vaccines, v) })),
       setDiscoverView: (v) => setState((s) => ({ ...s, discoverView: v })),
-      toggleDay: (v) => setState((s) => ({ ...s, days: toggleIn(s.days, v) })),
-      setTime: (v) => setState((s) => ({ ...s, time: v })),
-      setTip: (v) => setState((s) => ({ ...s, tip: v })),
-      setPayment: (v) => setState((s) => ({ ...s, payment: v })),
       pendingLegal: state.pendingLegal,
       refreshPendingLegal,
       signup,
@@ -551,8 +534,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       logWalkEvent,
       sendChatMessage,
       refreshMessages,
-      tipAmount,
-      total,
     };
   }, [
     state,

@@ -42,7 +42,8 @@ export type RootStackParamList = {
   MyPage: undefined;
   MeetGreet: { walkerId: string };
   Booking: { walkerId: string };
-  Checkout: { walkerId: string };
+  /** Everything the owner chose on Booking; nothing has been sent yet. */
+  Checkout: { walkerId: string; petId: string; scheduledAt: string; durationMinutes: number };
   Live: { walkerId: string };
   Chat: { bookingId: string };
   Dashboard: undefined;

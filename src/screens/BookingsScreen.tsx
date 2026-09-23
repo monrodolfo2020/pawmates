@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { ChevronLeft } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -7,6 +7,7 @@ import ScreenContainer from '../components/ScreenContainer';
 import { api, BookingSummary, MEET_GREET_SERVICE_TYPE_CODE } from '../api/client';
 import { vividColors as v, vividFonts as vf, vividRadius as vr } from '../theme/vividTokens';
 import { useAppState } from '../state/AppState';
+import { formatWhen } from '../utils/bookingSlots';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Bookings'>;
 
@@ -30,20 +31,41 @@ const STATUS_TINT: Record<string, { bg: string; border: string; text: string }> 
   rejected: { bg: v.roseTint, border: v.roseTintLine, text: v.rose },
 };
 
-const money = (cents: number, currency: string) => `${(cents / 100).toFixed(2)} ${currency}`;
+const money = (cents: number, currency: string) =>
+  '$' + (cents / 100).toFixed(2).replace(/\.00$/, '') + ' ' + currency;
+
+/** Still on the calendar — either side can call it off until it starts. */
+const CANCELLABLE = new Set(['requested', 'confirmed']);
 
 export default function BookingsScreen({ navigation }: Props) {
   const s = useAppState();
   const [bookings, setBookings] = useState<BookingSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
 
-  useEffect(() => {
+  const load = useCallback(() => {
     if (!s.token) return;
     api
       .listBookings(s.token)
       .then(setBookings)
       .catch((err) => setError(err instanceof Error ? err.message : 'No se pudieron cargar tus reservas.'));
   }, [s.token]);
+
+  useEffect(load, [load]);
+
+  const cancel = async (id: string) => {
+    if (!s.token) return;
+    setCancellingId(id);
+    setError(null);
+    try {
+      await api.cancelBooking(s.token, id);
+      load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo cancelar.');
+    } finally {
+      setCancellingId(null);
+    }
+  };
 
   return (
     <ScreenContainer>
@@ -63,7 +85,7 @@ export default function BookingsScreen({ navigation }: Props) {
             return (
               <View key={b.id} style={styles.card}>
                 <View style={styles.rowBetween}>
-                  <Text style={styles.date}>{new Date(b.scheduledAt).toLocaleString()}</Text>
+                  <Text style={styles.date}>{formatWhen(b.scheduledAt)}</Text>
                   <View style={[styles.statusTag, { backgroundColor: tint.bg, borderColor: tint.border }]}>
                     <Text style={[styles.statusTagText, { color: tint.text }]}>
                       {STATUS_LABEL[b.status] ?? b.status}
@@ -74,8 +96,21 @@ export default function BookingsScreen({ navigation }: Props) {
                   <Text style={styles.mutedBody}>Meet & Greet — sin costo</Text>
                 ) : (
                   b.priceBreakdown && (
-                    <Text style={styles.mutedBody}>Total: {money(b.priceBreakdown.totalAmount, b.priceBreakdown.currency)}</Text>
+                    <Text style={styles.mutedBody}>
+                      Tarifa: {money(b.priceBreakdown.rateAmount, b.priceBreakdown.currency)} · se paga directo al negocio
+                    </Text>
                   )
+                )}
+                {CANCELLABLE.has(b.status) && (
+                  <Pressable
+                    style={styles.cancelBtn}
+                    disabled={cancellingId === b.id}
+                    onPress={() => void cancel(b.id)}
+                  >
+                    <Text style={styles.cancelBtnText}>
+                      {cancellingId === b.id ? 'Cancelando…' : 'Cancelar'}
+                    </Text>
+                  </Pressable>
                 )}
               </View>
             );
@@ -102,4 +137,9 @@ const styles = StyleSheet.create({
   date: { fontFamily: vf.bodySemiBold, fontSize: 14.5, color: v.ink },
   statusTag: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: vr.pill, borderWidth: 1 },
   statusTagText: { fontFamily: vf.bodySemiBold, fontSize: 11 },
+  cancelBtn: {
+    alignSelf: 'flex-start', marginTop: 4, paddingHorizontal: 14, paddingVertical: 7,
+    borderRadius: vr.pill, borderWidth: 1, borderColor: v.line,
+  },
+  cancelBtnText: { fontFamily: vf.bodySemiBold, fontSize: 12.5, color: v.ink },
 });

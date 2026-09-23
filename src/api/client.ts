@@ -113,7 +113,7 @@ export interface BookingSummary {
     durationUnit: string;
     serviceTypeCode: string;
   }[];
-  priceBreakdown: { totalAmount: number; currency: string } | null;
+  priceBreakdown: { rateAmount: number; totalAmount: number; currency: string } | null;
 }
 
 export interface BookingWeekSummary {
@@ -725,22 +725,23 @@ export const api = {
     );
   },
 
-  /** A single immediate booking (durationValue in minutes) — this demo skips
-   * the recurring-schedule endpoint since "Live paseo" only makes sense for
-   * a walk starting now, not one scheduled for a future day.
-   *
-   * providerServiceId is the selected walker's id (see mockData.ts's
-   * walkers) — the backend's FakeMarketplaceAdapter treats it directly as
-   * the provider's account id (no real Marketplace/rate-card lookup yet).
-   * Each walker needs its own id here so two different walkers' schedules
-   * don't collide with each other in the no-double-booking check. */
-  createBooking(token: string, petId: string, providerServiceId: string, durationValue: number) {
+  /** One walk request, at the date and time the owner picked
+   * (scheduledAt, ISO). providerServiceId is the business's account id;
+   * the backend prices it at that business's own published rate. */
+  createBooking(
+    token: string,
+    petId: string,
+    providerServiceId: string,
+    durationValue: number,
+    scheduledAt: string,
+  ) {
     return request<BookingResult>('/v1/bookings', {
       method: 'POST',
       token,
       idempotencyKey: uuid(),
       body: {
         providerServiceId,
+        scheduledAt,
         lines: [
           {
             petId,
@@ -808,6 +809,16 @@ export const api = {
     return request<BookingResult>(`/v1/bookings/${bookingId}/reject`, {
       method: 'POST',
       token,
+      body: { reason },
+    });
+  },
+
+  /** Either side can call off a booking that hasn't started. */
+  cancelBooking(token: string, bookingId: string, reason?: string) {
+    return request<BookingResult>(`/v1/bookings/${bookingId}/cancel`, {
+      method: 'POST',
+      token,
+      idempotencyKey: uuid(),
       body: { reason },
     });
   },

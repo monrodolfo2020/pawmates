@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { ChevronLeft } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -6,33 +6,52 @@ import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
 import { IconButton } from '../components/Button';
 import Button from '../components/Button';
-import Field from '../components/Field';
-import Tag from '../components/Tag';
-import RadioRow from '../components/RadioRow';
 import Card from '../components/Card';
-import { CardBody } from '../components/CardText';
+import { CardBody, CardKicker, CardMeta } from '../components/CardText';
 import { colors, fonts, space } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
-import { api } from '../api/client';
-import { tipOptions, paymentOptions, BASE_PRICE } from '../state/mockData';
+import { api, ProviderDetail } from '../api/client';
+import { formatWhen } from '../utils/bookingSlots';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Checkout'>;
 
-const money = (n: number) => `$${n.toFixed(2)}`;
+const money = (cents: number, currency: string) =>
+  '$' + (cents / 100).toFixed(2).replace(/\.00$/, '') + ' ' + currency;
 
 const POLL_INTERVAL_MS = 4000;
 
-// The paseador decides from their own Dashboard, not this screen — see
-// BookingController.accept/reject on the backend. Sending the request
-// (below) leaves the booking at 'requested'; this screen then just waits
-// and polls until it sees 'confirmed' (accepted) or 'cancelled' (rejected).
-type Phase = 'review' | 'waiting' | 'rejected';
+// review    — nothing sent yet; the owner is looking at what they'll ask for.
+// waiting   — sent; the business decides from their own Dashboard (see
+//             BookingController.accept/reject), this screen polls for it.
+// confirmed / rejected / cancelled — the answer.
+type Phase = 'review' | 'waiting' | 'confirmed' | 'rejected' | 'cancelled';
 
+/**
+ * The summary before a walk request goes out. PawMates doesn't take
+ * payments or a commission — the owner pays the business directly, as
+ * the two of them agree (Términos para dueños §8; Acuerdo de prestadores
+ * 3.3) — so this shows the business's own published rate and says so,
+ * rather than a checkout.
+ */
 export default function CheckoutScreen({ navigation, route }: Props) {
   const s = useAppState();
-  const serviceFee = 54.4; // MXN (converted from $3.20 USD at ~17 MXN/USD)
+  const { walkerId, petId, scheduledAt, durationMinutes } = route.params;
+  const [business, setBusiness] = useState<ProviderDetail | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [phase, setPhase] = useState<Phase>('review');
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelError, setCancelError] = useState<string | null>(null);
+
+  const pet = s.pets.find((p) => p.id === petId);
+  const name = business?.name ?? 'el negocio';
+  const sending = s.bookingStatus === 'creating';
+
+  useEffect(() => {
+    api
+      .getProvider(s.token, walkerId)
+      .then(setBusiness)
+      .catch((err) => setLoadError(err instanceof Error ? err.message : 'No se pudo cargar el negocio.'));
+  }, [s.token, walkerId]);
 
   useEffect(() => {
     if (phase !== 'waiting') return;
@@ -41,45 +60,97 @@ export default function CheckoutScreen({ navigation, route }: Props) {
       if (!token || !bookingId) return;
       try {
         const booking = await api.getBooking(token, bookingId);
-        if (booking.status === 'confirmed' || booking.status === 'in_progress') {
-          navigation.navigate('Live', { walkerId: route.params.walkerId });
-        } else if (booking.status === 'cancelled') {
-          setPhase('rejected');
-        }
+        if (booking.status === 'confirmed' || booking.status === 'in_progress') setPhase('confirmed');
+        else if (booking.status === 'cancelled') setPhase('rejected');
       } catch {
         // Transient — the next tick tries again.
       }
     };
     void poll();
-    pollRef.current = setInterval(() => void poll(), POLL_INTERVAL_MS);
-    return () => {
-      if (pollRef.current) clearInterval(pollRef.current);
-      pollRef.current = null;
-    };
+    const timer = setInterval(() => void poll(), POLL_INTERVAL_MS);
+    return () => clearInterval(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
-  const handleConfirm = () => setPhase('waiting');
+  const send = async () => {
+    try {
+      await s.createBooking({ providerServiceId: walkerId, durationMinutes, scheduledAt, petId });
+      setPhase('waiting');
+    } catch {
+      // s.bookingError is shown below; stay on the summary.
+    }
+  };
 
-  if (phase === 'waiting' || phase === 'rejected') {
+  const cancel = async () => {
+    if (!s.token || !s.bookingId) return;
+    setCancelling(true);
+    setCancelError(null);
+    try {
+      await api.cancelBooking(s.token, s.bookingId, 'Cancelada por el dueño');
+      setPhase('cancelled');
+    } catch (err) {
+      setCancelError(err instanceof Error ? err.message : 'No se pudo cancelar.');
+    } finally {
+      setCancelling(false);
+    }
+  };
+
+  if (phase !== 'review') {
+    const copy: Record<Exclude<Phase, 'review'>, { title: string; body: string }> = {
+      waiting: {
+        title: 'Solicitud enviada',
+        body: `Le enviamos tu solicitud a ${name}. Puedes cerrar esta pantalla: su respuesta aparecerá en "Tus reservas".`,
+      },
+      confirmed: {
+        title: '¡Paseo confirmado!',
+        body: `${name} aceptó tu solicitud para el ${formatWhen(scheduledAt)}. Acuerden por el chat los detalles y la forma de pago.`,
+      },
+      rejected: {
+        title: 'Solicitud no aceptada',
+        body: `${name} no puede atender esta solicitud. Puedes pedir otro horario o buscar otro negocio.`,
+      },
+      cancelled: {
+        title: 'Cancelado',
+        body: `Cancelaste tu solicitud con ${name}. Si ya habían acordado algo por el chat, avísale por ahí.`,
+      },
+    };
+    const canCancel = phase === 'waiting' || phase === 'confirmed';
     return (
       <ScreenContainer>
         <View style={styles.header}>
-          <Text style={styles.title}>{phase === 'waiting' ? 'Esperando confirmación' : 'Solicitud rechazada'}</Text>
+          <Text style={styles.title}>{copy[phase].title}</Text>
         </View>
         <View style={styles.waitingBody}>
           <Card>
-            <CardBody>
-              {phase === 'waiting'
-                ? 'Enviamos tu solicitud al paseador. En cuanto la confirme, empezamos el paseo — no cierres esta pantalla.'
-                : 'El paseador no pudo aceptar esta solicitud. Puedes buscar otro paseador disponible.'}
-            </CardBody>
+            <CardBody>{copy[phase].body}</CardBody>
           </Card>
+          {cancelError && <CardMeta style={{ color: colors.accent }}>{cancelError}</CardMeta>}
         </View>
         <View style={styles.footer}>
-          <Button variant="secondary" block blueprint onPress={() => navigation.navigate('Home')}>
-            {phase === 'waiting' ? 'Volver al inicio' : 'Buscar otro paseador'}
-          </Button>
+          {phase === 'confirmed' && s.bookingId ? (
+            <Button
+              variant="primary"
+              block
+              blueprint
+              onPress={() => navigation.navigate('Chat', { bookingId: s.bookingId! })}
+            >
+              Abrir chat
+            </Button>
+          ) : (
+            <Button variant="primary" block blueprint onPress={() => navigation.navigate('Bookings')}>
+              Ver mis reservas
+            </Button>
+          )}
+          {canCancel && (
+            <Button variant="secondary" block blueprint disabled={cancelling} onPress={() => void cancel()}>
+              {cancelling ? 'Cancelando…' : phase === 'confirmed' ? 'Cancelar paseo' : 'Cancelar solicitud'}
+            </Button>
+          )}
+          {!canCancel && (
+            <Button variant="secondary" block blueprint onPress={() => navigation.navigate('Home')}>
+              Volver al inicio
+            </Button>
+          )}
         </View>
       </ScreenContainer>
     );
@@ -91,73 +162,72 @@ export default function CheckoutScreen({ navigation, route }: Props) {
         <IconButton onPress={() => navigation.goBack()}>
           <ChevronLeft size={18} strokeWidth={1.5} color={colors.text} />
         </IconButton>
-        <Text style={styles.title}>Resumen y pago</Text>
+        <Text style={styles.title}>Revisa tu solicitud</Text>
       </View>
       <ScrollView contentContainerStyle={styles.scroll}>
+        {loadError && <CardMeta style={{ color: colors.accent }}>{loadError}</CardMeta>}
+
         <Card>
-          <View style={styles.row}>
-            <Text style={styles.rowText}>Tarifa (3 paseos/sem × $306)</Text>
-            <Text style={styles.rowText}>{money(BASE_PRICE)}</Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={styles.rowText}>Comisión de servicio</Text>
-            <Text style={styles.rowText}>{money(serviceFee)}</Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={styles.rowText}>Propina ({s.tip}%)</Text>
-            <Text style={styles.rowText}>{money(s.tipAmount)}</Text>
-          </View>
+          <Row label="Negocio" value={business?.name ?? '…'} />
+          <Row label="Mascota" value={pet ? `${pet.name} · ${pet.breed}` : '—'} />
+          <Row label="Cuándo" value={formatWhen(scheduledAt)} />
+          <Row label="Duración" value={`${durationMinutes} min`} />
           <View style={styles.hr} />
-          <View style={styles.row}>
-            <Text style={styles.totalText}>Total semanal</Text>
-            <Text style={styles.totalText}>{money(s.total)}</Text>
-          </View>
+          <Row
+            label="Tarifa publicada"
+            value={business?.price ? `${money(business.price.amount, business.price.currency)} por paseo` : 'Por acordar'}
+            strong
+          />
         </Card>
 
-        <Field label="Propina para Camila">
-          <View style={styles.tipRow}>
-            {tipOptions.map((v) => (
-              <Tag
-                key={v}
-                variant={s.tip === v ? 'accent' : 'outline'}
-                onPress={() => s.setTip(v)}
-                style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
-              >
-                {v}%
-              </Tag>
-            ))}
-          </View>
-        </Field>
+        <Card>
+          <CardKicker>Cómo se paga</CardKicker>
+          <CardBody>
+            PawMates no cobra este paseo ni ninguna comisión. El precio final, la forma de pago y
+            cualquier propina los acuerdas directamente con {name}.
+          </CardBody>
+        </Card>
 
-        <Field label="Método de pago">
-          <View>
-            {paymentOptions.map((p) => (
-              <RadioRow key={p} label={p} selected={s.payment === p} onPress={() => s.setPayment(p)} />
-            ))}
-          </View>
-        </Field>
+        <CardMeta>
+          Al enviar, {name} recibe tu solicitud y puede aceptarla o rechazarla. Mientras no empiece
+          el paseo puedes cancelarla desde la app.
+        </CardMeta>
+
+        {s.bookingStatus === 'error' && s.bookingError && (
+          <CardMeta style={{ color: colors.accent }}>{s.bookingError}</CardMeta>
+        )}
       </ScrollView>
       <View style={styles.footer}>
-        <Button variant="primary" block blueprint onPress={handleConfirm}>
-          Enviar solicitud
+        <Button variant="primary" block blueprint disabled={sending || !business} onPress={() => void send()}>
+          {sending ? 'Enviando…' : 'Enviar solicitud'}
         </Button>
       </View>
     </ScreenContainer>
   );
 }
 
+function Row({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
+  return (
+    <View style={styles.row}>
+      <Text style={strong ? styles.rowStrong : styles.rowLabel}>{label}</Text>
+      <Text style={[strong ? styles.rowStrong : styles.rowText, styles.rowValue]}>{value}</Text>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  waitingBody: { paddingHorizontal: space.s4, paddingTop: space.s2, flex: 1 },
+  waitingBody: { paddingHorizontal: space.s4, paddingTop: space.s2, flex: 1, gap: space.s3 },
   header: {
     paddingHorizontal: space.s3, paddingVertical: space.s2,
     flexDirection: 'row', alignItems: 'center', gap: space.s3,
   },
   title: { fontFamily: fonts.heading, fontSize: 20, color: colors.text },
   scroll: { paddingHorizontal: space.s4, gap: space.s4, paddingBottom: space.s4 },
-  row: { flexDirection: 'row', justifyContent: 'space-between' },
+  row: { flexDirection: 'row', justifyContent: 'space-between', gap: space.s3, paddingVertical: 3 },
+  rowLabel: { fontFamily: fonts.body, fontSize: 13, color: colors.textMuted70 },
   rowText: { fontFamily: fonts.body, fontSize: 13, color: colors.text },
+  rowValue: { flexShrink: 1, textAlign: 'right' },
+  rowStrong: { fontFamily: fonts.heading, fontSize: 15, color: colors.text },
   hr: { height: 1, backgroundColor: colors.divider, marginVertical: 6 },
-  totalText: { fontFamily: fonts.heading, fontSize: 17, color: colors.text },
-  tipRow: { flexDirection: 'row', gap: 6 },
-  footer: { padding: space.s4 },
+  footer: { padding: space.s4, gap: space.s2 },
 });
