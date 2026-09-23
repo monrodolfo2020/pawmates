@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   image: { width: '100%', height: '100%' },
-  label: { fontFamily: fonts.body, fontSize: 11, color: colors.textMuted },
+  label: { fontFamily: fonts.bodyMedium, fontSize: 12, color: colors.textMuted },
   editBadge: {
     position: 'absolute', bottom: 4, right: 4, width: 22, height: 22, borderRadius: 11,
     backgroundColor: colors.accentPressed, alignItems: 'center', justifyContent: 'center',

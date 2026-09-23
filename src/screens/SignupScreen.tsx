@@ -82,6 +82,21 @@ export default function SignupScreen({ navigation, route }: Props) {
     generalDocuments.every((t) => versionOf(t));
   const canSubmit = !!email && passwordsReady && !missingProviderPhotos && legalReady;
 
+  // A business signs up in three short steps instead of one long form:
+  // what the business is, the account, then identity and documents. An
+  // owner has only the account part, so theirs stays a single screen.
+  const isProvider = role === 'provider';
+  const [step, setStep] = useState(0);
+  const emailLooksValid = /^\S+@\S+\.\S+$/.test(email.trim());
+  const stepReady = [
+    businessName.trim().length > 0,
+    emailLooksValid && passwordsReady,
+    canSubmit,
+  ];
+  const lastStep = isProvider ? PROVIDER_STEPS.length - 1 : 0;
+  const onLastStep = step === lastStep;
+  const show = (which: number) => !isProvider || step === which;
+
   const handleSubmit = async () => {
     const acceptedLegal: AcceptedLegal[] = generalDocuments
       .map((type) => ({ type, version: versionOf(type)! }))
@@ -98,8 +113,8 @@ export default function SignupScreen({ navigation, route }: Props) {
         password,
         role,
         name: name.trim() || undefined,
-        category: role === 'provider' ? category : undefined,
-        businessName: role === 'provider' ? businessName.trim() || undefined : undefined,
+        category: isProvider ? category : undefined,
+        businessName: isProvider ? businessName.trim() || undefined : undefined,
         facePhoto: facePhoto?.base64 ?? undefined,
         idDocumentPhoto: idPhoto?.base64 ?? undefined,
         profilePhoto: profilePhoto?.base64 ?? undefined,
@@ -112,13 +127,59 @@ export default function SignupScreen({ navigation, route }: Props) {
     }
   };
 
+  const goBack = () => (isProvider && step > 0 ? setStep(step - 1) : navigation.goBack());
+
+  const legalCard = (
+    <Card>
+      <CardTitle>Antes de crear tu cuenta</CardTitle>
+      <LegalAcceptRow checked={acceptedTerms} onToggle={() => setAcceptedTerms((v) => !v)}>
+        He leído y acepto el{' '}
+        <LegalLink onPress={() => openDocument('privacy_notice')}>Aviso de Privacidad</LegalLink>
+        {' y '}
+        {isProvider ? (
+          <LegalLink onPress={() => openDocument('provider_agreement')}>
+            el Acuerdo de Prestadores de Servicios
+          </LegalLink>
+        ) : (
+          <LegalLink onPress={() => openDocument('owner_terms')}>los Términos y Condiciones</LegalLink>
+        )}
+        .
+      </LegalAcceptRow>
+
+      {needsVerificationConsent && (
+        <LegalAcceptRow checked={acceptedVerification} onToggle={() => setAcceptedVerification((v) => !v)}>
+          Consiento expresamente que se traten mi fotografía y la de mi documento de identificación
+          para verificar mi identidad, conforme al{' '}
+          <LegalLink onPress={() => openDocument('identity_verification_consent')}>
+            consentimiento de verificación
+          </LegalLink>
+          .
+        </LegalAcceptRow>
+      )}
+
+      {documents?.length === 0 && (
+        <CardMeta>No pudimos cargar los documentos legales. Revisa tu conexión e inténtalo de nuevo.</CardMeta>
+      )}
+    </Card>
+  );
+
   return (
     <ScreenContainer>
-      <ScreenHeader onBack={() => navigation.goBack()} title={role === 'provider' ? 'Registra tu negocio' : 'Crea tu cuenta'}
-        subtitle={role === 'provider' ? 'Consigue tu página y aparece en el directorio.' : 'Para reservar y escribirles a los negocios.'}
+      <ScreenHeader
+        onBack={goBack}
+        kicker={isProvider ? `Paso ${step + 1} de ${PROVIDER_STEPS.length}` : undefined}
+        title={isProvider ? PROVIDER_STEPS[step].title : 'Crea tu cuenta'}
+        subtitle={isProvider ? PROVIDER_STEPS[step].subtitle : 'Para reservar y escribirles a los negocios.'}
       />
-      <ScrollView contentContainerStyle={styles.body}>
-        {role === 'provider' && (
+      {isProvider && (
+        <View style={styles.progress} accessibilityElementsHidden>
+          {PROVIDER_STEPS.map((st, i) => (
+            <View key={st.title} style={[styles.progressBar, i <= step && styles.progressBarDone]} />
+          ))}
+        </View>
+      )}
+      <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
+        {isProvider && show(0) && (
           <>
             <Field label="¿Qué tipo de negocio tienes?">
               <View style={styles.categoryRow}>
@@ -136,41 +197,62 @@ export default function SignupScreen({ navigation, route }: Props) {
               placeholder="Ej. Veterinaria San Ángel"
               autoCapitalize="words"
             />
+            <Field label="Foto o logo para tu página (opcional)">
+              <View style={styles.pagePhotoRow}>
+                <PhotoPicker
+                  uri={profilePhoto?.uri ?? null}
+                  onChange={setProfilePhoto}
+                  style={styles.pagePhoto}
+                  label="Agregar"
+                  alertTitle="Foto de tu página"
+                />
+                <Text style={[styles.note, { flex: 1 }]}>
+                  Es lo que verán en tu página y en el directorio. Puedes cambiarla cuando quieras.
+                </Text>
+              </View>
+            </Field>
           </>
         )}
 
-        <TextField label="Nombre" value={name} onChangeText={setName} placeholder="Tu nombre" autoCapitalize="words" />
-        <TextField
-          label="Correo"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          placeholder="tu@correo.com"
-        />
-        <TextField
-          label="Contraseña"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          placeholder="Mínimo 8 caracteres"
-        />
-        <TextField
-          label="Confirma la contraseña"
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-          secureTextEntry
-          placeholder="Escríbela otra vez"
-        />
-        {passwordsMismatch && (
-          <Text style={styles.mismatch}>Las contraseñas no coinciden.</Text>
+        {show(1) && (
+          <>
+            <TextField
+              label={isProvider ? 'Tu nombre' : 'Nombre'}
+              value={name}
+              onChangeText={setName}
+              placeholder="Tu nombre"
+              autoCapitalize="words"
+            />
+            <TextField
+              label="Correo"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              placeholder="tu@correo.com"
+            />
+            <TextField
+              label="Contraseña"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              placeholder="Mínimo 8 caracteres"
+            />
+            <TextField
+              label="Confirma la contraseña"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              secureTextEntry
+              placeholder="Escríbela otra vez"
+            />
+            {passwordsMismatch && <Text style={styles.mismatch}>Las contraseñas no coinciden.</Text>}
+          </>
         )}
 
-        {role === 'provider' && (
-          <View style={{ gap: space.s2 }}>
+        {isProvider && show(2) && (
+          <>
             <Text style={styles.note}>
-              Para registrar tu negocio necesitamos verificar tu identidad: una foto de tu cara y
-              una foto de tu documento. La verificación automática llega más adelante — por ahora
-              tu cuenta queda marcada como "pendiente" hasta que se revise.
+              Una foto de tu cara y una de tu identificación. Las revisa una persona del equipo y
+              después se borran: solo guardamos el resultado.
             </Text>
             <View style={styles.photoRow}>
               <View style={{ flex: 1 }}>
@@ -184,104 +266,59 @@ export default function SignupScreen({ navigation, route }: Props) {
                 </Field>
               </View>
               <View style={{ flex: 1 }}>
-                <Field label="Foto de tu documento">
+                <Field label="Foto de tu identificación">
                   <PhotoPicker
                     uri={idPhoto?.uri ?? null}
                     onChange={setIdPhoto}
                     style={styles.photoBox}
-                    alertTitle="Foto de tu documento"
+                    alertTitle="Foto de tu identificación"
                   />
                 </Field>
               </View>
             </View>
-
-            <View style={{ gap: space.s2 }}>
-              <Text style={styles.note}>
-                Esta otra foto es la que verán en tu página y en el directorio — puedes usar la
-                misma de tu cara, el logo de tu negocio o cualquier otra, y cambiarla después.
-              </Text>
-              <View style={styles.photoRow}>
-                <View style={{ flex: 1 }}>
-                  <Field label="Foto de tu página">
-                    <PhotoPicker
-                      uri={profilePhoto?.uri ?? null}
-                      onChange={setProfilePhoto}
-                      style={styles.photoBox}
-                      alertTitle="Foto de tu página"
-                    />
-                  </Field>
-                </View>
-                <View style={{ flex: 1, justifyContent: 'flex-end' }}>
-                  <Button
-                    variant="secondary"
-                    disabled={!facePhoto?.base64}
-                    onPress={() => facePhoto && setProfilePhoto(facePhoto)}
-                  >
-                    Usar esta fotografía
-                  </Button>
-                </View>
-              </View>
-            </View>
-          </View>
+            {facePhoto?.base64 && !profilePhoto && (
+              <Button variant="ghost" onPress={() => setProfilePhoto(facePhoto)}>
+                Usar también esta foto en mi página
+              </Button>
+            )}
+          </>
         )}
 
-        <Card>
-          <CardTitle>Antes de crear tu cuenta</CardTitle>
-          <LegalAcceptRow checked={acceptedTerms} onToggle={() => setAcceptedTerms((v) => !v)}>
-            He leído y acepto el{' '}
-            <LegalLink onPress={() => openDocument('privacy_notice')}>
-              Aviso de Privacidad
-            </LegalLink>
-            {' y '}
-            {role === 'provider' ? (
-              <LegalLink onPress={() => openDocument('provider_agreement')}>
-                el Acuerdo de Prestadores de Servicios
-              </LegalLink>
-            ) : (
-              <LegalLink onPress={() => openDocument('owner_terms')}>
-                los Términos y Condiciones
-              </LegalLink>
-            )}
-            .
-          </LegalAcceptRow>
-
-          {needsVerificationConsent && (
-            <LegalAcceptRow
-              checked={acceptedVerification}
-              onToggle={() => setAcceptedVerification((v) => !v)}
-            >
-              Consiento expresamente que se traten mi fotografía y la de mi documento de
-              identificación para verificar mi identidad, conforme al{' '}
-              <LegalLink onPress={() => openDocument('identity_verification_consent')}>
-                consentimiento de verificación
-              </LegalLink>
-              .
-            </LegalAcceptRow>
-          )}
-
-          {documents?.length === 0 && (
-            <CardMeta>
-              No pudimos cargar los documentos legales. Revisa tu conexión e inténtalo de nuevo.
-            </CardMeta>
-          )}
-        </Card>
+        {onLastStep && legalCard}
 
         {s.authError && <Notice tone="danger">{s.authError}</Notice>}
       </ScrollView>
       <BottomBar>
-        <Button variant="primary" block disabled={submitting || !canSubmit} onPress={handleSubmit}>
-          {submitting ? 'Creando cuenta…' : 'Crear cuenta'}
-        </Button>
+        {onLastStep ? (
+          <Button variant="primary" block disabled={submitting || !canSubmit} onPress={handleSubmit}>
+            {submitting ? 'Creando cuenta…' : 'Crear cuenta'}
+          </Button>
+        ) : (
+          <Button variant="primary" block disabled={!stepReady[step]} onPress={() => setStep(step + 1)}>
+            Siguiente
+          </Button>
+        )}
       </BottomBar>
     </ScreenContainer>
   );
 }
 
+const PROVIDER_STEPS = [
+  { title: 'Tu negocio', subtitle: 'Así aparecerás en el directorio.' },
+  { title: 'Tu cuenta', subtitle: 'Con este correo y contraseña entrarás a tu panel.' },
+  { title: 'Verifica tu identidad', subtitle: 'Para que los dueños sepan que eres quien dices ser.' },
+];
+
 const styles = StyleSheet.create({
-  body: { paddingHorizontal: space.s4, gap: space.s4, paddingBottom: space.s4 },
-  note: { ...type.meta },
+  body: { paddingHorizontal: space.s4, gap: space.s4, paddingBottom: space.s6 },
+  note: { ...type.small },
   mismatch: { fontFamily: fonts.bodyMedium, fontSize: 13, color: colors.danger, marginTop: -space.s2 },
+  progress: { flexDirection: 'row', gap: space.s1, paddingHorizontal: space.s4, paddingBottom: space.s4 },
+  progressBar: { flex: 1, height: 4, borderRadius: 2, backgroundColor: colors.panel },
+  progressBarDone: { backgroundColor: colors.accent },
   photoRow: { flexDirection: 'row', gap: space.s3 },
   categoryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s2 },
   photoBox: { width: '100%', aspectRatio: 1 },
+  pagePhotoRow: { flexDirection: 'row', alignItems: 'center', gap: space.s4 },
+  pagePhoto: { width: 88, height: 88 },
 });
