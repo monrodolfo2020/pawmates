@@ -10,9 +10,24 @@ export class ApiError extends Error {
   constructor(
     message: string,
     public readonly retryable: boolean,
+    public readonly code?: string,
   ) {
     super(message);
   }
+}
+
+/**
+ * Called when the server says this account was suspended or deleted.
+ *
+ * Tokens don't expire, so this can happen in the middle of a session,
+ * on any request, from any screen. Without a single place to catch it,
+ * every screen would just start showing errors and the person would
+ * never learn why. AppState registers itself here to sign out and say
+ * so on the login screen.
+ */
+let onAccountDisabled: ((message: string) => void) | null = null;
+export function setAccountDisabledHandler(handler: ((message: string) => void) | null) {
+  onAccountDisabled = handler;
 }
 
 async function request<T>(
@@ -38,10 +53,10 @@ async function request<T>(
 
   const json = await res.json().catch(() => null);
   if (!res.ok) {
-    throw new ApiError(
-      json?.error?.message ?? `Error ${res.status} al llamar ${path}`,
-      Boolean(json?.error?.retryable),
-    );
+    const message = json?.error?.message ?? `Error ${res.status} al llamar ${path}`;
+    const code = json?.error?.code as string | undefined;
+    if (code === 'auth.account_disabled' && options.token) onAccountDisabled?.(message);
+    throw new ApiError(message, Boolean(json?.error?.retryable), code);
   }
   return json?.data as T;
 }
@@ -142,6 +157,9 @@ export interface AdminAccount {
   email: string;
   name: string | null;
   roles: Role[];
+  emailVerified: boolean;
+  /** When an admin suspended it; null while active. */
+  disabledAt: string | null;
   createdAt: string;
 }
 
@@ -604,6 +622,31 @@ export const api = {
     return request<{ plan: BusinessPlan; isVip: boolean; expiresAt: string }>(
       '/v1/billing/redeem',
       { method: 'POST', token, body: { code } },
+    );
+  },
+
+  adminUpdateAccount(token: string, id: string, params: { name?: string; email?: string }) {
+    return request<AdminAccount>(`/v1/admin/accounts/${id}`, {
+      method: 'PATCH',
+      token,
+      body: params,
+    });
+  },
+
+  adminSetAccountEnabled(token: string, id: string, enabled: boolean) {
+    return request<AdminAccount>(`/v1/admin/accounts/${id}/status`, {
+      method: 'PATCH',
+      token,
+      body: { enabled },
+    });
+  },
+
+  /** Permanent. `confirmEmail` must be the account's own email — the
+   * server checks it too. */
+  adminDeleteAccount(token: string, id: string, confirmEmail: string) {
+    return request<{ accountId: string; email: string; photosDeleted: number }>(
+      `/v1/admin/accounts/${id}`,
+      { method: 'DELETE', token, body: { confirmEmail } },
     );
   },
 

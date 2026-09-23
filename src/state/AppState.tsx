@@ -2,6 +2,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   api,
+  setAccountDisabledHandler,
   AcceptedLegal,
   AuthResult,
   ChatMessage,
@@ -316,6 +317,17 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const logout = useCallback(async () => {
     await AsyncStorage.removeItem(SESSION_KEY);
     setState({ ...initialState, authStatus: 'guest' });
+  }, []);
+
+  // A suspension can arrive on any request, mid-session. Rather than let
+  // every screen fail on its own, sign out once and say why — the login
+  // screen already shows authError.
+  useEffect(() => {
+    setAccountDisabledHandler((message) => {
+      void AsyncStorage.removeItem(SESSION_KEY);
+      setState({ ...initialState, authStatus: 'guest', authError: message });
+    });
+    return () => setAccountDisabledHandler(null);
   }, []);
 
   const addRole = useCallback(

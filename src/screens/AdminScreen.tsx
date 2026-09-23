@@ -10,6 +10,7 @@ import Segmented from '../components/Segmented';
 import Card from '../components/Card';
 import { CardKicker, CardBody, CardMeta } from '../components/CardText';
 import Tag from '../components/Tag';
+import AdminAccountCard from '../components/AdminAccountCard';
 import {
   api,
   AdminAccount,
@@ -92,15 +93,7 @@ export default function AdminScreen({ navigation }: Props) {
           <View style={{ gap: space.s2 }}>
             <Text style={styles.h5}>Cuentas ({accounts?.length ?? '…'})</Text>
             {accounts?.map((a) => (
-              <Card key={a.id}>
-                <CardKicker style={{ margin: 0 }}>{a.email}</CardKicker>
-                <CardBody>{a.name ?? 'Sin nombre'}</CardBody>
-                <View style={styles.wrapRow}>
-                  {a.roles.map((r) => (
-                    <Tag key={r} variant="outline">{r}</Tag>
-                  ))}
-                </View>
-              </Card>
+              <AdminAccountCard key={a.id} account={a} selfId={s.accountId} onChanged={load} />
             ))}
           </View>
         )}
