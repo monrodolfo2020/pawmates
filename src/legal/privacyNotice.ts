@@ -11,9 +11,10 @@ export const privacyNotice = `# Aviso de Privacidad — PawMates
 
 ## 1. Quién es responsable de tus datos
 
-\`[[RAZÓN SOCIAL COMPLETA]]\` ("PawMates"), con domicilio en
-\`[[DOMICILIO FISCAL COMPLETO]]\` y correo de contacto
-\`[[CORREO DE PRIVACIDAD]]\`, es responsable del tratamiento de tus datos
+[[NOMBRE COMPLETO DEL TITULAR]] ("PawMates"), persona física con
+actividad empresarial, con Registro Federal de Contribuyentes
+**MOGR730915PB1**, domicilio en Privada Carpe 32, Paseo Arboleda, Santín, C.P. 50214, Toluca, Estado de México y
+correo de contacto **rmonterrozag@gmail.com**, es responsable del tratamiento de tus datos
 personales, en términos de la legislación mexicana en materia de
 protección de datos personales en posesión de los particulares.
 
@@ -178,7 +179,7 @@ que eso afecte tu cuenta**:
 4. Elaborar estadísticas y análisis internos que nos permitan mejorar el
    producto.
 
-**Cómo negarte:** escribe a \`[[CORREO DE PRIVACIDAD]]\` indicando a qué
+**Cómo negarte:** escribe a **rmonterrozag@gmail.com** indicando a qué
 finalidad adicional te opones, o usa el ajuste correspondiente en tu
 cuenta cuando esté disponible. Si no manifiestas tu negativa dentro de
 los **cinco días hábiles** siguientes a que este Aviso se ponga a tu
@@ -274,7 +275,7 @@ Además de tus derechos de la sección 8, puedes:
 - **Limitar** el uso o divulgación de tus datos.
 
 **8.2. Cómo solicitarlo.** Envía tu solicitud a
-\`[[CORREO DE PRIVACIDAD]]\`. Para poder atenderla necesitamos que
+**rmonterrozag@gmail.com**. Para poder atenderla necesitamos que
 incluyas:
 
 a) tu nombre y un medio para comunicarte la respuesta;
@@ -381,7 +382,7 @@ diseñado para recabar datos de menores**. No aceptamos registros de
 menores de edad. Si detectamos una cuenta de un menor, la
 suspenderemos y eliminaremos sus datos. Si eres madre, padre o tutor y
 consideras que un menor nos proporcionó datos, escríbenos a
-\`[[CORREO DE PRIVACIDAD]]\` y los eliminaremos.
+**rmonterrozag@gmail.com** y los eliminaremos.
 
 ---
 
@@ -410,7 +411,7 @@ materia de protección de datos personales, que a la fecha de este Aviso
 es \`[[AUTORIDAD COMPETENTE]]\`, en \`[[MEDIO / SITIO DE LA AUTORIDAD]]\`.
 
 Te agradeceríamos la oportunidad de resolverlo primero contigo:
-escríbenos a \`[[CORREO DE PRIVACIDAD]]\`.
+escríbenos a **rmonterrozag@gmail.com**.
 
 ---
 

@@ -17,9 +17,10 @@
 
 ## 1. Quién es responsable de tus datos
 
-`[[RAZÓN SOCIAL COMPLETA]]` ("PawMates"), con domicilio en
-`[[DOMICILIO FISCAL COMPLETO]]` y correo de contacto
-`[[CORREO DE PRIVACIDAD]]`, es responsable del tratamiento de tus datos
+[[NOMBRE COMPLETO DEL TITULAR]] ("PawMates"), persona física con
+actividad empresarial, con Registro Federal de Contribuyentes
+**MOGR730915PB1**, domicilio en Privada Carpe 32, Paseo Arboleda, Santín, C.P. 50214, Toluca, Estado de México y
+correo de contacto **rmonterrozag@gmail.com**, es responsable del tratamiento de tus datos
 personales, en términos de la legislación mexicana en materia de
 protección de datos personales en posesión de los particulares.
 
@@ -184,7 +185,7 @@ que eso afecte tu cuenta**:
 4. Elaborar estadísticas y análisis internos que nos permitan mejorar el
    producto.
 
-**Cómo negarte:** escribe a `[[CORREO DE PRIVACIDAD]]` indicando a qué
+**Cómo negarte:** escribe a **rmonterrozag@gmail.com** indicando a qué
 finalidad adicional te opones, o usa el ajuste correspondiente en tu
 cuenta cuando esté disponible. Si no manifiestas tu negativa dentro de
 los **cinco días hábiles** siguientes a que este Aviso se ponga a tu
@@ -280,7 +281,7 @@ Además de tus derechos de la sección 8, puedes:
 - **Limitar** el uso o divulgación de tus datos.
 
 **8.2. Cómo solicitarlo.** Envía tu solicitud a
-`[[CORREO DE PRIVACIDAD]]`. Para poder atenderla necesitamos que
+**rmonterrozag@gmail.com**. Para poder atenderla necesitamos que
 incluyas:
 
 a) tu nombre y un medio para comunicarte la respuesta;
@@ -387,7 +388,7 @@ diseñado para recabar datos de menores**. No aceptamos registros de
 menores de edad. Si detectamos una cuenta de un menor, la
 suspenderemos y eliminaremos sus datos. Si eres madre, padre o tutor y
 consideras que un menor nos proporcionó datos, escríbenos a
-`[[CORREO DE PRIVACIDAD]]` y los eliminaremos.
+**rmonterrozag@gmail.com** y los eliminaremos.
 
 ---
 
@@ -416,7 +417,7 @@ materia de protección de datos personales, que a la fecha de este Aviso
 es `[[AUTORIDAD COMPETENTE]]`, en `[[MEDIO / SITIO DE LA AUTORIDAD]]`.
 
 Te agradeceríamos la oportunidad de resolverlo primero contigo:
-escríbenos a `[[CORREO DE PRIVACIDAD]]`.
+escríbenos a **rmonterrozag@gmail.com**.
 
 ---
 
@@ -438,7 +439,7 @@ solicita por separado y de forma expresa, conforme a la sección 4.
 *Para mostrar en la pantalla de registro, junto a la casilla de
 aceptación y con un enlace al Aviso completo.*
 
-> **Tus datos en PawMates.** `[[RAZÓN SOCIAL]]` es responsable de tus
+> **Tus datos en PawMates.** [[NOMBRE COMPLETO DEL TITULAR]] es responsable de tus
 > datos personales. Usamos tu nombre y correo para tu cuenta; si eres un
 > negocio, publicamos la información y las fotos que tú cargues en tu
 > página pública; si eres paseador, registramos tu ubicación solo
@@ -461,7 +462,7 @@ casilla propia, distinta de la del registro.*
 > visualmente para confirmar que corresponden a la misma persona. **No
 > las publicamos, no las usamos para reconocimiento facial automatizado
 > y no las compartimos con otros usuarios.** Puedes retirarlas cuando
-> quieras escribiendo a `[[CORREO DE PRIVACIDAD]]`.
+> quieras escribiendo a **rmonterrozag@gmail.com**.
 >
 > `[ ]` **Consiento expresamente** el tratamiento de estas dos imágenes
 > para la finalidad descrita, en los términos de la sección 4 del Aviso
@@ -539,6 +540,20 @@ legislación mexicana ha exigido tradicionalmente, que es la que
 razonablemente subsiste, pero **esto tiene que verificarse contra el
 texto en vigor**, y es la razón principal por la que este documento no
 debe publicarse sin revisión.
+
+## ⚠️ Tu domicilio queda público
+
+El domicilio que aparece en la sección 1 es el que me diste, y parece
+ser **particular**. La ley exige que el aviso de privacidad incluya la
+identidad y el domicilio del responsable, así que ese dato **va a ser
+público**: cualquiera que abra
+`https://pawmates-one.vercel.app/aviso-de-privacidad` lo verá, y lo
+mismo con tu nombre completo.
+
+No es un error, es cómo funciona. Pero si prefieres no publicar dónde
+vives, la salida habitual es dar de alta un domicilio fiscal distinto
+—una oficina virtual o un despacho contable— y usar ese en los tres
+documentos. Dímelo y lo cambio en un minuto.
 
 ## Preguntas concretas para tu abogado
 

@@ -32,10 +32,11 @@ lo que PawMates sí hace y lo que expresamente no hace por ti.
 
 Celebran este Acuerdo:
 
-**1.1.** `[[RAZÓN SOCIAL COMPLETA]]`, con Registro Federal de
-Contribuyentes `[[RFC]]` y domicilio en `[[DOMICILIO FISCAL COMPLETO]]`,
-titular y operadora de la plataforma digital PawMates, a quien en lo
-sucesivo se le denominará **"PawMates"** o **"la Plataforma"**.
+**1.1.** [[NOMBRE COMPLETO DEL TITULAR]], persona física con actividad
+empresarial, con Registro Federal de Contribuyentes **MOGR730915PB1** y
+domicilio en Privada Carpe 32, Paseo Arboleda, Santín, C.P. 50214, Toluca, Estado de México, quien opera la plataforma
+digital PawMates y a quien en lo sucesivo se le denominará
+**"PawMates"** o **"la Plataforma"**.
 
 **1.2.** La persona física o moral que se registra en la Plataforma con
 el carácter de negocio o prestador de servicios para mascotas, a quien
@@ -665,7 +666,7 @@ ocurridos antes de su entrada en vigor.
 ## 20. Notificaciones y consentimiento por medios electrónicos
 
 **20.1.** Las partes aceptan comunicarse por medios electrónicos. Las
-notificaciones a PawMates se enviarán a `[[CORREO DE CONTACTO LEGAL]]` y
+notificaciones a PawMates se enviarán a rmonterrozag@gmail.com y
 las notificaciones al Prestador a la dirección de correo electrónico
 registrada en su cuenta, que declara vigente y bajo su control.
 
@@ -701,7 +702,7 @@ naturales siguientes a la notificación de la inconformidad.
 **21.4.** De no lograrse acuerdo, y cuando resulte aplicable la
 competencia de la Procuraduría Federal del Consumidor, el Prestador podrá
 acudir ante ella. En cualquier otro caso, las partes se someten a la
-jurisdicción de los tribunales competentes de `[[CIUDAD]]`, renunciando
+jurisdicción de los tribunales competentes de Toluca, Estado de México, renunciando
 a cualquier otro fuero que pudiera corresponderles por razón de su
 domicilio presente o futuro.
 
@@ -775,6 +776,24 @@ indican.**
    publicidad potencialmente engañosa sin haber advertido nada.
 5. **Solo los paseadores se reservan dentro de la app;** el resto de las
    categorías se contacta por fuera. Cláusulas 8.1 y 8.2.
+
+## ⚠️ Operas como persona física, no como sociedad
+
+El RFC que me diste (MOGR730915PB1, trece caracteres) es de **persona
+física**, así que redacté los tres documentos en esos términos: el
+contrato lo celebras tú, no una empresa.
+
+Eso tiene una consecuencia que conviene que sepas antes de empezar a
+cobrar suscripciones: **no hay separación entre el patrimonio del
+negocio y el tuyo.** Si un cliente demanda a PawMates por algo que pasó
+con su mascota, responde tu patrimonio personal. Las cláusulas de
+limitación de responsabilidad ayudan, pero no crean esa separación —
+solo una sociedad lo hace.
+
+Pregúntale a tu abogado si conviene constituir una S.A.S. o una
+S. de R.L. antes de escalar. Una S.A.S. se puede constituir en línea y
+sin notario. No es urgente hoy, pero sí antes de tener muchos negocios
+pagando y muchas mascotas de por medio.
 
 ## Preguntas que debes plantearle específicamente
 

@@ -29,9 +29,9 @@ Las secciones **6 (verificación y sus límites)**, **8 (pagos)** y
 
 ## 1. Quiénes somos y a qué te obligas al usar la app
 
-**1.1.** PawMates es operada por \`[[RAZÓN SOCIAL COMPLETA]]\`, con
-Registro Federal de Contribuyentes \`[[RFC]]\` y domicilio en
-\`[[DOMICILIO FISCAL COMPLETO]]\`.
+**1.1.** PawMates es operada por [[NOMBRE COMPLETO DEL TITULAR]], persona
+física con actividad empresarial, con Registro Federal de Contribuyentes
+**MOGR730915PB1** y domicilio en Privada Carpe 32, Paseo Arboleda, Santín, C.P. 50214, Toluca, Estado de México.
 
 **1.2.** Estos Términos son un contrato entre tú y PawMates. Al crear
 una cuenta, marcar la casilla de aceptación o usar la aplicación,
@@ -252,7 +252,7 @@ Podemos suspender o cerrar tu cuenta si incumples esta sección.
 Prestador**: es con él con quien contrataste.
 
 **10.2.** Aun así, queremos saberlo. Repórtalo a
-\`[[CORREO DE SOPORTE]]\`. Con esa información podemos retirar contenido
+rmonterrozag@gmail.com. Con esa información podemos retirar contenido
 engañoso, quitar una insignia, suspender a un Prestador o sacarlo del
 directorio.
 
@@ -357,7 +357,7 @@ a su entrada en vigor.
 ## 15. Notificaciones
 
 Te contactaremos al correo electrónico registrado en tu cuenta y
-mediante avisos dentro de la app. Escríbenos a \`[[CORREO DE SOPORTE]]\`.
+mediante avisos dentro de la app. Escríbenos a rmonterrozag@gmail.com.
 Mantén tu correo actualizado: es el medio por el que te avisaremos de
 cambios y de cualquier incidente que te afecte.
 
@@ -380,7 +380,7 @@ responderemos.
 
 **16.4.** Si no llegamos a un acuerdo, puedes acudir a la
 **Procuraduría Federal del Consumidor**. También puedes acudir a los
-tribunales competentes de \`[[CIUDAD]]\`.
+tribunales competentes de Toluca, Estado de México.
 
 ---
 
