@@ -473,10 +473,15 @@ export interface MyProviderProfile {
   idNumber: string | null;
   age: number | null;
   phone: string | null;
+  /** Only means the page is complete. Whether anyone can see it is
+   * isPubliclyVisible. */
   isPublished: boolean;
   /** null while an admin hasn't approved the business yet: its page is
    * complete or not, but nobody else can see it. */
   approvedAt: string | null;
+  /** Complete *and* approved — decided by the backend, which is what the
+   * directory and the public page go by. Say "publicada" from this. */
+  isPubliclyVisible: boolean;
   plan: BusinessPlan;
   /** Whether VIP is actually in force — always prefer this over
    * `plan === 'vip'`, which stays 'vip' after a plan lapses. */
@@ -501,6 +506,8 @@ export interface AdminBusiness {
   isPublished: boolean;
   /** null while the business waits for an admin's approval. */
   approvedAt: string | null;
+  /** What a visitor actually gets: complete, approved and not suspended. */
+  isPubliclyVisible: boolean;
   createdAt: string;
 }
 

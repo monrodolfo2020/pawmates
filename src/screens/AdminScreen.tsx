@@ -393,7 +393,13 @@ function BusinessRow({ business: b, onChange }: { business: AdminBusiness; onCha
           {b.isPublished ? 'Página completa' : 'Página incompleta'}
         </Tag>
         {b.slug && <Tag variant="outline">/s/{b.slug}</Tag>}
+        {b.isPubliclyVisible && <Tag variant="accent">Visible en el directorio</Tag>}
       </View>
+      {approved && b.isPublished && !b.isPubliclyVisible && (
+        <CardMeta>
+          No aparece en el directorio porque su cuenta está suspendida (pestaña Cuentas).
+        </CardMeta>
+      )}
       {!approved && !b.isPublished && (
         <CardMeta>
           Puedes aprobarlo ya: su página aparecerá en cuanto la complete, y el correo le dirá qué le

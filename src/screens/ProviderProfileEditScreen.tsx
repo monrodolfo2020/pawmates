@@ -32,7 +32,10 @@ type Props = NativeStackScreenProps<RootStackParamList, 'ProviderProfileEdit'>;
 export default function ProviderProfileEditScreen({ navigation }: Props) {
   const s = useAppState();
   const [loaded, setLoaded] = useState(false);
-  const [isPublished, setIsPublished] = useState(false);
+  // Complete (the fields are filled in) and visible (also approved) are
+  // different answers; only the backend's second one means "publicada".
+  const [complete, setComplete] = useState(false);
+  const [visible, setVisible] = useState(false);
   const [photo, setPhoto] = useState<PhotoResult | null>(null);
   const [existingPhotoUrl, setExistingPhotoUrl] = useState<string | null>(null);
   const [category, setCategory] = useState<ServiceCategory>('walker');
@@ -61,7 +64,8 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
       .getMyProviderProfile(s.token)
       .then((profile) => {
         if (profile) {
-          setIsPublished(profile.isPublished);
+          setComplete(profile.isPublished);
+          setVisible(profile.isPubliclyVisible);
           setExistingPhotoUrl(profile.photo);
           setCategory(profile.category);
           setBusinessName(profile.businessName ?? '');
@@ -128,7 +132,8 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
         age: ageValue,
         phone: phone.trim(),
       });
-      setIsPublished(saved.isPublished);
+      setComplete(saved.isPublished);
+      setVisible(saved.isPubliclyVisible);
       if (saved.photo) setExistingPhotoUrl(saved.photo);
       // Comes back as hosted URLs — swapping the local base64 for them
       // keeps a second save from re-uploading the same images.
@@ -154,15 +159,25 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
       </View>
       <ScrollView contentContainerStyle={styles.body}>
         {loaded && (
-          <Tag variant={isPublished ? 'accent' : 'outline'}>
-            {isPublished ? 'Publicada — visible en el directorio' : 'Aún no publicada'}
+          <Tag variant={visible ? 'accent' : 'outline'}>
+            {visible
+              ? 'Publicada — visible en el directorio'
+              : complete
+                ? 'Completa — esperando aprobación'
+                : 'Aún no publicada'}
           </Tag>
         )}
-        {!isPublished && loaded && (
+        {!complete && loaded && (
           <CardBody>
             Completa el nombre de tu negocio y su descripción
-            {isBookable(category) ? ', más tu precio por paseo,' : ''} para que tu página se publique
-            automáticamente.
+            {isBookable(category) ? ', más tu precio por paseo,' : ''} para que tu página quede lista.
+            Se publica en cuanto la aprobemos.
+          </CardBody>
+        )}
+        {complete && !visible && loaded && (
+          <CardBody>
+            Tu página está lista. La estamos revisando y te avisaremos por correo, con tu enlace y tu
+            código QR, en cuanto esté en línea.
           </CardBody>
         )}
         {error && <CardBody style={{ color: colors.accent }}>{error}</CardBody>}

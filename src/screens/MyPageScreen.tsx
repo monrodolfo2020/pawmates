@@ -86,9 +86,9 @@ export default function MyPageScreen({ navigation }: Props) {
   const isVip = profile?.isVip ?? false;
   const complete = profile?.isPublished ?? false;
   const approved = profile?.approvedAt != null;
-  // What visitors see is complete *and* approved; the share link and the
-  // QR would lead to a page that doesn't open until both are true.
-  const published = complete && approved;
+  // The backend's answer, not ours: the share link and the QR would lead
+  // to a page that doesn't open until it says so.
+  const published = profile?.isPubliclyVisible ?? false;
   const missing = profile ? missingToPublish(profile) : [];
   // Either an edit that hasn't been saved yet, or one saved as a draft
   // that hasn't been published — both mean "the live page is behind".

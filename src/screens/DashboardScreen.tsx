@@ -137,8 +137,8 @@ export default function DashboardScreen({ navigation }: Props) {
   const photo = profile?.photo ?? null;
   const url = profile?.slug ? micrositeUrl(profile.slug) : null;
   const approved = profile?.approvedAt != null;
-  // Visitors see the page only once it's complete and approved.
-  const published = (profile?.isPublished ?? false) && approved;
+  // Whether visitors can see the page is the backend's call.
+  const published = profile?.isPubliclyVisible ?? false;
   const missing = profile ? missingToPublish(profile) : [];
 
   const copyLink = async () => {
