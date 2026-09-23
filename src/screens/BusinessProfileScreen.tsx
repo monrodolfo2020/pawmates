@@ -195,13 +195,12 @@ export default function BusinessProfileScreen({ navigation, route }: Props) {
             <>
               <Button
                 variant="secondary"
-                blueprint
                 style={{ flex: 1 }}
                 onPress={() => navigation.navigate('MeetGreet', { walkerId: providerId })}
               >
                 Conócenos primero
               </Button>
-              <Button variant="primary" blueprint style={{ flex: 1 }} onPress={handleReservar}>
+              <Button variant="primary" style={{ flex: 1 }} onPress={handleReservar}>
                 Reservar
               </Button>
             </>
@@ -210,7 +209,6 @@ export default function BusinessProfileScreen({ navigation, route }: Props) {
             // job for those is to hand the customer a way to reach them.
             <Button
               variant="primary"
-              blueprint
               block
               disabled={!waUrl}
               icon={<Phone size={14} strokeWidth={1.5} color={waUrl ? colors.bg : colors.text} />}

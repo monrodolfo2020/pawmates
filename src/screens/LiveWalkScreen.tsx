@@ -316,7 +316,6 @@ export default function LiveWalkScreen({ navigation, route }: Props) {
 
           <Button
             variant="secondary"
-            blueprint
             icon={<MessageCircle size={14} strokeWidth={1.5} color={colors.text} />}
             onPress={() => navigation.navigate('Chat', { bookingId })}
           >
@@ -355,7 +354,6 @@ export default function LiveWalkScreen({ navigation, route }: Props) {
             <Button
               variant="primary"
               block
-              blueprint
               disabled={busy !== null}
               onPress={() => void act('start', (t) => api.startTrip(t, bookingId))}
             >
@@ -365,7 +363,6 @@ export default function LiveWalkScreen({ navigation, route }: Props) {
             <Button
               variant="primary"
               block
-              blueprint
               disabled={busy !== null}
               onPress={() => void act('finish', (t) => api.completeTrip(t, bookingId))}
             >

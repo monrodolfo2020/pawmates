@@ -141,7 +141,6 @@ export default function OnboardingScreen({ navigation, route }: Props) {
         <Button
           variant="primary"
           block
-          blueprint
           disabled={saving || !s.petName || !s.breed}
           icon={<ArrowRight size={14} strokeWidth={1.5} color={colors.bg} />}
           onPress={handleSave}

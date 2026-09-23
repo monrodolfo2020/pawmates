@@ -1,7 +1,6 @@
 import React from 'react';
 import { Pressable, Text, View, StyleSheet, StyleProp, ViewStyle } from 'react-native';
 import { colors, fonts, radius, space } from '../theme/tokens';
-import CornerMarks from './CornerMarks';
 
 type Variant = 'primary' | 'secondary' | 'ghost';
 
@@ -10,15 +9,14 @@ type Props = {
   onPress?: () => void;
   variant?: Variant;
   block?: boolean;
-  blueprint?: boolean;
   icon?: React.ReactNode;
   style?: StyleProp<ViewStyle>;
   disabled?: boolean;
 };
 
-// Mirrors .btn with .btn-primary/-secondary/-ghost/-block, blueprint-framed.
+// Mirrors .btn with .btn-primary/-secondary/-ghost/-block.
 export default function Button({
-  children, onPress, variant = 'secondary', block, blueprint = false, icon, style, disabled,
+  children, onPress, variant = 'secondary', block, icon, style, disabled,
 }: Props) {
   return (
     <Pressable
@@ -32,7 +30,6 @@ export default function Button({
         style,
       ]}
     >
-      {blueprint && <CornerMarks />}
       {icon}
       <Text style={[styles.text, TEXT_VARIANTS[variant]]}>{children}</Text>
     </Pressable>

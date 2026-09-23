@@ -71,7 +71,7 @@ export default function ResetPasswordScreen({ route }: Props) {
               <CardBody style={{ textAlign: 'center' }}>
                 Ya puedes iniciar sesión con tu nueva contraseña.
               </CardBody>
-              <Button variant="primary" block blueprint onPress={goToLogin}>
+              <Button variant="primary" block onPress={goToLogin}>
                 Ir a iniciar sesión
               </Button>
             </>
@@ -100,7 +100,6 @@ export default function ResetPasswordScreen({ route }: Props) {
               <Button
                 variant="primary"
                 block
-                blueprint
                 disabled={submitting || !password || !confirmPassword}
                 onPress={handleSubmit}
               >

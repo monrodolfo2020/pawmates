@@ -126,7 +126,7 @@ export default function BookingScreen({ navigation, route }: Props) {
         </CardMeta>
       </ScrollView>
       <View style={styles.footer}>
-        <Button variant="primary" block blueprint disabled={!canContinue} onPress={handleContinue}>
+        <Button variant="primary" block disabled={!canContinue} onPress={handleContinue}>
           Revisar solicitud
         </Button>
       </View>

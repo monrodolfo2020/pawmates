@@ -1,20 +1,18 @@
 import React from 'react';
 import { View, StyleSheet, ViewStyle, StyleProp, Pressable } from 'react-native';
 import { colors, radius, space, shadow } from '../theme/tokens';
-import CornerMarks from './CornerMarks';
 
 type Props = {
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
   elevation?: 'sm' | 'md' | 'lg';
-  blueprint?: boolean;
   row?: boolean;
   onPress?: () => void;
 };
 
 // A rounded, white surface card floating on the app's cream background.
 export default function Card({
-  children, style, elevation, blueprint = true, row = false, onPress,
+  children, style, elevation, row = false, onPress,
 }: Props) {
   const content = (
     <View
@@ -25,7 +23,6 @@ export default function Card({
         style,
       ]}
     >
-      {blueprint && <CornerMarks />}
       {children}
     </View>
   );

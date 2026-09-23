@@ -66,7 +66,6 @@ export default function LoginScreen({ navigation }: Props) {
           <Button
             variant="primary"
             block
-            blueprint
             disabled={submitting || !email || !password}
             onPress={handleSubmit}
           >

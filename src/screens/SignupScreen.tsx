@@ -282,7 +282,7 @@ export default function SignupScreen({ navigation, route }: Props) {
         )}
       </ScrollView>
       <View style={styles.footer}>
-        <Button variant="primary" block blueprint disabled={submitting || !canSubmit} onPress={handleSubmit}>
+        <Button variant="primary" block disabled={submitting || !canSubmit} onPress={handleSubmit}>
           {submitting ? 'Creando cuenta…' : 'Crear cuenta'}
         </Button>
       </View>

@@ -2,20 +2,17 @@ import React from 'react';
 import { View, Text, StyleSheet, StyleProp, ViewStyle } from 'react-native';
 import { Camera } from 'lucide-react-native';
 import { colors, fonts, radius } from '../theme/tokens';
-import CornerMarks from './CornerMarks';
 
 type Props = {
   label: string;
   style?: StyleProp<ViewStyle>;
-  blueprint?: boolean;
 };
 
-// Stands in for the design's <image-slot> — a duotone blueprint placeholder
+// Stands in for the design's <image-slot> — a duotone placeholder
 // box with a caption, since there's no real photo backing this prototype.
-export default function ImagePlaceholder({ label, style, blueprint = true }: Props) {
+export default function ImagePlaceholder({ label, style }: Props) {
   return (
     <View style={[styles.box, style]}>
-      {blueprint && <CornerMarks />}
       <Camera size={22} strokeWidth={1.5} color={colors.text} style={{ opacity: 0.45 }} />
       <Text style={styles.label}>{label}</Text>
     </View>

@@ -7,7 +7,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
 import AppNav from '../components/AppNav';
-import { vividColors as v, vividFonts as vf, vividRadius as vr, vividTintFor } from '../theme/vividTokens';
+import { colors, fonts, radius, tintFor } from '../theme/tokens';
 import {
   api,
   BookingSummary,
@@ -133,7 +133,7 @@ export default function DashboardScreen({ navigation }: Props) {
   };
 
   const businessName = profile?.businessName ?? s.name ?? s.email ?? 'tu negocio';
-  const avatarTint = vividTintFor(businessName);
+  const avatarTint = tintFor(businessName);
   const photo = profile?.photo ?? null;
   const url = profile?.slug ? micrositeUrl(profile.slug) : null;
   const approved = profile?.approvedAt != null;
@@ -410,7 +410,7 @@ export default function DashboardScreen({ navigation }: Props) {
                   const isMeetGreet = b.lines.some((l) => l.serviceTypeCode === MEET_GREET_SERVICE_TYPE_CODE);
                   return (
                     <View key={b.id} style={styles.requestCard}>
-                      <View style={[styles.requestAccent, { backgroundColor: v.mint }]} />
+                      <View style={[styles.requestAccent, { backgroundColor: colors.mint }]} />
                       <View style={styles.requestBody}>
                         <View style={styles.rowBetween}>
                           <Text style={styles.requestPet}>{petLabel}</Text>
@@ -462,83 +462,83 @@ export default function DashboardScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: v.bg },
+  root: { flex: 1, backgroundColor: colors.bg },
   body: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 24, gap: 18 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  avatar: { width: 48, height: 48, borderRadius: vr.pill },
-  avatarPlaceholder: { width: 48, height: 48, borderRadius: vr.pill, alignItems: 'center', justifyContent: 'center' },
-  avatarPlaceholderText: { fontFamily: vf.display, fontSize: 20 },
-  kicker: { fontFamily: vf.bodyBold, fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: v.coral },
-  title: { fontFamily: vf.display, fontSize: 19, color: v.ink, marginTop: 2 },
-  pillBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: vr.pill, backgroundColor: v.surface, borderWidth: 1.5, borderColor: v.line },
-  pillBtnText: { fontFamily: vf.bodyBold, fontSize: 12.5, color: v.ink },
+  avatar: { width: 48, height: 48, borderRadius: radius.pill },
+  avatarPlaceholder: { width: 48, height: 48, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' },
+  avatarPlaceholderText: { fontFamily: fonts.heading, fontSize: 20 },
+  kicker: { fontFamily: fonts.bodyBold, fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: colors.accent },
+  title: { fontFamily: fonts.heading, fontSize: 19, color: colors.text, marginTop: 2 },
+  pillBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: radius.pill, backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.divider },
+  pillBtnText: { fontFamily: fonts.bodyBold, fontSize: 12.5, color: colors.text },
 
-  alertCard: { padding: 16, borderRadius: vr.md, backgroundColor: v.sunTint, borderWidth: 1.5, borderColor: v.sunTintLine, gap: 4 },
-  alertTitle: { fontFamily: vf.bodyBold, fontSize: 14, color: v.ink },
-  alertBody: { fontFamily: vf.body, fontSize: 12.5, color: v.mute, lineHeight: 17 },
+  alertCard: { padding: 16, borderRadius: radius.md, backgroundColor: colors.sunTint, borderWidth: 1.5, borderColor: colors.sunTintLine, gap: 4 },
+  alertTitle: { fontFamily: fonts.bodyBold, fontSize: 14, color: colors.text },
+  alertBody: { fontFamily: fonts.body, fontSize: 12.5, color: colors.neutral600, lineHeight: 17 },
 
-  outlineBtn: { paddingVertical: 14, borderRadius: vr.md, borderWidth: 1.5, borderColor: v.grapeTintLine, backgroundColor: v.grapeTint, alignItems: 'center' },
-  outlineBtnText: { fontFamily: vf.bodyBold, fontSize: 14, color: v.grape },
+  outlineBtn: { paddingVertical: 14, borderRadius: radius.md, borderWidth: 1.5, borderColor: colors.grapeTintLine, backgroundColor: colors.grapeTint, alignItems: 'center' },
+  outlineBtnText: { fontFamily: fonts.bodyBold, fontSize: 14, color: colors.grape },
 
-  earningsCard: { padding: 20, borderRadius: vr.lg, backgroundColor: v.coral, gap: 4 },
-  earningsKicker: { fontFamily: vf.bodyBold, fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: v.coralTint },
-  earnings: { fontFamily: vf.display, fontSize: 40, color: '#fff', marginTop: 2 },
-  earningsMeta: { fontFamily: vf.bodyMedium, fontSize: 12.5, color: v.coralTint },
+  earningsCard: { padding: 20, borderRadius: radius.lg, backgroundColor: colors.accent, gap: 4 },
+  earningsKicker: { fontFamily: fonts.bodyBold, fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: colors.accent100 },
+  earnings: { fontFamily: fonts.heading, fontSize: 40, color: '#fff', marginTop: 2 },
+  earningsMeta: { fontFamily: fonts.bodyMedium, fontSize: 12.5, color: colors.accent100 },
 
   // The directory business's counterpart to earningsCard: same weight on
   // the screen, but it leads with the page and its link, which is the
   // only thing PawMates actually does for a non-paseador today.
-  pageCard: { padding: 20, borderRadius: vr.lg, backgroundColor: v.coral, gap: 4 },
-  pageCardTitle: { fontFamily: vf.display, fontSize: 26, color: '#fff', marginTop: 2 },
+  pageCard: { padding: 20, borderRadius: radius.lg, backgroundColor: colors.accent, gap: 4 },
+  pageCardTitle: { fontFamily: fonts.heading, fontSize: 26, color: '#fff', marginTop: 2 },
 
   actionsRow: { flexDirection: 'row', gap: 8 },
-  halfBtn: { flex: 1, paddingVertical: 13, borderRadius: vr.md, borderWidth: 1.5, borderColor: v.line, backgroundColor: v.surface, alignItems: 'center' },
-  halfBtnText: { fontFamily: vf.bodyBold, fontSize: 13.5, color: v.ink },
-  halfBtnPrimary: { flex: 1, paddingVertical: 13, borderRadius: vr.md, backgroundColor: v.ink, alignItems: 'center' },
-  halfBtnPrimaryText: { fontFamily: vf.bodyBold, fontSize: 13.5, color: '#fff' },
+  halfBtn: { flex: 1, paddingVertical: 13, borderRadius: radius.md, borderWidth: 1.5, borderColor: colors.divider, backgroundColor: colors.surface, alignItems: 'center' },
+  halfBtnText: { fontFamily: fonts.bodyBold, fontSize: 13.5, color: colors.text },
+  halfBtnPrimary: { flex: 1, paddingVertical: 13, borderRadius: radius.md, backgroundColor: colors.text, alignItems: 'center' },
+  halfBtnPrimaryText: { fontFamily: fonts.bodyBold, fontSize: 13.5, color: '#fff' },
 
   ghostBtn: { paddingVertical: 12, alignItems: 'center' },
-  ghostBtnText: { fontFamily: vf.bodyBold, fontSize: 13.5, color: v.grape },
+  ghostBtnText: { fontFamily: fonts.bodyBold, fontSize: 13.5, color: colors.grape },
 
   checkRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  checkDot: { width: 20, height: 20, borderRadius: vr.pill, borderWidth: 1.5, borderColor: v.line, backgroundColor: v.surface, alignItems: 'center', justifyContent: 'center' },
-  checkDotDone: { backgroundColor: v.mint, borderColor: v.mint },
-  checkLabel: { flex: 1, fontFamily: vf.body, fontSize: 13.5, color: v.mute },
-  checkLabelDone: { fontFamily: vf.bodyMedium, color: v.ink },
-  warnBody: { marginTop: 10, fontFamily: vf.body, fontSize: 12.5, color: v.mute, lineHeight: 17 },
+  checkDot: { width: 20, height: 20, borderRadius: radius.pill, borderWidth: 1.5, borderColor: colors.divider, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
+  checkDotDone: { backgroundColor: colors.mint, borderColor: colors.mint },
+  checkLabel: { flex: 1, fontFamily: fonts.body, fontSize: 13.5, color: colors.neutral600 },
+  checkLabelDone: { fontFamily: fonts.bodyMedium, color: colors.text },
+  warnBody: { marginTop: 10, fontFamily: fonts.body, fontSize: 12.5, color: colors.neutral600, lineHeight: 17 },
 
-  sectionTitle: { fontFamily: vf.display, fontSize: 17, color: v.ink, marginBottom: 10 },
+  sectionTitle: { fontFamily: fonts.heading, fontSize: 17, color: colors.text, marginBottom: 10 },
   weekRow: { flexDirection: 'row', gap: 8 },
-  weekCell: { flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: vr.md, backgroundColor: v.surface, borderWidth: 1.5, borderColor: v.line, gap: 4 },
-  weekCellActive: { backgroundColor: v.mintTint, borderColor: v.mintTintLine },
-  weekLabel: { fontFamily: vf.bodyBold, fontSize: 10.5, letterSpacing: 0.5, textTransform: 'uppercase', color: v.muted2 },
+  weekCell: { flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: radius.md, backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.divider, gap: 4 },
+  weekCellActive: { backgroundColor: colors.mintTint, borderColor: colors.mintTintLine },
+  weekLabel: { fontFamily: fonts.bodyBold, fontSize: 10.5, letterSpacing: 0.5, textTransform: 'uppercase', color: colors.textFaint },
   weekLabelActive: { color: '#00947C' },
-  weekCount: { fontFamily: vf.display, fontSize: 18, color: v.mute },
-  weekCountActive: { color: v.ink },
+  weekCount: { fontFamily: fonts.heading, fontSize: 18, color: colors.neutral600 },
+  weekCountActive: { color: colors.text },
 
-  mutedBody: { fontFamily: vf.body, fontSize: 13.5, color: v.mute },
+  mutedBody: { fontFamily: fonts.body, fontSize: 13.5, color: colors.neutral600 },
 
-  requestCard: { flexDirection: 'row', borderRadius: vr.lg, backgroundColor: v.surface, borderWidth: 1.5, borderColor: v.line, overflow: 'hidden' },
-  requestAccent: { width: 6, backgroundColor: v.coral },
+  requestCard: { flexDirection: 'row', borderRadius: radius.lg, backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.divider, overflow: 'hidden' },
+  requestAccent: { width: 6, backgroundColor: colors.accent },
   requestBody: { flex: 1, padding: 16, gap: 8 },
   rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  requestPet: { fontFamily: vf.bodyBold, fontSize: 15, color: v.ink },
-  timeTag: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: vr.pill, backgroundColor: v.sunTint },
-  timeTagText: { fontFamily: vf.bodyBold, fontSize: 11, color: '#8A6400' },
-  requestMeta: { fontFamily: vf.body, fontSize: 13, color: v.mute },
+  requestPet: { fontFamily: fonts.bodyBold, fontSize: 15, color: colors.text },
+  timeTag: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: radius.pill, backgroundColor: colors.sunTint },
+  timeTagText: { fontFamily: fonts.bodyBold, fontSize: 11, color: '#8A6400' },
+  requestMeta: { fontFamily: fonts.body, fontSize: 13, color: colors.neutral600 },
   messageBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-    paddingVertical: 10, borderRadius: vr.md, borderWidth: 1.5, borderColor: v.grapeTintLine, backgroundColor: v.grapeTint,
+    paddingVertical: 10, borderRadius: radius.md, borderWidth: 1.5, borderColor: colors.grapeTintLine, backgroundColor: colors.grapeTint,
   },
-  messageBtnText: { fontFamily: vf.bodyBold, fontSize: 12.5, color: v.grape },
-  messageBtnUnread: { borderColor: v.coral, backgroundColor: v.coral },
+  messageBtnText: { fontFamily: fonts.bodyBold, fontSize: 12.5, color: colors.grape },
+  messageBtnUnread: { borderColor: colors.accent, backgroundColor: colors.accent },
   messageBtnTextUnread: { color: '#fff' },
-  messageDot: { width: 7, height: 7, borderRadius: vr.pill, backgroundColor: '#fff' },
+  messageDot: { width: 7, height: 7, borderRadius: radius.pill, backgroundColor: '#fff' },
   requestActions: { flexDirection: 'row', gap: 8, marginTop: 4 },
-  rejectBtn: { flex: 1, paddingVertical: 12, borderRadius: vr.md, borderWidth: 1.5, borderColor: v.line, backgroundColor: v.surface, alignItems: 'center' },
-  rejectBtnText: { fontFamily: vf.bodyBold, fontSize: 13.5, color: v.ink },
-  acceptBtn: { flex: 1, paddingVertical: 12, borderRadius: vr.md, backgroundColor: v.mint, alignItems: 'center' },
-  acceptBtnText: { fontFamily: vf.bodyBold, fontSize: 13.5, color: '#fff' },
+  rejectBtn: { flex: 1, paddingVertical: 12, borderRadius: radius.md, borderWidth: 1.5, borderColor: colors.divider, backgroundColor: colors.surface, alignItems: 'center' },
+  rejectBtnText: { fontFamily: fonts.bodyBold, fontSize: 13.5, color: colors.text },
+  acceptBtn: { flex: 1, paddingVertical: 12, borderRadius: radius.md, backgroundColor: colors.mint, alignItems: 'center' },
+  acceptBtnText: { fontFamily: fonts.bodyBold, fontSize: 13.5, color: '#fff' },
   btnDisabled: { opacity: 0.5 },
 });

@@ -4,7 +4,6 @@ import * as ImagePicker from 'expo-image-picker';
 import { Camera, Pencil } from 'lucide-react-native';
 import { colors, fonts, radius } from '../theme/tokens';
 import { resizeImagePhoto } from '../utils/resizeImagePhoto';
-import CornerMarks from './CornerMarks';
 
 export type PhotoResult = { uri: string; base64: string | null };
 
@@ -66,7 +65,6 @@ export default function PhotoPicker({
 
   return (
     <Pressable onPress={handlePress} style={[styles.box, style]}>
-      <CornerMarks />
       {uri ? (
         <>
           <Image source={{ uri }} style={styles.image} resizeMode="cover" />

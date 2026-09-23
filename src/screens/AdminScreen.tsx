@@ -301,7 +301,7 @@ function NewCodeForm({ onCreated }: { onCreated: () => void }) {
           <Text style={styles.codeText} selectable>{created}</Text>
         </View>
       )}
-      <Button variant="primary" blueprint disabled={busy} onPress={() => void create()}>
+      <Button variant="primary" disabled={busy} onPress={() => void create()}>
         {busy ? 'Generando…' : 'Generar código'}
       </Button>
     </Card>
@@ -407,7 +407,7 @@ function BusinessRow({ business: b, onChange }: { business: AdminBusiness; onCha
         </CardMeta>
       )}
       {!approved && (
-        <Button variant="primary" blueprint disabled={busy} onPress={() => void setApproval(true)}>
+        <Button variant="primary" disabled={busy} onPress={() => void setApproval(true)}>
           {busy ? 'Aprobando…' : 'Aprobar y enviarle su enlace'}
         </Button>
       )}
@@ -420,7 +420,7 @@ function BusinessRow({ business: b, onChange }: { business: AdminBusiness; onCha
       {error && <CardMeta style={{ color: colors.accent }}>{error}</CardMeta>}
       {approved && (
         <View style={{ flexDirection: 'row', gap: space.s2 }}>
-          <Button variant={vip ? 'secondary' : 'primary'} blueprint={!vip} style={{ flex: 1 }} disabled={busy} onPress={() => void setPlan()}>
+          <Button variant={vip ? 'secondary' : 'primary'} style={{ flex: 1 }} disabled={busy} onPress={() => void setPlan()}>
             {busy ? 'Guardando…' : vip ? 'Quitar VIP' : 'Activar VIP'}
           </Button>
           <Button variant="ghost" style={{ flex: 1 }} disabled={busy} onPress={() => void setApproval(false)}>
@@ -496,7 +496,7 @@ function VerificationRow({ verification: v, onChange }: { verification: AdminVer
             <Button variant="secondary" style={{ flex: 1 }} disabled={busy} onPress={() => void decide('rejected')}>
               Rechazar
             </Button>
-            <Button variant="primary" blueprint style={{ flex: 1 }} disabled={busy} onPress={() => void decide('verified')}>
+            <Button variant="primary" style={{ flex: 1 }} disabled={busy} onPress={() => void decide('verified')}>
               {busy ? 'Guardando…' : 'Aprobar'}
             </Button>
           </View>
@@ -515,7 +515,7 @@ function VerificationRow({ verification: v, onChange }: { verification: AdminVer
                 <Button variant="secondary" style={{ flex: 1 }} disabled={busy} onPress={() => setConfirmWithdraw(false)}>
                   No
                 </Button>
-                <Button variant="primary" blueprint style={{ flex: 1 }} disabled={busy} onPress={() => void decide('rejected')}>
+                <Button variant="primary" style={{ flex: 1 }} disabled={busy} onPress={() => void decide('rejected')}>
                   {busy ? 'Guardando…' : 'Sí, retirarla'}
                 </Button>
               </View>

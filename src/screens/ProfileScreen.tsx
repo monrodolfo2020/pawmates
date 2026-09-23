@@ -4,7 +4,7 @@ import { ChevronLeft } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
-import { vividColors as v, vividFonts as vf, vividRadius as vr } from '../theme/vividTokens';
+import { colors, fonts, radius } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Profile'>;
@@ -23,7 +23,7 @@ export default function ProfileScreen({ navigation }: Props) {
       <View style={styles.root}>
         <View style={styles.header}>
           <Pressable style={styles.backBtn} onPress={() => navigation.goBack()}>
-            <ChevronLeft size={16} strokeWidth={2} color={v.ink} />
+            <ChevronLeft size={16} strokeWidth={2} color={colors.text} />
           </Pressable>
           <Text style={styles.title}>Perfil</Text>
         </View>
@@ -104,29 +104,29 @@ export default function ProfileScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: v.bg },
+  root: { flex: 1, backgroundColor: colors.bg },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingTop: 20, paddingBottom: 14 },
   backBtn: {
-    width: 36, height: 36, borderRadius: vr.pill, borderWidth: 1, borderColor: v.line,
-    backgroundColor: v.surface, alignItems: 'center', justifyContent: 'center',
+    width: 36, height: 36, borderRadius: radius.pill, borderWidth: 1, borderColor: colors.divider,
+    backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center',
   },
-  title: { fontFamily: vf.display, fontSize: 26, color: v.ink },
+  title: { fontFamily: fonts.heading, fontSize: 26, color: colors.text },
   body: { paddingHorizontal: 20, paddingBottom: 24, gap: 16 },
-  card: { padding: 18, borderRadius: vr.lg, backgroundColor: v.surface, borderWidth: 1, borderColor: v.line, gap: 4 },
-  kicker: { fontFamily: vf.bodySemiBold, fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: v.muted2 },
-  name: { fontFamily: vf.display, fontSize: 24, color: v.ink, marginTop: 2 },
-  mutedBody: { fontFamily: vf.body, fontSize: 13.5, color: v.mute },
+  card: { padding: 18, borderRadius: radius.lg, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.divider, gap: 4 },
+  kicker: { fontFamily: fonts.bodySemiBold, fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: colors.textFaint },
+  name: { fontFamily: fonts.heading, fontSize: 24, color: colors.text, marginTop: 2 },
+  mutedBody: { fontFamily: fonts.body, fontSize: 13.5, color: colors.neutral600 },
   wrapRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 6 },
-  roleTag: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: vr.pill, borderWidth: 1, borderColor: v.line, backgroundColor: v.panel },
-  roleTagText: { fontFamily: vf.bodySemiBold, fontSize: 11, color: v.mute },
+  roleTag: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: radius.pill, borderWidth: 1, borderColor: colors.divider, backgroundColor: colors.panel },
+  roleTagText: { fontFamily: fonts.bodySemiBold, fontSize: 11, color: colors.neutral600 },
   legalRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8, paddingTop: 4 },
-  legalLink: { fontFamily: vf.body, fontSize: 12.5, color: v.mute, textDecorationLine: 'underline' },
-  legalSeparator: { fontFamily: vf.body, fontSize: 12.5, color: v.muted2 },
-  petRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: v.line, marginTop: 4 },
-  addPetRow: { paddingTop: 10, marginTop: 4, borderTopWidth: 1, borderTopColor: v.line },
-  linkText: { fontFamily: vf.bodySemiBold, fontSize: 13.5, color: v.coral },
-  outlineBtn: { paddingVertical: 14, borderRadius: vr.md, borderWidth: 1, borderColor: v.line, backgroundColor: v.surface, alignItems: 'center' },
-  outlineBtnText: { fontFamily: vf.bodySemiBold, fontSize: 14, color: v.ink },
-  primaryBtn: { paddingVertical: 14, borderRadius: vr.md, backgroundColor: v.coral, alignItems: 'center' },
-  primaryBtnText: { fontFamily: vf.bodyBold, fontSize: 14, color: v.bg },
+  legalLink: { fontFamily: fonts.body, fontSize: 12.5, color: colors.neutral600, textDecorationLine: 'underline' },
+  legalSeparator: { fontFamily: fonts.body, fontSize: 12.5, color: colors.textFaint },
+  petRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: colors.divider, marginTop: 4 },
+  addPetRow: { paddingTop: 10, marginTop: 4, borderTopWidth: 1, borderTopColor: colors.divider },
+  linkText: { fontFamily: fonts.bodySemiBold, fontSize: 13.5, color: colors.accent },
+  outlineBtn: { paddingVertical: 14, borderRadius: radius.md, borderWidth: 1, borderColor: colors.divider, backgroundColor: colors.surface, alignItems: 'center' },
+  outlineBtnText: { fontFamily: fonts.bodySemiBold, fontSize: 14, color: colors.text },
+  primaryBtn: { paddingVertical: 14, borderRadius: radius.md, backgroundColor: colors.accent, alignItems: 'center' },
+  primaryBtnText: { fontFamily: fonts.bodyBold, fontSize: 14, color: colors.bg },
 });

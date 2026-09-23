@@ -131,23 +131,22 @@ export default function CheckoutScreen({ navigation, route }: Props) {
             <Button
               variant="primary"
               block
-              blueprint
               onPress={() => navigation.navigate('Chat', { bookingId: s.bookingId! })}
             >
               Abrir chat
             </Button>
           ) : (
-            <Button variant="primary" block blueprint onPress={() => navigation.navigate('Bookings')}>
+            <Button variant="primary" block onPress={() => navigation.navigate('Bookings')}>
               Ver mis reservas
             </Button>
           )}
           {canCancel && (
-            <Button variant="secondary" block blueprint disabled={cancelling} onPress={() => void cancel()}>
+            <Button variant="secondary" block disabled={cancelling} onPress={() => void cancel()}>
               {cancelling ? 'Cancelando…' : phase === 'confirmed' ? 'Cancelar paseo' : 'Cancelar solicitud'}
             </Button>
           )}
           {!canCancel && (
-            <Button variant="secondary" block blueprint onPress={() => navigation.navigate('Home')}>
+            <Button variant="secondary" block onPress={() => navigation.navigate('Home')}>
               Volver al inicio
             </Button>
           )}
@@ -198,7 +197,7 @@ export default function CheckoutScreen({ navigation, route }: Props) {
         )}
       </ScrollView>
       <View style={styles.footer}>
-        <Button variant="primary" block blueprint disabled={sending || !business} onPress={() => void send()}>
+        <Button variant="primary" block disabled={sending || !business} onPress={() => void send()}>
           {sending ? 'Enviando…' : 'Enviar solicitud'}
         </Button>
       </View>

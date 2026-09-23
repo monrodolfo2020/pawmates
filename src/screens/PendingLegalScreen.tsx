@@ -104,7 +104,7 @@ export default function PendingLegalScreen({ navigation }: Props) {
 
           {error && <CardMeta style={{ color: colors.accent }}>{error}</CardMeta>}
 
-          <Button variant="primary" block blueprint disabled={busy || !ready} onPress={() => void submit()}>
+          <Button variant="primary" block disabled={busy || !ready} onPress={() => void submit()}>
             {busy ? 'Guardando…' : 'Aceptar y continuar'}
           </Button>
         </Card>

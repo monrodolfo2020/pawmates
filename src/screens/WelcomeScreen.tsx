@@ -31,13 +31,12 @@ export default function WelcomeScreen({ navigation }: Props) {
         </Text>
 
         <View style={styles.footer}>
-          <Button variant="secondary" block blueprint onPress={() => navigation.navigate('Home')}>
+          <Button variant="secondary" block onPress={() => navigation.navigate('Home')}>
             Ver servicios cerca de ti
           </Button>
           <Button
             variant="primary"
             block
-            blueprint
             onPress={() => navigation.navigate('Signup', { role: 'owner' })}
           >
             Soy dueño de mascota — Registrarse
@@ -45,7 +44,6 @@ export default function WelcomeScreen({ navigation }: Props) {
           <Button
             variant="secondary"
             block
-            blueprint
             onPress={() => navigation.navigate('Signup', { role: 'provider' })}
           >
             Tengo un negocio de mascotas — Registrarse

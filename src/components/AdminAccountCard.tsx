@@ -124,7 +124,7 @@ export default function AdminAccountCard({ account: a, selfId, onChanged }: Prop
             <Button variant="secondary" style={{ flex: 1 }} disabled={busy} onPress={() => setMode('view')}>
               Cancelar
             </Button>
-            <Button variant="primary" blueprint style={{ flex: 1 }} disabled={busy} onPress={() => void save()}>
+            <Button variant="primary" style={{ flex: 1 }} disabled={busy} onPress={() => void save()}>
               {busy ? 'Guardando…' : 'Guardar'}
             </Button>
           </View>

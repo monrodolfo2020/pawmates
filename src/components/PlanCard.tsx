@@ -153,7 +153,7 @@ export default function PlanCard({ onActivated }: Props) {
       </View>
 
       {plans?.online ? (
-        <Button variant="primary" block blueprint disabled={busy} onPress={() => void checkout()}>
+        <Button variant="primary" block disabled={busy} onPress={() => void checkout()}>
           {busy
             ? 'Abriendo…'
             : `${isVip ? 'Renovar' : 'Activar'} VIP ${PERIOD_LABELS[period].toLowerCase()}`}

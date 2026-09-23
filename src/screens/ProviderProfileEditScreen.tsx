@@ -331,7 +331,7 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
           keyboardType="phone-pad"
         />
 
-        <Button variant="primary" block blueprint onPress={handleSave} disabled={saving}>
+        <Button variant="primary" block onPress={handleSave} disabled={saving}>
           {saving ? 'Guardando…' : 'Guardar'}
         </Button>
       </ScrollView>

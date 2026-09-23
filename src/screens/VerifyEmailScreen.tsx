@@ -71,7 +71,7 @@ export default function VerifyEmailScreen({ navigation }: Props) {
             <CardBody style={{ textAlign: 'center' }}>
               ¡Listo! Tu correo {s.email} quedó verificado.
             </CardBody>
-            <Button variant="primary" block blueprint onPress={goToPanel}>
+            <Button variant="primary" block onPress={goToPanel}>
               Continuar
             </Button>
           </>
@@ -94,7 +94,6 @@ export default function VerifyEmailScreen({ navigation }: Props) {
             <Button
               variant="primary"
               block
-              blueprint
               disabled={verifying || code.trim().length !== 6}
               onPress={handleVerify}
             >

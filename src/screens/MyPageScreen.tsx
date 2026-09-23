@@ -186,7 +186,7 @@ export default function MyPageScreen({ navigation }: Props) {
                 <CardMeta>
                   Tu nuevo diseño está guardado pero la página que ven tus clientes sigue igual.
                 </CardMeta>
-                <Button variant="primary" block blueprint onPress={() => void save(true)}>
+                <Button variant="primary" block onPress={() => void save(true)}>
                   {busy ? 'Publicando…' : 'Publicar cambios'}
                 </Button>
               </Card>
@@ -220,7 +220,6 @@ export default function MyPageScreen({ navigation }: Props) {
                   </Button>
                   <Button
                     variant="primary"
-                    blueprint
                     style={{ flex: 1 }}
                     icon={<ExternalLink size={14} strokeWidth={1.5} color={colors.bg} />}
                     onPress={() => void Linking.openURL(url)}
@@ -236,7 +235,7 @@ export default function MyPageScreen({ navigation }: Props) {
 
             {published && profile?.slug && <QrCard slug={profile.slug} />}
 
-            <Button variant="secondary" block blueprint onPress={() => navigation.navigate('ProviderProfileEdit')}>
+            <Button variant="secondary" block onPress={() => navigation.navigate('ProviderProfileEdit')}>
               Editar mi página
             </Button>
 
@@ -279,7 +278,6 @@ export default function MyPageScreen({ navigation }: Props) {
                   </Button>
                   <Button
                     variant="primary"
-                    blueprint
                     style={{ flex: 1 }}
                     disabled={busy || !dirty}
                     onPress={() => void save(true)}

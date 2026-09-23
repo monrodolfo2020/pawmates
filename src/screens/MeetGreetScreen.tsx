@@ -69,12 +69,11 @@ export default function MeetGreetScreen({ navigation, route }: Props) {
           <Button
             variant="secondary"
             block
-            blueprint
             onPress={() => navigation.navigate('Chat', { bookingId: sentBookingId })}
           >
             Enviar mensaje
           </Button>
-          <Button variant="primary" block blueprint onPress={() => navigation.navigate('Home')}>
+          <Button variant="primary" block onPress={() => navigation.navigate('Home')}>
             Volver al inicio
           </Button>
         </View>
@@ -127,7 +126,6 @@ export default function MeetGreetScreen({ navigation, route }: Props) {
         <Button
           variant="primary"
           block
-          blueprint
           disabled={submitting || s.pets.length === 0}
           onPress={handleSubmit}
         >

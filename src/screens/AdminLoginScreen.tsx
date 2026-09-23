@@ -48,7 +48,7 @@ export default function AdminLoginScreen() {
             <CardBody style={{ color: colors.accent }}>{s.authError}</CardBody>
           </Card>
         )}
-        <Button variant="primary" blueprint block disabled={submitting || !password} onPress={handleSubmit}>
+        <Button variant="primary" block disabled={submitting || !password} onPress={handleSubmit}>
           {submitting ? 'Entrando…' : 'Entrar'}
         </Button>
       </View>

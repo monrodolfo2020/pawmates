@@ -45,7 +45,7 @@ export default function ForgotPasswordScreen({ navigation }: Props) {
             Si {email.trim()} tiene una cuenta con nosotros, te enviamos un enlace para restablecer tu
             contraseña. Vence en 60 minutos.
           </CardBody>
-          <Button variant="primary" block blueprint onPress={() => navigation.navigate('Login')}>
+          <Button variant="primary" block onPress={() => navigation.navigate('Login')}>
             Volver a iniciar sesión
           </Button>
         </View>
@@ -75,7 +75,7 @@ export default function ForgotPasswordScreen({ navigation }: Props) {
             <CardBody style={{ color: colors.accent }}>{error}</CardBody>
           </Card>
         )}
-        <Button variant="primary" block blueprint disabled={submitting || !email.trim()} onPress={handleSubmit}>
+        <Button variant="primary" block disabled={submitting || !email.trim()} onPress={handleSubmit}>
           {submitting ? 'Enviando…' : 'Enviar enlace'}
         </Button>
       </View>

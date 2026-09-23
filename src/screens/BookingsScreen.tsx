@@ -11,7 +11,7 @@ import {
   BookingSummary,
   MEET_GREET_SERVICE_TYPE_CODE,
 } from '../api/client';
-import { vividColors as v, vividFonts as vf, vividRadius as vr } from '../theme/vividTokens';
+import { colors, fonts, radius } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
 import { formatWhen } from '../utils/bookingSlots';
 
@@ -21,10 +21,10 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Bookings'>;
 // cancelled as a soft stop (rose tint); requested — still
 // waiting on the paseador — stays neutral.
 const STATUS_TINT: Record<string, { bg: string; border: string; text: string }> = {
-  confirmed: { bg: v.mintTint, border: v.mintTintLine, text: v.mintDark },
-  in_progress: { bg: v.mintTint, border: v.mintTintLine, text: v.mintDark },
-  completed: { bg: v.mintTint, border: v.mintTintLine, text: v.mintDark },
-  cancelled: { bg: v.roseTint, border: v.roseTintLine, text: v.rose },
+  confirmed: { bg: colors.mintTint, border: colors.mintTintLine, text: colors.mintDark },
+  in_progress: { bg: colors.mintTint, border: colors.mintTintLine, text: colors.mintDark },
+  completed: { bg: colors.mintTint, border: colors.mintTintLine, text: colors.mintDark },
+  cancelled: { bg: colors.roseTint, border: colors.roseTintLine, text: colors.rose },
 };
 
 const money = (cents: number, currency: string) =>
@@ -75,7 +75,7 @@ export default function BookingsScreen({ navigation }: Props) {
       <View style={styles.root}>
         <View style={styles.header}>
           <Pressable style={styles.backBtn} onPress={() => navigation.goBack()}>
-            <ChevronLeft size={16} strokeWidth={2} color={v.ink} />
+            <ChevronLeft size={16} strokeWidth={2} color={colors.text} />
           </Pressable>
           <Text style={styles.title}>Tus reservas</Text>
         </View>
@@ -83,7 +83,7 @@ export default function BookingsScreen({ navigation }: Props) {
           {error && <Text style={styles.error}>{error}</Text>}
           {bookings?.length === 0 && <Text style={styles.mutedBody}>Todavía no tienes reservas.</Text>}
           {bookings?.map((b) => {
-            const tint = STATUS_TINT[b.status] ?? { bg: v.panel, border: v.line, text: v.mute };
+            const tint = STATUS_TINT[b.status] ?? { bg: colors.panel, border: colors.divider, text: colors.neutral600 };
             const isMeetGreet = b.lines.some((l) => l.serviceTypeCode === MEET_GREET_SERVICE_TYPE_CODE);
             return (
               <View key={b.id} style={styles.card}>
@@ -133,26 +133,26 @@ export default function BookingsScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: v.bg },
+  root: { flex: 1, backgroundColor: colors.bg },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingTop: 20, paddingBottom: 14 },
   backBtn: {
-    width: 36, height: 36, borderRadius: vr.pill, borderWidth: 1, borderColor: v.line,
-    backgroundColor: v.surface, alignItems: 'center', justifyContent: 'center',
+    width: 36, height: 36, borderRadius: radius.pill, borderWidth: 1, borderColor: colors.divider,
+    backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center',
   },
-  title: { fontFamily: vf.display, fontSize: 26, color: v.ink },
+  title: { fontFamily: fonts.heading, fontSize: 26, color: colors.text },
   body: { paddingHorizontal: 20, paddingBottom: 24, gap: 12 },
-  error: { fontFamily: vf.body, fontSize: 13, color: v.rose },
-  mutedBody: { fontFamily: vf.body, fontSize: 13.5, color: v.mute },
-  card: { padding: 16, borderRadius: vr.lg, backgroundColor: v.surface, borderWidth: 1, borderColor: v.line, gap: 6 },
+  error: { fontFamily: fonts.body, fontSize: 13, color: colors.rose },
+  mutedBody: { fontFamily: fonts.body, fontSize: 13.5, color: colors.neutral600 },
+  card: { padding: 16, borderRadius: radius.lg, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.divider, gap: 6 },
   rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  date: { fontFamily: vf.bodySemiBold, fontSize: 14.5, color: v.ink },
-  statusTag: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: vr.pill, borderWidth: 1 },
-  statusTagText: { fontFamily: vf.bodySemiBold, fontSize: 11 },
+  date: { fontFamily: fonts.bodySemiBold, fontSize: 14.5, color: colors.text },
+  statusTag: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: radius.pill, borderWidth: 1 },
+  statusTagText: { fontFamily: fonts.bodySemiBold, fontSize: 11 },
   cancelBtn: {
     alignSelf: 'flex-start', marginTop: 4, paddingHorizontal: 14, paddingVertical: 7,
-    borderRadius: vr.pill, borderWidth: 1, borderColor: v.line,
+    borderRadius: radius.pill, borderWidth: 1, borderColor: colors.divider,
   },
-  cancelBtnText: { fontFamily: vf.bodySemiBold, fontSize: 12.5, color: v.ink },
-  walkBtn: { backgroundColor: v.mint, borderColor: v.mint },
+  cancelBtnText: { fontFamily: fonts.bodySemiBold, fontSize: 12.5, color: colors.text },
+  walkBtn: { backgroundColor: colors.mint, borderColor: colors.mint },
   walkBtnText: { color: '#fff' },
 });
