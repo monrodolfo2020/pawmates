@@ -27,7 +27,7 @@ export default function GalleryPicker({ photos, onChange, max = 8 }: Props) {
             onPress={() => onChange(photos.filter((_, idx) => idx !== i))}
             hitSlop={6}
           >
-            <X size={12} strokeWidth={2.5} color={colors.bg} />
+            <X size={12} strokeWidth={2.5} color={colors.onAccent} />
           </Pressable>
         </View>
       ))}
@@ -50,10 +50,10 @@ export default function GalleryPicker({ photos, onChange, max = 8 }: Props) {
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s2, alignItems: 'center' },
   thumbWrap: { position: 'relative' },
-  thumb: { width: 84, height: 84, borderRadius: radius.md, backgroundColor: colors.accent100 },
+  thumb: { width: 84, height: 84, borderRadius: radius.md, backgroundColor: colors.panel },
   removeBadge: {
     position: 'absolute', top: -6, right: -6, width: 22, height: 22, borderRadius: 11,
-    backgroundColor: colors.accent700, alignItems: 'center', justifyContent: 'center',
+    backgroundColor: colors.text, alignItems: 'center', justifyContent: 'center',
   },
-  maxNote: { fontFamily: fonts.body, fontSize: 12, color: colors.textMuted70 },
+  maxNote: { fontFamily: fonts.body, fontSize: 12, color: colors.textMuted },
 });

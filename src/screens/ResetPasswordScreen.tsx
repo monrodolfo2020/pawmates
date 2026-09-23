@@ -6,10 +6,10 @@ import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
 import Button from '../components/Button';
 import TextField from '../components/TextField';
-import Card from '../components/Card';
 import { CardBody } from '../components/CardText';
-import { colors, fonts, space } from '../theme/tokens';
+import { colors, space, type } from '../theme/tokens';
 import { api } from '../api/client';
+import Notice from '../components/Notice';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ResetPassword'>;
 
@@ -63,7 +63,7 @@ export default function ResetPasswordScreen({ route }: Props) {
       <View style={styles.root}>
         <View style={styles.body}>
           <View style={styles.icon}>
-            <KeyRound size={40} strokeWidth={1.5} color={colors.accent} />
+            <KeyRound size={40} strokeWidth={1.25} color={colors.text} />
           </View>
           {done ? (
             <>
@@ -92,11 +92,7 @@ export default function ResetPasswordScreen({ route }: Props) {
                 secureTextEntry
                 placeholder="••••••••"
               />
-              {error && (
-                <Card>
-                  <CardBody style={{ color: colors.accent }}>{error}</CardBody>
-                </Card>
-              )}
+              {error && <Notice tone="danger">{error}</Notice>}
               <Button
                 variant="primary"
                 block
@@ -117,5 +113,5 @@ const styles = StyleSheet.create({
   root: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: space.s6 },
   body: { width: '100%', maxWidth: 360, gap: space.s3 },
   icon: { alignSelf: 'center' },
-  title: { fontFamily: fonts.heading, fontSize: 24, color: colors.text, textAlign: 'center' },
+  title: { ...type.title, textAlign: 'center' },
 });

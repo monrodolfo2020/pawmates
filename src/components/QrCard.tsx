@@ -3,9 +3,9 @@ import { View, Text, Image, StyleSheet, Linking, Platform } from 'react-native';
 import { QrCode, Download } from 'lucide-react-native';
 import Card from './Card';
 import Button from './Button';
-import { CardBody, CardMeta } from './CardText';
+import { CardMeta, CardTitle } from './CardText';
 import { micrositeQrUrl } from '../api/client';
-import { colors, space } from '../theme/tokens';
+import { colors, fonts, space } from '../theme/tokens';
 
 /**
  * The business's QR code, ready to print.
@@ -38,8 +38,8 @@ export default function QrCard({ slug }: { slug: string }) {
   return (
     <Card>
       <View style={styles.row}>
-        <QrCode size={18} strokeWidth={1.5} color={colors.accent} />
-        <CardBody style={{ margin: 0, flex: 1 }}>Tu código QR</CardBody>
+        <QrCode size={18} strokeWidth={1.75} color={colors.textMuted} />
+        <CardTitle style={{ flex: 1 }}>Tu código QR</CardTitle>
       </View>
       <CardMeta>
         Imprímelo en tu mostrador, tus tarjetas o tus volantes: quien lo escanee llega directo a tu
@@ -64,5 +64,5 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: space.s2 },
   qrFrame: { alignItems: 'center', paddingVertical: space.s2 },
   qr: { width: 200, height: 200 },
-  note: { fontSize: 11.5, color: colors.textMuted70, textAlign: 'center' },
+  note: { fontFamily: fonts.body, fontSize: 12.5, color: colors.textMuted, textAlign: 'center' },
 });

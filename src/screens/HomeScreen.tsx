@@ -1,13 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, Image, ScrollView, StyleSheet, Pressable, TextInput } from 'react-native';
-import { Plus, Search } from 'lucide-react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable, TextInput } from 'react-native';
+import { ChevronRight, Plus, Search, ShieldCheck } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
 import Card from '../components/Card';
-import { CardTitle, CardBody } from '../components/CardText';
 import Tag from '../components/Tag';
-import ImagePlaceholder from '../components/ImagePlaceholder';
+import Avatar from '../components/Avatar';
 import AppNav from '../components/AppNav';
 import {
   api,
@@ -17,11 +16,11 @@ import {
   SERVICE_CATEGORIES,
   ServiceCategory,
 } from '../api/client';
-import { colors, fonts, radius, space } from '../theme/tokens';
+import { colors, fonts, radius, space, type } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
+import Notice from '../components/Notice';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
-
 
 const money = (cents: number, currency: string) => '$' + (cents / 100).toFixed(0) + ' ' + currency;
 
@@ -60,185 +59,138 @@ export default function HomeScreen({ navigation }: Props) {
     );
   }, [providers, search]);
 
+  const nav = [
+    { label: 'Inicio', onPress: () => navigation.navigate('Home') },
+    { label: 'Reservas', onPress: () => navigation.navigate(authed ? 'Bookings' : 'Login') },
+    { label: 'Perfil', onPress: () => navigation.navigate(authed ? 'Profile' : 'Login') },
+    ...(s.roles.includes('provider') ? [{ label: 'Mi negocio', onPress: () => navigation.navigate('Dashboard') }] : []),
+    ...(s.roles.includes('admin') ? [{ label: 'Admin', onPress: () => navigation.navigate('Admin') }] : []),
+    ...(!authed ? [{ label: 'Iniciar sesión', onPress: () => navigation.navigate('Login') }] : []),
+  ];
+
   return (
     <ScreenContainer>
-      <AppNav
-        items={[
-          { label: 'Inicio', onPress: () => navigation.navigate('Home') },
-          { label: 'Reservas', onPress: () => navigation.navigate(authed ? 'Bookings' : 'Login') },
-          { label: 'Perfil', onPress: () => navigation.navigate(authed ? 'Profile' : 'Login') },
-        ]}
-        activeIndex={0}
-      />
-      <View style={styles.header}>
-        <View>
-          {authed && <Text style={styles.kicker}>Hola, {s.name ?? s.email ?? ''}</Text>}
-          <Text style={styles.title}>Servicios para tu mascota</Text>
+      <AppNav items={nav} activeIndex={0} />
+      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <View style={styles.header}>
+          {authed && <Text style={type.kicker}>Hola, {firstName(s.name ?? s.email ?? '')}</Text>}
+          <Text style={type.display}>Servicios para tu mascota</Text>
         </View>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s2 }}>
-          {s.roles.includes('admin') && (
-            <Pressable onPress={() => navigation.navigate('Admin')}>
-              <Tag variant="outline">Admin</Tag>
+
+        {s.pets.length > 0 && (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.petsRow}>
+            {s.pets.map((pet) => (
+              // 'Onboarding' also serves as the per-pet edit form — see
+              // that screen's comment on its three modes.
+              <Pressable
+                key={pet.id}
+                style={styles.petItem}
+                onPress={() => navigation.navigate('Onboarding', { petId: pet.id })}
+              >
+                <Avatar name={pet.name} uri={pet.photo} size={52} />
+                <Text style={styles.petName} numberOfLines={1}>{pet.name}</Text>
+              </Pressable>
+            ))}
+            <Pressable style={styles.petItem} onPress={() => navigation.navigate('Onboarding')}>
+              <View style={styles.addPet}>
+                <Plus size={20} strokeWidth={1.75} color={colors.textMuted} />
+              </View>
+              <Text style={styles.petName} numberOfLines={1}>Agregar</Text>
             </Pressable>
-          )}
-          {s.roles.includes('provider') && (
-            <Pressable onPress={() => navigation.navigate('Dashboard')}>
-              <Tag variant="outline">Mi negocio</Tag>
-            </Pressable>
-          )}
-          {authed ? (
-            <Pressable onPress={() => void s.logout()}>
-              <Tag variant="outline">Salir</Tag>
-            </Pressable>
-          ) : (
-            <Pressable onPress={() => navigation.navigate('Login')}>
-              <Tag variant="accent">Iniciar sesión</Tag>
-            </Pressable>
-          )}
+          </ScrollView>
+        )}
+
+        <View style={styles.searchBox}>
+          <Search size={18} strokeWidth={1.75} color={colors.textMuted} />
+          <TextInput
+            value={search}
+            onChangeText={setSearch}
+            placeholder="Busca veterinaria, estética, paseador…"
+            placeholderTextColor={colors.textFaint}
+            style={styles.searchInput}
+          />
         </View>
-      </View>
 
-      {s.pets.length > 0 && (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.petsRow} contentContainerStyle={styles.petsRowContent}>
-          {s.pets.map((pet) => (
-            // 'Onboarding' also serves as the per-pet edit form — see
-            // that screen's comment on its three modes.
-            <Pressable
-              key={pet.id}
-              style={styles.petItem}
-              onPress={() => navigation.navigate('Onboarding', { petId: pet.id })}
-            >
-              {pet.photo ? (
-                <Image source={{ uri: pet.photo }} style={styles.petPhoto} resizeMode="cover" />
-              ) : (
-                <ImagePlaceholder label="Foto" style={styles.petPhoto} />
-              )}
-              <Text style={styles.petName} numberOfLines={1}>{pet.name}</Text>
-            </Pressable>
-          ))}
-          <Pressable style={styles.petItem} onPress={() => navigation.navigate('Onboarding')}>
-            <View style={styles.addPetPhoto}>
-              <Plus size={20} strokeWidth={1.5} color={colors.accent} />
-            </View>
-            <Text style={styles.petName} numberOfLines={1}>Agregar</Text>
-          </Pressable>
-        </ScrollView>
-      )}
-
-      <View style={styles.searchBox}>
-        <Search size={16} strokeWidth={2} color={colors.textMuted50} />
-        <TextInput
-          value={search}
-          onChangeText={setSearch}
-          placeholder="Busca veterinaria, estética, paseador…"
-          placeholderTextColor={colors.textMuted50}
-          style={styles.searchInput}
-        />
-      </View>
-
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.chipsRow}
-        contentContainerStyle={styles.chipsRowContent}
-      >
-        {(['all', ...SERVICE_CATEGORIES] as const).map((c) => (
-          <Pressable key={c} onPress={() => setCategory(c)}>
-            <Tag variant={category === c ? 'accent' : 'outline'}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipsRow}>
+          {(['all', ...SERVICE_CATEGORIES] as const).map((c) => (
+            <Tag key={c} variant={category === c ? 'accent' : 'outline'} onPress={() => setCategory(c)}>
               {c === 'all' ? 'Todos' : CATEGORY_LABELS[c]}
             </Tag>
-          </Pressable>
-        ))}
-      </ScrollView>
+          ))}
+        </ScrollView>
 
-      <ScrollView contentContainerStyle={styles.list}>
-        {error && (
-          <Card>
-            <CardBody style={{ color: colors.accent }}>{error}</CardBody>
-          </Card>
-        )}
-        {results?.length === 0 && (
-          <CardBody>
-            {search.trim()
-              ? 'Ningún negocio coincide con tu búsqueda.'
-              : 'Todavía no hay negocios publicados en esta categoría. Vuelve pronto.'}
-          </CardBody>
-        )}
-        {results?.map((p) => (
-          <Card
-            key={p.accountId}
-            row
-            elevation="sm"
-            onPress={() => navigation.navigate('Business', { providerId: p.accountId })}
-          >
-            {p.photo ? (
-              <Image source={{ uri: p.photo }} style={styles.businessPhoto} resizeMode="cover" />
-            ) : (
-              <ImagePlaceholder label="Foto" style={styles.businessPhoto} />
-            )}
-            <View style={{ flex: 1, gap: 2 }}>
-              <View style={styles.nameRow}>
-                <CardTitle style={{ fontSize: 15 }}>{p.name}</CardTitle>
-                {/* Only an admin-reviewed identity earns the badge; a verified
-                    email says nothing an owner can rely on. */}
-                {p.identityVerified && (
-                  <Tag variant="accent" style={{ paddingVertical: 1, paddingHorizontal: 6 }}>
-                    Identidad verificada
-                  </Tag>
-                )}
-              </View>
-              {(where(p) || p.price) && (
-                <CardBody style={{ margin: 0 }}>
-                  {[where(p), p.price && `${money(p.price.amount, p.price.currency)}/paseo`]
-                    .filter(Boolean)
-                    .join(' · ')}
-                </CardBody>
-              )}
-              <View style={styles.tagsRow}>
-                <Tag variant="outline" style={{ paddingVertical: 1, paddingHorizontal: 6 }}>
-                  {CATEGORY_LABELS_SINGULAR[p.category]}
-                </Tag>
+        <View style={styles.list}>
+          {error && <Notice tone="danger">{error}</Notice>}
+          {results?.length === 0 && (
+            <Notice>
+              {search.trim()
+                ? 'Ningún negocio coincide con tu búsqueda.'
+                : 'Todavía no hay negocios publicados en esta categoría. Vuelve pronto.'}
+            </Notice>
+          )}
+          {results?.map((p) => (
+            <Card key={p.accountId} row onPress={() => navigation.navigate('Business', { providerId: p.accountId })}>
+              <Avatar name={p.name} uri={p.photo} size={60} square />
+              <View style={styles.cardText}>
+                <Text style={styles.name} numberOfLines={2}>{p.name}</Text>
+                <Text style={type.small} numberOfLines={1}>
+                  {[CATEGORY_LABELS_SINGULAR[p.category], where(p)].filter(Boolean).join(' · ')}
+                </Text>
                 {p.specialty && (
-                  <Tag variant="outline" style={{ paddingVertical: 1, paddingHorizontal: 6 }}>
-                    {p.specialty}
-                  </Tag>
+                  <Text style={type.meta} numberOfLines={1}>{p.specialty}</Text>
                 )}
+                <View style={styles.cardFoot}>
+                  {p.price && (
+                    <Text style={styles.price}>
+                      {money(p.price.amount, p.price.currency)}
+                      <Text style={styles.priceUnit}> / paseo</Text>
+                    </Text>
+                  )}
+                  {/* Only an admin-reviewed identity earns the badge; a verified
+                      email says nothing an owner can rely on. */}
+                  {p.identityVerified && (
+                    <View style={styles.verified}>
+                      <ShieldCheck size={14} strokeWidth={2} color={colors.success} />
+                      <Text style={styles.verifiedText}>Identidad verificada</Text>
+                    </View>
+                  )}
+                </View>
               </View>
-            </View>
-          </Card>
-        ))}
+              <ChevronRight size={18} strokeWidth={1.75} color={colors.textFaint} />
+            </Card>
+          ))}
+        </View>
       </ScrollView>
     </ScreenContainer>
   );
 }
 
+const firstName = (full: string) => full.split(/[\s@]/)[0];
+
 const styles = StyleSheet.create({
-  header: {
-    paddingHorizontal: space.s4, paddingTop: space.s4, paddingBottom: space.s2,
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-  },
-  kicker: { fontFamily: fonts.body, fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', color: colors.accent },
-  title: { fontFamily: fonts.heading, fontSize: 22, color: colors.text },
-  petsRow: { flexGrow: 0 },
-  petsRowContent: { paddingHorizontal: space.s4, gap: space.s3, paddingBottom: space.s2 },
-  petItem: { alignItems: 'center', gap: 4, width: 56 },
-  petPhoto: { width: 48, height: 48, borderWidth: 1, borderColor: colors.divider },
-  addPetPhoto: {
-    width: 48, height: 48, borderWidth: 1, borderColor: colors.accent, borderStyle: 'dashed',
+  scroll: { paddingBottom: space.s8 },
+  header: { paddingHorizontal: space.s4, paddingTop: space.s5, paddingBottom: space.s4, gap: space.s1 },
+  petsRow: { paddingHorizontal: space.s4, gap: space.s3, paddingBottom: space.s4 },
+  petItem: { alignItems: 'center', gap: space.s1, width: 60 },
+  addPet: {
+    width: 52, height: 52, borderRadius: radius.pill, backgroundColor: colors.panel,
     alignItems: 'center', justifyContent: 'center',
   },
-  petName: { fontFamily: fonts.body, fontSize: 11, color: colors.text, opacity: 0.8 },
+  petName: { fontFamily: fonts.bodyMedium, fontSize: 12.5, color: colors.textMuted },
   searchBox: {
-    marginHorizontal: space.s4, marginBottom: space.s2,
+    marginHorizontal: space.s4, marginBottom: space.s3,
     flexDirection: 'row', alignItems: 'center', gap: space.s2,
-    paddingHorizontal: space.s3, minHeight: 42,
-    backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.divider, borderRadius: radius.pill,
+    paddingHorizontal: space.s4, minHeight: 48,
+    backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.md,
   },
-  searchInput: { flex: 1, fontFamily: fonts.body, fontSize: 14, color: colors.text, paddingVertical: 10 },
-  chipsRow: { flexGrow: 0 },
-  chipsRowContent: { paddingHorizontal: space.s4, gap: 6, paddingBottom: space.s2 },
-  list: { paddingHorizontal: space.s4, gap: space.s3, paddingBottom: space.s4 },
-  businessPhoto: { width: 56, height: 56, marginRight: space.s3 },
-  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 2 },
+  searchInput: { flex: 1, fontFamily: fonts.body, fontSize: 15, color: colors.text, paddingVertical: space.s3 },
+  chipsRow: { paddingHorizontal: space.s4, gap: space.s2, paddingBottom: space.s4 },
+  list: { paddingHorizontal: space.s4, gap: space.s3 },
+  cardText: { flex: 1, gap: 2, minWidth: 0 },
+  name: { fontFamily: fonts.display, fontSize: 22, lineHeight: 25, color: colors.text },
+  cardFoot: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: space.s3, rowGap: 2, marginTop: space.s1 },
+  price: { fontFamily: fonts.bodyBold, fontSize: 14, color: colors.text },
+  priceUnit: { fontFamily: fonts.body, color: colors.textMuted },
+  verified: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  verifiedText: { fontFamily: fonts.bodySemiBold, fontSize: 12.5, color: colors.success },
 });

@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, StyleSheet, StyleProp, ViewStyle } from 'react-native';
+import { StyleSheet, StyleProp, ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, fonts } from '../theme/tokens';
+import { colors } from '../theme/tokens';
 
 type Props = { children: React.ReactNode; style?: StyleProp<ViewStyle> };
 

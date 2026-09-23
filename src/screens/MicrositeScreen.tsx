@@ -5,7 +5,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
 import MicrositeView from '../components/MicrositeView';
-import { colors, fonts, space } from '../theme/tokens';
+import { colors, fonts, space, type } from '../theme/tokens';
 import { api, ProviderDetail } from '../api/client';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Microsite'>;
@@ -44,7 +44,7 @@ export default function MicrositeScreen({ route }: Props) {
     return (
       <ScreenContainer>
         <View style={styles.centered}>
-          <PawPrint size={40} strokeWidth={1.5} color={colors.accent} />
+          <PawPrint size={40} strokeWidth={1.25} color={colors.text} />
           <Text style={styles.notFoundTitle}>Página no encontrada</Text>
           <Text style={styles.notFoundBody}>{error}</Text>
         </View>
@@ -77,6 +77,6 @@ const styles = StyleSheet.create({
   canvas: { flex: 1 },
   scroll: { alignItems: 'center', paddingBottom: space.s8 },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.s3, paddingHorizontal: space.s6 },
-  notFoundTitle: { fontFamily: fonts.heading, fontSize: 22, color: colors.text },
-  notFoundBody: { fontFamily: fonts.body, fontSize: 14, color: colors.textMuted70, textAlign: 'center' },
+  notFoundTitle: { ...type.title },
+  notFoundBody: { fontFamily: fonts.body, fontSize: 14, color: colors.textMuted, textAlign: 'center' },
 });

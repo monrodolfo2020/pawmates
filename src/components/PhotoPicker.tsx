@@ -69,12 +69,12 @@ export default function PhotoPicker({
         <>
           <Image source={{ uri }} style={styles.image} resizeMode="cover" />
           <View style={styles.editBadge}>
-            <Pencil size={11} strokeWidth={1.5} color={colors.bg} />
+            <Pencil size={11} strokeWidth={1.5} color={colors.onAccent} />
           </View>
         </>
       ) : (
         <>
-          <Camera size={22} strokeWidth={1.5} color={colors.text} style={{ opacity: 0.45 }} />
+          <Camera size={22} strokeWidth={1.75} color={colors.textMuted} />
           <Text style={styles.label}>{label}</Text>
         </>
       )}
@@ -84,9 +84,10 @@ export default function PhotoPicker({
 
 const styles = StyleSheet.create({
   box: {
-    borderWidth: 1.5,
-    borderColor: colors.accent200,
-    backgroundColor: colors.accent100,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: colors.border,
+    backgroundColor: colors.panel,
     borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
@@ -94,9 +95,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   image: { width: '100%', height: '100%' },
-  label: { fontFamily: fonts.body, fontSize: 11, color: colors.text, opacity: 0.6 },
+  label: { fontFamily: fonts.body, fontSize: 11, color: colors.textMuted },
   editBadge: {
-    position: 'absolute', bottom: 4, right: 4, width: 18, height: 18, borderRadius: 9,
-    backgroundColor: colors.accent700, alignItems: 'center', justifyContent: 'center',
+    position: 'absolute', bottom: 4, right: 4, width: 22, height: 22, borderRadius: 11,
+    backgroundColor: colors.accentPressed, alignItems: 'center', justifyContent: 'center',
   },
 });

@@ -6,11 +6,12 @@ import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
 import Button from '../components/Button';
 import Card from '../components/Card';
-import { CardBody, CardMeta } from '../components/CardText';
+import { CardMeta, CardTitle } from '../components/CardText';
 import LegalAcceptRow, { LegalLink } from '../components/LegalAcceptRow';
 import { api, LegalDocument, LegalDocumentType } from '../api/client';
-import { colors, fonts, space } from '../theme/tokens';
+import { colors, fonts, space, type } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
+import Notice from '../components/Notice';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'PendingLegal'>;
 
@@ -31,7 +32,7 @@ const TITLES: Record<LegalDocumentType, string> = {
  * the record exists to prevent — so this stands in front of everything
  * else rather than being a banner that can be ignored.
  *
- * "Salir" is always there: the way out of a document you don't accept is
+ * "Cerrar sesión" is always there: the way out of a document you don't accept is
  * to stop using the service, not to be trapped in a screen.
  */
 export default function PendingLegalScreen({ navigation }: Props) {
@@ -72,16 +73,16 @@ export default function PendingLegalScreen({ navigation }: Props) {
     <ScreenContainer>
       <ScrollView contentContainerStyle={styles.body}>
         <View style={styles.header}>
-          <FileText size={26} strokeWidth={1.5} color={colors.accent} />
+          <FileText size={26} strokeWidth={1.25} color={colors.text} />
           <Text style={styles.title}>Antes de continuar</Text>
         </View>
 
         <Card>
-          <CardBody style={{ margin: 0 }}>
+          <CardTitle>
             {pending.length > 1
               ? 'Necesitamos que aceptes estos documentos'
               : 'Necesitamos que aceptes este documento'}
-          </CardBody>
+          </CardTitle>
           <CardMeta>
             Tu cuenta se creó antes de que te lo pidiéramos, o el texto cambió desde la última vez.
             Léelo con calma: se abre aquí mismo y puedes volver.
@@ -102,7 +103,7 @@ export default function PendingLegalScreen({ navigation }: Props) {
             He leído y acepto {pending.map((t) => TITLES[t]).join(' y ')}.
           </LegalAcceptRow>
 
-          {error && <CardMeta style={{ color: colors.accent }}>{error}</CardMeta>}
+          {error && <Notice tone="danger">{error}</Notice>}
 
           <Button variant="primary" block disabled={busy || !ready} onPress={() => void submit()}>
             {busy ? 'Guardando…' : 'Aceptar y continuar'}
@@ -110,7 +111,7 @@ export default function PendingLegalScreen({ navigation }: Props) {
         </Card>
 
         <Button variant="ghost" block onPress={() => void s.logout()}>
-          Salir
+          Cerrar sesión
         </Button>
       </ScrollView>
     </ScreenContainer>
@@ -120,8 +121,8 @@ export default function PendingLegalScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   body: { padding: space.s4, gap: space.s4, flexGrow: 1, justifyContent: 'center' },
   header: { alignItems: 'center', gap: space.s2 },
-  title: { fontFamily: fonts.heading, fontSize: 24, color: colors.text },
+  title: { ...type.title },
   list: { gap: 6, paddingVertical: space.s1 },
   item: { flexDirection: 'row', gap: space.s2, alignItems: 'center' },
-  bullet: { fontFamily: fonts.body, fontSize: 14, color: colors.accent },
+  bullet: { fontFamily: fonts.body, fontSize: 14, color: colors.textMuted },
 });

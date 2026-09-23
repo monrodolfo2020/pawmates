@@ -1,14 +1,13 @@
 import React, { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Linking } from 'react-native';
-import { ChevronLeft, Link2, ExternalLink, Copy, Check, Sparkles } from 'lucide-react-native';
+import { Link2, ExternalLink, Copy, Check, Sparkles } from 'lucide-react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
-import { IconButton } from '../components/Button';
 import Button from '../components/Button';
 import Card from '../components/Card';
-import { CardBody, CardMeta } from '../components/CardText';
+import { CardMeta, CardTitle } from '../components/CardText';
 import Segmented from '../components/Segmented';
 import Tag from '../components/Tag';
 import MicrositeView from '../components/MicrositeView';
@@ -20,6 +19,8 @@ import { api, MyProviderProfile, PageDesign, ProviderDetail } from '../api/clien
 import { listInSpanish, missingToPublish } from '../utils/pageStatus';
 import { useAppState } from '../state/AppState';
 import { micrositeUrl } from '../utils/contactLinks';
+import ScreenHeader from '../components/ScreenHeader';
+import Notice from '../components/Notice';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MyPage'>;
 
@@ -131,12 +132,7 @@ export default function MyPageScreen({ navigation }: Props) {
 
   return (
     <ScreenContainer>
-      <View style={styles.header}>
-        <IconButton onPress={() => navigation.goBack()}>
-          <ChevronLeft size={18} strokeWidth={1.5} color={colors.text} />
-        </IconButton>
-        <Text style={styles.title}>Mi página</Text>
-      </View>
+      <ScreenHeader onBack={() => navigation.goBack()} title="Mi página" />
 
       <View style={styles.tabs}>
         <Segmented
@@ -156,10 +152,10 @@ export default function MyPageScreen({ navigation }: Props) {
           <>
             <Card>
               <View style={styles.rowBetween}>
-                <CardBody style={{ margin: 0 }}>Estado</CardBody>
+                <CardTitle>Estado</CardTitle>
                 <View style={styles.rowStart}>
-                  {isVip && <Tag variant="accent">VIP</Tag>}
-                  <Tag variant={published ? 'accent' : 'outline'}>
+                  {isVip && <Tag variant="success">VIP</Tag>}
+                  <Tag variant={published ? 'success' : 'warning'}>
                     {published ? 'Publicada ✓' : !approved ? 'En revisión' : 'Sin publicar'}
                   </Tag>
                 </View>
@@ -182,7 +178,7 @@ export default function MyPageScreen({ navigation }: Props) {
 
             {isVip && profile && profile.hasUnpublishedDesign && (
               <Card>
-                <CardBody style={{ margin: 0 }}>Tienes cambios sin publicar</CardBody>
+                <CardTitle>Tienes cambios sin publicar</CardTitle>
                 <CardMeta>
                   Tu nuevo diseño está guardado pero la página que ven tus clientes sigue igual.
                 </CardMeta>
@@ -195,8 +191,8 @@ export default function MyPageScreen({ navigation }: Props) {
             {published && url && (
               <Card>
                 <View style={styles.rowStart}>
-                  <Link2 size={18} strokeWidth={1.5} color={colors.accent} />
-                  <CardBody style={{ margin: 0, flex: 1 }}>Tu enlace para compartir</CardBody>
+                  <Link2 size={18} strokeWidth={1.75} color={colors.textMuted} />
+                  <CardTitle style={{ flex: 1 }}>Tu enlace para compartir</CardTitle>
                 </View>
                 <View style={styles.linkBox}>
                   <Text style={styles.linkText} selectable numberOfLines={2}>
@@ -221,7 +217,7 @@ export default function MyPageScreen({ navigation }: Props) {
                   <Button
                     variant="primary"
                     style={{ flex: 1 }}
-                    icon={<ExternalLink size={14} strokeWidth={1.5} color={colors.bg} />}
+                    icon={<ExternalLink size={14} strokeWidth={1.5} color={colors.onAccent} />}
                     onPress={() => void Linking.openURL(url)}
                   >
                     Ver mi página
@@ -261,7 +257,7 @@ export default function MyPageScreen({ navigation }: Props) {
             {isVip && profile && draft && (
               <>
                 <View style={styles.rowStart}>
-                  <Sparkles size={16} strokeWidth={1.5} color={colors.accent} />
+                  <Sparkles size={16} strokeWidth={1.75} color={colors.textMuted} />
                   <Text style={styles.previewLabel}>Vista previa en vivo</Text>
                 </View>
                 <View style={styles.previewFrame}>
@@ -270,7 +266,7 @@ export default function MyPageScreen({ navigation }: Props) {
 
                 <PageDesignEditor design={draft} onChange={setDraft} />
 
-                {error && <Text style={styles.error}>{error}</Text>}
+                {error && <Notice tone="danger">{error}</Notice>}
 
                 <View style={styles.actionsRow}>
                   <Button variant="secondary" style={{ flex: 1 }} disabled={busy} onPress={() => void save(false)}>
@@ -300,27 +296,21 @@ export default function MyPageScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    paddingHorizontal: space.s3, paddingVertical: space.s2,
-    flexDirection: 'row', alignItems: 'center', gap: space.s3,
-  },
-  title: { fontFamily: fonts.heading, fontSize: 20, color: colors.text },
   tabs: { paddingHorizontal: space.s4, paddingBottom: space.s3 },
   body: { paddingHorizontal: space.s4, gap: space.s4, paddingBottom: space.s8 },
   rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   rowStart: { flexDirection: 'row', alignItems: 'center', gap: space.s2 },
   linkBox: {
     paddingHorizontal: space.s3, paddingVertical: space.s2,
-    backgroundColor: colors.neutral100, borderRadius: radius.sm,
+    backgroundColor: colors.panel, borderRadius: radius.sm,
   },
-  linkText: { fontFamily: fonts.body, fontSize: 13, color: colors.text },
+  linkText: { fontFamily: fonts.bodyMedium, fontSize: 14, color: colors.text },
   actionsRow: { flexDirection: 'row', gap: space.s2 },
 
   previewBlock: { gap: space.s2 },
-  previewLabel: { fontFamily: fonts.bodyMedium, fontSize: 12, color: colors.textMuted70 },
+  previewLabel: { fontFamily: fonts.bodySemiBold, fontSize: 13, color: colors.textMuted },
   previewFrame: {
-    borderWidth: 1.5, borderColor: colors.divider, borderRadius: radius.lg,
+    borderWidth: 1, borderColor: colors.divider, borderRadius: radius.lg,
     overflow: 'hidden',
   },
-  error: { fontFamily: fonts.body, fontSize: 13, color: colors.accent },
 });

@@ -17,7 +17,8 @@ test('un negocio nuevo no aparece hasta que el admin lo aprueba', async ({ page,
   await expect(walkerPage.getByText('Completa — esperando aprobación')).toBeVisible();
 
   const adminPage = await openInNewContext(browser, admin);
-  await adminPage.getByText('Admin', { exact: true }).first().click();
+  await adminPage.getByText('Menú', { exact: true }).click();
+  await adminPage.getByText('Admin', { exact: true }).filter({ visible: true }).click();
   await adminPage.getByText('Negocios', { exact: true }).first().click();
   await adminPage
     .locator(`xpath=//*[text()="${businessName}"]/following::*[text()="Aprobar y enviarle su enlace"][1]`)

@@ -3,8 +3,9 @@ import { View, Text, TextInput, Pressable, StyleSheet, Linking } from 'react-nat
 import { Lock, Sparkles, Ticket } from 'lucide-react-native';
 import Button from './Button';
 import Card from './Card';
-import { CardBody, CardMeta } from './CardText';
+import { CardMeta, CardTitle } from './CardText';
 import Tag from './Tag';
+import Notice from './Notice';
 import {
   api,
   BillingPeriod,
@@ -98,14 +99,14 @@ export default function PlanCard({ onActivated }: Props) {
     <Card>
       <View style={styles.rowStart}>
         {isVip ? (
-          <Sparkles size={18} strokeWidth={1.5} color={colors.accent} />
+          <Sparkles size={20} strokeWidth={1.75} color={colors.success} />
         ) : (
-          <Lock size={18} strokeWidth={1.5} color={colors.accent} />
+          <Lock size={20} strokeWidth={1.75} color={colors.textMuted} />
         )}
-        <CardBody style={{ margin: 0, flex: 1 }}>
+        <CardTitle style={{ flex: 1 }}>
           {isVip ? 'Tu plan VIP' : 'Diseño personalizado — plan VIP'}
-        </CardBody>
-        {isVip && <Tag variant="accent">Activo</Tag>}
+        </CardTitle>
+        {isVip && <Tag variant="success">Activo</Tag>}
       </View>
 
       {isVip && mine?.expiresAt && (
@@ -168,8 +169,8 @@ export default function PlanCard({ onActivated }: Props) {
       <View style={styles.divider} />
 
       <View style={styles.rowStart}>
-        <Ticket size={16} strokeWidth={1.5} color={colors.accent} />
-        <CardBody style={{ margin: 0, flex: 1 }}>¿Tienes un código de activación?</CardBody>
+        <Ticket size={18} strokeWidth={1.75} color={colors.textMuted} />
+        <CardTitle style={{ flex: 1, fontSize: 15 }}>¿Tienes un código de activación?</CardTitle>
       </View>
       {isVip && (
         <CardMeta>Se suma al tiempo que te queda, no lo reemplaza.</CardMeta>
@@ -179,7 +180,7 @@ export default function PlanCard({ onActivated }: Props) {
           value={code}
           onChangeText={setCode}
           placeholder="Ej. AB3D9K2M"
-          placeholderTextColor={colors.textMuted50}
+          placeholderTextColor={colors.textFaint}
           autoCapitalize="characters"
           autoCorrect={false}
           maxLength={20}
@@ -190,8 +191,8 @@ export default function PlanCard({ onActivated }: Props) {
         </Button>
       </View>
 
-      {error && <Text style={styles.error}>{error}</Text>}
-      {done && <Text style={styles.done}>{done}</Text>}
+      {error && <Notice tone="danger">{error}</Notice>}
+      {done && <Notice tone="success">{done}</Notice>}
     </Card>
   );
 }
@@ -202,25 +203,23 @@ const styles = StyleSheet.create({
   priceRow: { flexDirection: 'row', gap: space.s2 },
   priceBox: {
     flex: 1, gap: 2, padding: space.s3,
-    borderRadius: radius.md, borderWidth: 1.5, borderColor: colors.divider,
+    borderRadius: radius.md, borderWidth: 1, borderColor: colors.border,
     backgroundColor: colors.surface,
   },
-  priceBoxSelected: { borderColor: colors.accent, backgroundColor: colors.accent100 },
-  priceLabel: { fontFamily: fonts.bodyBold, fontSize: 12, color: colors.textMuted70 },
-  priceAmount: { fontFamily: fonts.heading, fontSize: 20, color: colors.text },
-  priceMeta: { fontFamily: fonts.body, fontSize: 11.5, color: colors.textMuted70 },
-  priceSave: { fontFamily: fonts.bodyBold, fontSize: 11.5, color: colors.accent, marginTop: 2 },
+  priceBoxSelected: { borderColor: colors.accent, borderWidth: 2, padding: space.s3 - 1 },
+  priceLabel: { fontFamily: fonts.bodyBold, fontSize: 12, color: colors.textMuted },
+  priceAmount: { fontFamily: fonts.bodyBold, fontSize: 20, color: colors.text },
+  priceMeta: { fontFamily: fonts.body, fontSize: 11.5, color: colors.textMuted },
+  priceSave: { fontFamily: fonts.bodyBold, fontSize: 12, color: colors.success, marginTop: 2 },
 
   divider: { height: 1, backgroundColor: colors.divider, marginVertical: space.s1 },
 
   codeRow: { flexDirection: 'row', gap: space.s2, alignItems: 'center' },
   codeInput: {
     flex: 1,
-    paddingHorizontal: space.s3, paddingVertical: 10,
-    borderWidth: 1.5, borderColor: colors.divider, borderRadius: radius.sm,
+    minHeight: 48, paddingHorizontal: space.s4, paddingVertical: space.s3,
+    borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, backgroundColor: colors.surface,
     fontFamily: fonts.bodyBold, fontSize: 14, letterSpacing: 1, color: colors.text,
   },
 
-  error: { fontFamily: fonts.body, fontSize: 13, color: colors.accent },
-  done: { fontFamily: fonts.bodyBold, fontSize: 13, color: colors.text },
 });

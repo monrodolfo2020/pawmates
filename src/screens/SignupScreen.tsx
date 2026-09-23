@@ -1,20 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
-import { ChevronLeft } from 'lucide-react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
-import { IconButton } from '../components/Button';
 import Button from '../components/Button';
 import TextField from '../components/TextField';
 import Field from '../components/Field';
 import PhotoPicker, { PhotoResult } from '../components/PhotoPicker';
 import Card from '../components/Card';
 import Tag from '../components/Tag';
-import { CardBody } from '../components/CardText';
-import { colors, fonts, space } from '../theme/tokens';
+import { CardMeta, CardTitle } from '../components/CardText';
+import { colors, fonts, space, type } from '../theme/tokens';
 import LegalAcceptRow, { LegalLink } from '../components/LegalAcceptRow';
-import { CardMeta } from '../components/CardText';
 import {
   AcceptedLegal,
   api,
@@ -25,6 +22,9 @@ import {
   ServiceCategory,
 } from '../api/client';
 import { useAppState } from '../state/AppState';
+import ScreenHeader from '../components/ScreenHeader';
+import Notice from '../components/Notice';
+import BottomBar from '../components/BottomBar';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Signup'>;
 
@@ -114,27 +114,18 @@ export default function SignupScreen({ navigation, route }: Props) {
 
   return (
     <ScreenContainer>
-      <View style={styles.header}>
-        <IconButton onPress={() => navigation.goBack()}>
-          <ChevronLeft size={18} strokeWidth={1.5} color={colors.text} />
-        </IconButton>
-        <Text style={styles.title}>Crear cuenta</Text>
-      </View>
+      <ScreenHeader onBack={() => navigation.goBack()} title={role === 'provider' ? 'Registra tu negocio' : 'Crea tu cuenta'}
+        subtitle={role === 'provider' ? 'Consigue tu página y aparece en el directorio.' : 'Para reservar y escribirles a los negocios.'}
+      />
       <ScrollView contentContainerStyle={styles.body}>
-        <Field label="Tipo de cuenta">
-          <Tag variant="accent">{role === 'provider' ? 'Negocio de mascotas' : 'Dueño de mascota'}</Tag>
-        </Field>
-
         {role === 'provider' && (
           <>
             <Field label="¿Qué tipo de negocio tienes?">
               <View style={styles.categoryRow}>
                 {SERVICE_CATEGORIES.map((c) => (
-                  <Pressable key={c} onPress={() => setCategory(c)}>
-                    <Tag variant={category === c ? 'accent' : 'outline'}>
-                      {CATEGORY_LABELS_SINGULAR[c]}
-                    </Tag>
-                  </Pressable>
+                  <Tag key={c} variant={category === c ? 'accent' : 'outline'} onPress={() => setCategory(c)}>
+                    {CATEGORY_LABELS_SINGULAR[c]}
+                  </Tag>
                 ))}
               </View>
             </Field>
@@ -235,7 +226,7 @@ export default function SignupScreen({ navigation, route }: Props) {
         )}
 
         <Card>
-          <CardBody style={{ margin: 0 }}>Antes de crear tu cuenta</CardBody>
+          <CardTitle>Antes de crear tu cuenta</CardTitle>
           <LegalAcceptRow checked={acceptedTerms} onToggle={() => setAcceptedTerms((v) => !v)}>
             He leído y acepto el{' '}
             <LegalLink onPress={() => openDocument('privacy_notice')}>
@@ -275,32 +266,22 @@ export default function SignupScreen({ navigation, route }: Props) {
           )}
         </Card>
 
-        {s.authError && (
-          <Card>
-            <CardBody style={{ color: colors.accent }}>{s.authError}</CardBody>
-          </Card>
-        )}
+        {s.authError && <Notice tone="danger">{s.authError}</Notice>}
       </ScrollView>
-      <View style={styles.footer}>
+      <BottomBar>
         <Button variant="primary" block disabled={submitting || !canSubmit} onPress={handleSubmit}>
           {submitting ? 'Creando cuenta…' : 'Crear cuenta'}
         </Button>
-      </View>
+      </BottomBar>
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
-    paddingHorizontal: space.s3, paddingVertical: space.s2,
-    flexDirection: 'row', alignItems: 'center', gap: space.s3,
-  },
-  title: { fontFamily: fonts.heading, fontSize: 20, color: colors.text },
   body: { paddingHorizontal: space.s4, gap: space.s4, paddingBottom: space.s4 },
-  note: { fontFamily: fonts.body, fontSize: 12, color: colors.text, opacity: 0.7 },
-  mismatch: { fontFamily: fonts.bodyMedium, fontSize: 12.5, color: colors.accent, marginTop: -6 },
+  note: { ...type.meta },
+  mismatch: { fontFamily: fonts.bodyMedium, fontSize: 13, color: colors.danger, marginTop: -space.s2 },
   photoRow: { flexDirection: 'row', gap: space.s3 },
-  categoryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  categoryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s2 },
   photoBox: { width: '100%', aspectRatio: 1 },
-  footer: { padding: space.s4 },
 });

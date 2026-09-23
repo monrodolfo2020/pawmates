@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
-import { ChevronLeft } from 'lucide-react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
-import { IconButton } from '../components/Button';
 import Button from '../components/Button';
 import TextField from '../components/TextField';
 import PhotoPicker, { PhotoResult } from '../components/PhotoPicker';
@@ -17,7 +15,7 @@ import {
 } from '../config/categoryFields';
 import Tag from '../components/Tag';
 import { CardBody } from '../components/CardText';
-import { colors, fonts, space } from '../theme/tokens';
+import { colors, fonts, space, type } from '../theme/tokens';
 import {
   api,
   CATEGORY_LABELS_SINGULAR,
@@ -26,6 +24,8 @@ import {
   isBookable,
 } from '../api/client';
 import { useAppState } from '../state/AppState';
+import ScreenHeader from '../components/ScreenHeader';
+import Notice from '../components/Notice';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ProviderProfileEdit'>;
 
@@ -151,15 +151,10 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
 
   return (
     <ScreenContainer>
-      <View style={styles.header}>
-        <IconButton onPress={() => navigation.goBack()}>
-          <ChevronLeft size={18} strokeWidth={1.5} color={colors.text} />
-        </IconButton>
-        <Text style={styles.title}>Editar mi página</Text>
-      </View>
+      <ScreenHeader onBack={() => navigation.goBack()} title="Editar mi página" />
       <ScrollView contentContainerStyle={styles.body}>
         {loaded && (
-          <Tag variant={visible ? 'accent' : 'outline'}>
+          <Tag variant={visible ? 'success' : complete ? 'warning' : 'neutral'}>
             {visible
               ? 'Publicada — visible en el directorio'
               : complete
@@ -180,15 +175,15 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
             código QR, en cuanto esté en línea.
           </CardBody>
         )}
-        {error && <CardBody style={{ color: colors.accent }}>{error}</CardBody>}
+        {error && <Notice tone="danger">{error}</Notice>}
 
-        <View style={{ gap: 5 }}>
+        <View style={{ gap: space.s2 }}>
           <Text style={styles.fieldLabel}>Tipo de negocio</Text>
           <View style={styles.categoryRow}>
             {SERVICE_CATEGORIES.map((c) => (
-              <Pressable key={c} onPress={() => setCategory(c)}>
-                <Tag variant={category === c ? 'accent' : 'outline'}>{CATEGORY_LABELS_SINGULAR[c]}</Tag>
-              </Pressable>
+              <Tag key={c} variant={category === c ? 'accent' : 'outline'} onPress={() => setCategory(c)}>
+                {CATEGORY_LABELS_SINGULAR[c]}
+              </Tag>
             ))}
           </View>
         </View>
@@ -263,13 +258,13 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
           />
         )}
 
-        <View style={{ gap: 4, marginTop: space.s2 }}>
+        <View style={styles.section}>
           <Text style={styles.sectionTitle}>Tu página para compartir</Text>
           <Text style={styles.sectionNote}>
             Esto es lo que ven quienes abren el enlace de tu negocio.
           </Text>
         </View>
-        <View style={{ gap: 5 }}>
+        <View style={{ gap: space.s2 }}>
           <Text style={styles.fieldLabel}>Fotos del negocio</Text>
           <GalleryPicker photos={photos} onChange={setPhotos} />
         </View>
@@ -303,7 +298,7 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
           keyboardType="phone-pad"
         />
 
-        <View style={{ gap: 4, marginTop: space.s2 }}>
+        <View style={styles.section}>
           <Text style={styles.sectionTitle}>Verificación (privado)</Text>
           <Text style={styles.sectionNote}>
             Esta información no se muestra en tu página — solo la ven nuestro equipo de
@@ -340,15 +335,11 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    paddingHorizontal: space.s3, paddingVertical: space.s2,
-    flexDirection: 'row', alignItems: 'center', gap: space.s2,
-  },
-  title: { fontFamily: fonts.heading, fontSize: 18, color: colors.text },
-  body: { paddingHorizontal: space.s4, paddingBottom: space.s4, gap: space.s3 },
-  photo: { width: 88, height: 88 },
-  sectionTitle: { fontFamily: fonts.heading, fontSize: 15, color: colors.text },
-  sectionNote: { fontFamily: fonts.body, fontSize: 12, color: colors.textMuted70 },
-  fieldLabel: { fontFamily: fonts.body, fontSize: 12, color: colors.textMuted70 },
-  categoryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  body: { paddingHorizontal: space.s4, paddingBottom: space.s8, gap: space.s4 },
+  photo: { width: 96, height: 96 },
+  section: { gap: space.s1, marginTop: space.s3, paddingTop: space.s4, borderTopWidth: 1, borderTopColor: colors.divider },
+  sectionTitle: { ...type.section },
+  sectionNote: { ...type.small },
+  fieldLabel: { fontFamily: fonts.bodySemiBold, fontSize: 13, color: colors.text },
+  categoryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s2 },
 });

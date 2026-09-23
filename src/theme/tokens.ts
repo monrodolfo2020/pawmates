@@ -1,126 +1,129 @@
 // PawMates' design tokens — the one place colors, fonts, spacing, radii
-// and shadows come from. Coral on warm cream, mint for success/verified,
-// sun for highlights; Barlow for headlines, Figtree for body text (both
-// loaded in App.tsx).
+// and shadows come from.
 //
-// Named by role where a role exists (text, accent, divider...), and by
-// hue for the secondary palette (mint, sun, grape, rose), which screens
-// pick for meaning: mint = done/verified, sun = time/attention,
-// rose = cancelled/problem, grape = messages.
+// "Cálido editorial": warm bone background, ink text, Instrument Serif
+// for screen titles and business names, Figtree for everything else
+// (both loaded in App.tsx).
+//
+// Color has a job, or it isn't used:
+//   accent  — the one action color: primary buttons, links, selection.
+//   success — verified / done / confirmed.
+//   warning — pending / waiting for someone.
+//   danger  — cancelled / rejected / errors.
+// Everything else is ink on bone and white.
 
 export const colors = {
-  bg: '#FFF7F0',
+  bg: '#FBF6F1',
   surface: '#FFFFFF',
-  text: '#1D1533',
-  accent: '#FF6B4A',
-  accent2: '#00C2A0',
-  divider: '#F0E4D6',
+  /** A slightly darker bone than bg, for inset panels and tracks. */
+  panel: '#F4ECE3',
+  text: '#261E2C',
+  /** Secondary text; 5.4:1 on bg. */
+  textMuted: '#6B6273',
+  /** Placeholders and tertiary counts only — not for anything to read. */
+  textFaint: '#9A91A1',
+  /** Text on an accent/ink fill. */
+  onAccent: '#FFFFFF',
+  divider: '#ECE2D7',
+  border: '#DDD1C4',
 
-  neutral100: '#F7F0E8',
-  neutral200: '#EFE3D6',
-  neutral300: '#DCD0C5',
-  neutral400: '#B8ACB9',
-  neutral500: '#978CA0',
-  neutral600: '#756E85',
-  neutral700: '#5C5570',
-  neutral800: '#3D3654',
-  neutral900: '#1D1533',
+  // 4.7:1 with white text.
+  accent: '#C8492A',
+  accentPressed: '#A83C22',
+  accentTint: '#FBE7DF',
+  accentTintLine: '#F3CDBF',
 
-  accent100: '#FFE7DE',
-  accent200: '#FFD2C2',
-  accent300: '#FFB49B',
-  accent400: '#FF9575',
-  accent500: '#FF7A57',
-  accent600: '#FF6B4A',
-  accent700: '#E85234',
-  accent800: '#C43F24',
-  accent900: '#8F2C18',
+  success: '#2F7A55',
+  successTint: '#E4F2EA',
+  successLine: '#C3E3D1',
 
-  textMuted: 'rgba(29, 21, 51, 0.55)',
-  textMuted70: 'rgba(29, 21, 51, 0.7)',
-  textMuted50: 'rgba(29, 21, 51, 0.5)',
-  /** Lighter than neutral600, for placeholders and secondary counts. */
-  textFaint: '#A79FB0',
-  /** A slightly darker cream than bg, for inset panels. */
-  panel: '#F5EBE0',
+  warning: '#8A5A00',
+  warningTint: '#FCF1D9',
+  warningLine: '#F2DDA8',
 
-  mint: '#00C2A0',
-  mintDark: '#00947C',
-  mintTint: '#DAF6EF',
-  mintTintLine: '#B7ECDF',
-
-  sun: '#FFC93C',
-  sunDark: '#8A6400',
-  sunTint: '#FFF3D6',
-  sunTintLine: '#FFE7A8',
-
-  grape: '#8C6FE0',
-  grapeTint: '#EDE7FB',
-  grapeTintLine: '#DACCF5',
-
-  rose: '#FF4D6D',
-  roseTint: '#FFE1E7',
-  roseTintLine: '#FFC2CF',
+  danger: '#B42348',
+  dangerTint: '#FBE3E8',
+  dangerLine: '#F2C2CE',
 };
 
 export const fonts = {
-  heading: 'Barlow_700Bold',
-  headingRegular: 'Barlow_500Medium',
-  condensed: 'BarlowCondensed_600SemiBold',
+  /** Serif, one weight: screen titles and business names, 20px and up. */
+  display: 'InstrumentSerif_400Regular',
+  /** Bold sans: numbers, prices, short UI headings. */
+  heading: 'Figtree_700Bold',
   body: 'Figtree_400Regular',
   bodyMedium: 'Figtree_500Medium',
   bodySemiBold: 'Figtree_600SemiBold',
   bodyBold: 'Figtree_700Bold',
 };
 
-// space-*: 3.4 / 6.8 / 10.2 / 13.6 / 20.4 / 27.2
+// Ready-made text styles, so screens don't invent sizes.
+export const type = {
+  display: { fontFamily: fonts.display, fontSize: 34, lineHeight: 38, color: colors.text },
+  title: { fontFamily: fonts.display, fontSize: 28, lineHeight: 32, color: colors.text },
+  section: { fontFamily: fonts.bodyBold, fontSize: 17, lineHeight: 22, color: colors.text },
+  cardTitle: { fontFamily: fonts.bodySemiBold, fontSize: 16, lineHeight: 21, color: colors.text },
+  body: { fontFamily: fonts.body, fontSize: 15, lineHeight: 22, color: colors.text },
+  small: { fontFamily: fonts.body, fontSize: 13.5, lineHeight: 19, color: colors.textMuted },
+  meta: { fontFamily: fonts.body, fontSize: 12.5, lineHeight: 17, color: colors.textMuted },
+  kicker: {
+    fontFamily: fonts.bodySemiBold, fontSize: 11.5, letterSpacing: 0.8,
+    textTransform: 'uppercase' as const, color: colors.textMuted,
+  },
+};
+
+// A 4px grid. Screens use s4 (16) for side gutters and s6 (24) between
+// sections; cards pad with s4.
 export const space = {
-  s1: 3.4,
-  s2: 6.8,
-  s3: 10.2,
-  s4: 13.6,
-  s6: 20.4,
-  s8: 27.2,
+  s1: 4,
+  s2: 8,
+  s3: 12,
+  s4: 16,
+  s5: 20,
+  s6: 24,
+  s8: 32,
 };
 
 export const radius = {
-  sm: 12,
-  md: 18,
-  lg: 24,
+  sm: 8,
+  md: 12,
+  lg: 16,
   pill: 999,
 };
 
 export const shadow = {
   sm: {
-    shadowColor: '#3D3654',
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
+    shadowColor: '#261E2C',
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 1,
   },
   md: {
-    shadowColor: '#3D3654',
-    shadowOpacity: 0.1,
+    shadowColor: '#261E2C',
+    shadowOpacity: 0.08,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
+    elevation: 3,
   },
   lg: {
-    shadowColor: '#3D3654',
-    shadowOpacity: 0.14,
-    shadowRadius: 28,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 8,
+    shadowColor: '#261E2C',
+    shadowOpacity: 0.12,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 6,
   },
 };
 
-// Placeholder avatar/tile tints, so an empty photo is colorful instead
-// of a gray box. Picked by a stable hash of the name.
+// Placeholder avatar tints, so a business without a photo gets its
+// initials on a soft color instead of an empty box. Picked by a stable
+// hash of the name.
 const AVATAR_TINTS = [
-  { bg: colors.accent100, fg: colors.accent700 },
-  { bg: colors.mintTint, fg: '#00A488' },
-  { bg: colors.sunTint, fg: '#C98F00' },
-  { bg: colors.grapeTint, fg: '#6B4FC9' },
+  { bg: '#FBE7DF', fg: '#A83C22' },
+  { bg: '#E4F2EA', fg: '#2F6B4F' },
+  { bg: '#FCF1D9', fg: '#7A5200' },
+  { bg: '#ECE6F3', fg: '#5B4A78' },
+  { bg: '#E3EEF3', fg: '#335E73' },
 ];
 
 export function tintFor(seed: string): { bg: string; fg: string } {

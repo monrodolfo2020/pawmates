@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Image, Pressable, StyleSheet, Linking } from 'react-native';
-import { MapPin, Clock, MessageCircle, PawPrint, Quote, Navigation } from 'lucide-react-native';
+import { Clock, MapPin, MessageCircle, Navigation, PawPrint, Quote, ShieldCheck } from 'lucide-react-native';
 import { CATEGORY_LABELS_SINGULAR, PageDesign, PageSection, ProviderDetail } from '../api/client';
 import { fonts, radius, space } from '../theme/tokens';
 import { whatsappUrl } from '../utils/contactLinks';
@@ -28,7 +28,7 @@ export default function MicrositeView({ business, design, compact = false }: Pro
   // editor's frame is scaled down to match.
   const scale = compact ? 0.82 : 1;
 
-  const heading = design.font === 'display' ? fonts.heading : fonts.bodyBold;
+  const heading = design.font === 'display' ? fonts.display : fonts.bodyBold;
   const cover = design.cover ?? business.photos[0] ?? business.photo;
   // Whichever photo became the cover shouldn't repeat inside the gallery.
   const gallery = business.photos.filter((uri) => uri !== cover);
@@ -48,7 +48,7 @@ export default function MicrositeView({ business, design, compact = false }: Pro
     design.sections.find((s) => s.id === id)?.enabled ?? true;
 
   const sectionTitle = (text: string) => (
-    <Text style={[styles.sectionTitle, { fontFamily: heading, color: design.textColor, fontSize: 18 * scale }]}>
+    <Text style={[styles.sectionTitle, { fontFamily: heading, color: design.textColor, fontSize: (design.font === 'display' ? 23 : 18) * scale }]}>
       {text}
     </Text>
   );
@@ -179,10 +179,12 @@ export default function MicrositeView({ business, design, compact = false }: Pro
         <View
           style={[
             styles.coverBand,
-            { height: (design.template === 'minimal' ? 96 : 240) * scale, backgroundColor: design.primaryColor },
+            // Without a photo, a soft wash of the page's color rather than a
+            // solid slab of it: the name below is what should stand out.
+            { height: (design.template === 'minimal' ? 96 : 160) * scale, backgroundColor: design.primaryColor + '1F' },
           ]}
         >
-          {!design.logo && <PawPrint size={40 * scale} strokeWidth={1.5} color="#fff" />}
+          {!design.logo && <PawPrint size={40 * scale} strokeWidth={1.5} color={design.primaryColor} />}
         </View>
       )}
 
@@ -202,37 +204,30 @@ export default function MicrositeView({ business, design, compact = false }: Pro
             resizeMode="cover"
           />
         )}
-        <Text style={[styles.name, { fontFamily: heading, color: design.textColor, fontSize: 30 * scale }]}>
+        <Text style={[styles.name, { fontFamily: heading, color: design.textColor, fontSize: (design.font === 'display' ? 38 : 30) * scale }]}>
           {business.name}
         </Text>
-        <View style={styles.badges}>
-          <View style={[styles.chip, { backgroundColor: design.primaryColor }]}>
-            <Text style={[styles.chipText, { fontSize: 11 * scale }]}>
-              {CATEGORY_LABELS_SINGULAR[business.category]}
-            </Text>
+        <Text style={[styles.meta, muted(0.7), { fontSize: 14.5 * scale }]}>
+          {[CATEGORY_LABELS_SINGULAR[business.category], business.specialty].filter(Boolean).join(' · ')}
+        </Text>
+        {(business.price || business.identityVerified) && (
+          <View style={styles.badges}>
+            {business.price && (
+              <Text style={[styles.price, { color: design.textColor, fontSize: 15 * scale }]}>
+                {money(business.price.amount, business.price.currency)}
+                <Text style={[styles.meta, muted(0.7)]}> por paseo</Text>
+              </Text>
+            )}
+            {business.identityVerified && (
+              <View style={styles.verified}>
+                <ShieldCheck size={15 * scale} strokeWidth={2} color={design.primaryColor} />
+                <Text style={[styles.verifiedText, { color: design.primaryColor, fontSize: 13 * scale }]}>
+                  Identidad verificada
+                </Text>
+              </View>
+            )}
           </View>
-          {business.identityVerified && (
-            <View style={[styles.chipOutline, { borderColor: design.primaryColor }]}>
-              <Text style={[styles.chipOutlineText, { color: design.primaryColor, fontSize: 11 * scale }]}>
-                Identidad verificada ✓
-              </Text>
-            </View>
-          )}
-          {business.specialty && (
-            <View style={[styles.chipOutline, { borderColor: design.primaryColor }]}>
-              <Text style={[styles.chipOutlineText, { color: design.primaryColor, fontSize: 11 * scale }]}>
-                {business.specialty}
-              </Text>
-            </View>
-          )}
-          {business.price && (
-            <View style={[styles.chipOutline, { borderColor: design.primaryColor }]}>
-              <Text style={[styles.chipOutlineText, { color: design.primaryColor, fontSize: 11 * scale }]}>
-                {money(business.price.amount, business.price.currency)}/paseo
-              </Text>
-            </View>
-          )}
-        </View>
+        )}
       </View>
 
       {sectionOrder.map(renderSection)}
@@ -254,11 +249,11 @@ const styles = StyleSheet.create({
   headerBlock: { paddingHorizontal: space.s4, gap: space.s2 },
   logo: { borderWidth: 3 },
   name: {},
-  badges: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  chip: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: radius.pill },
-  chipText: { fontFamily: fonts.bodyBold, color: '#fff' },
-  chipOutline: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: radius.pill, borderWidth: 1.5 },
-  chipOutlineText: { fontFamily: fonts.bodyMedium },
+  badges: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: space.s4, rowGap: space.s1 },
+  meta: { fontFamily: fonts.body },
+  price: { fontFamily: fonts.bodyBold },
+  verified: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  verifiedText: { fontFamily: fonts.bodySemiBold },
 
   body: { paddingHorizontal: space.s4, fontFamily: fonts.body, lineHeight: 21 },
   section: { paddingHorizontal: space.s4, gap: space.s2 },
@@ -273,13 +268,13 @@ const styles = StyleSheet.create({
   outlineButton: {
     marginHorizontal: space.s4,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.s2,
-    paddingVertical: 12, borderRadius: radius.pill, borderWidth: 1.5,
+    paddingVertical: 12, borderRadius: radius.pill, borderWidth: 1,
   },
   outlineButtonText: { fontFamily: fonts.bodyBold },
 
   infoCard: {
     marginHorizontal: space.s4, gap: space.s2,
-    padding: space.s4, borderRadius: radius.lg, borderWidth: 1.5,
+    padding: space.s4, borderRadius: radius.lg, borderWidth: 1,
   },
   infoRow: { flexDirection: 'row', alignItems: 'center', gap: space.s2 },
   infoText: { flex: 1, fontFamily: fonts.body },

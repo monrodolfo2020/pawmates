@@ -1,22 +1,25 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Image, Platform } from 'react-native';
-import { ChevronLeft, MessageCircle, Camera } from 'lucide-react-native';
+import { MessageCircle, Camera } from 'lucide-react-native';
 import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
 import Svg, { Polyline, Circle } from 'react-native-svg';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
-import Button, { IconButton } from '../components/Button';
+import ScreenHeader from '../components/ScreenHeader';
+import Button from '../components/Button';
 import Card from '../components/Card';
 import { CardMeta, CardBody } from '../components/CardText';
-import Tag from '../components/Tag';
-import { colors, fonts, space } from '../theme/tokens';
+import Tag, { bookingStatusVariant } from '../components/Tag';
+import { colors, fonts, radius, space, type } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
 import { api, BookingSummary, TripDetail, TripPoint } from '../api/client';
 import { mapboxRouteImageUrl } from '../utils/mapboxStaticUrl';
 import { resizeImagePhoto } from '../utils/resizeImagePhoto';
 import { formatWhen } from '../utils/bookingSlots';
+import Notice from '../components/Notice';
+import BottomBar from '../components/BottomBar';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Live'>;
 
@@ -215,7 +218,7 @@ export default function LiveWalkScreen({ navigation, route }: Props) {
       <ScreenContainer>
         <Header onBack={() => navigation.goBack()} title="Paseo" />
         <View style={styles.pad}>
-          <CardMeta style={{ color: colors.accent }}>{loadError}</CardMeta>
+          <Notice tone="danger">{loadError}</Notice>
         </View>
       </ScreenContainer>
     );
@@ -223,7 +226,7 @@ export default function LiveWalkScreen({ navigation, route }: Props) {
 
   return (
     <ScreenContainer>
-      <Header onBack={() => navigation.goBack()} title={`Paseo de ${petLabel}`} tag={status ? STATUS_LABEL[status] : undefined} />
+      <Header onBack={() => navigation.goBack()} title={`Paseo de ${petLabel}`} tag={status ? STATUS_LABEL[status] : undefined} tagVariant={status ? bookingStatusVariant(status) : undefined} />
 
       {!booking && <CardMeta style={styles.pad}>Cargando…</CardMeta>}
 
@@ -240,10 +243,10 @@ export default function LiveWalkScreen({ navigation, route }: Props) {
           )}
 
           {isWalker && live && gpsState === 'denied' && (
-            <CardMeta style={{ color: colors.accent }}>
+            <Notice tone="danger">
               Sin permiso de ubicación no se dibuja la ruta. Puedes seguir registrando fotos y
               necesidades; actívalo en tu navegador o teléfono para que {other} vea el recorrido.
-            </CardMeta>
+            </Notice>
           )}
 
           <View style={styles.map}>
@@ -266,7 +269,7 @@ export default function LiveWalkScreen({ navigation, route }: Props) {
                   cy={points[points.length - 1].y}
                   r={7}
                   fill={colors.accent}
-                  stroke={colors.accent200}
+                  stroke={colors.accentTintLine}
                   strokeWidth={4}
                 />
               </Svg>
@@ -291,7 +294,7 @@ export default function LiveWalkScreen({ navigation, route }: Props) {
                 style={{ flex: 1 }}
                 disabled={busy !== null}
                 onPress={() => void takePhoto()}
-                icon={<Camera size={14} strokeWidth={1.5} color={colors.text} />}
+                icon={<Camera size={16} strokeWidth={1.75} color={colors.text} />}
               >
                 {busy === 'photo' ? 'Subiendo…' : 'Foto'}
               </Button>
@@ -316,13 +319,13 @@ export default function LiveWalkScreen({ navigation, route }: Props) {
 
           <Button
             variant="secondary"
-            icon={<MessageCircle size={14} strokeWidth={1.5} color={colors.text} />}
+            icon={<MessageCircle size={16} strokeWidth={1.75} color={colors.text} />}
             onPress={() => navigation.navigate('Chat', { bookingId })}
           >
             {`Mensaje a ${other}`}
           </Button>
 
-          {actionError && <CardMeta style={{ color: colors.accent }}>{actionError}</CardMeta>}
+          {actionError && <Notice tone="danger">{actionError}</Notice>}
 
           <Text style={styles.h5}>{finished ? 'Resumen del paseo' : 'Bitácora'}</Text>
           {events.length === 0 && (
@@ -349,7 +352,7 @@ export default function LiveWalkScreen({ navigation, route }: Props) {
       )}
 
       {booking && isWalker && (status === 'confirmed' || live) && (
-        <View style={styles.footer}>
+        <BottomBar>
           {status === 'confirmed' ? (
             <Button
               variant="primary"
@@ -369,23 +372,19 @@ export default function LiveWalkScreen({ navigation, route }: Props) {
               {busy === 'finish' ? 'Terminando…' : 'Terminar paseo'}
             </Button>
           )}
-        </View>
+        </BottomBar>
       )}
     </ScreenContainer>
   );
 }
 
-function Header({ onBack, title, tag }: { onBack: () => void; title: string; tag?: string }) {
+function Header({ onBack, title, tag, tagVariant }: { onBack: () => void; title: string; tag?: string; tagVariant?: 'success' | 'warning' | 'neutral' | 'danger' }) {
   return (
-    <View style={styles.header}>
-      <IconButton onPress={onBack}>
-        <ChevronLeft size={18} strokeWidth={1.5} color={colors.text} />
-      </IconButton>
-      <Text style={styles.title} numberOfLines={1}>
-        {title}
-      </Text>
-      {tag && <Tag variant="accent">{tag}</Tag>}
-    </View>
+    <ScreenHeader
+      onBack={onBack}
+      title={title}
+      right={tag ? <Tag variant={tagVariant ?? 'neutral'}>{tag}</Tag> : undefined}
+    />
   );
 }
 
@@ -399,25 +398,22 @@ function Stat({ label, value }: { label: string; value: string }) {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    paddingHorizontal: space.s3, paddingVertical: space.s2,
-    flexDirection: 'row', alignItems: 'center', gap: space.s3,
-  },
-  title: { flex: 1, fontFamily: fonts.heading, fontSize: 20, color: colors.text },
   pad: { paddingHorizontal: space.s4 },
-  scroll: { paddingHorizontal: space.s4, gap: space.s3, paddingBottom: space.s4 },
+  scroll: { paddingHorizontal: space.s4, gap: space.s3, paddingBottom: space.s6 },
   map: {
-    height: 210,
-    backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.divider,
+    height: 220, borderRadius: radius.lg,
+    backgroundColor: colors.panel, borderWidth: 1, borderColor: colors.divider,
     alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
   },
-  mapEmpty: { fontFamily: fonts.body, fontSize: 12, color: colors.text, opacity: 0.5, textAlign: 'center', paddingHorizontal: space.s4 },
+  mapEmpty: { ...type.small, textAlign: 'center', paddingHorizontal: space.s4 },
   stats: { flexDirection: 'row', gap: space.s2 },
-  stat: { flex: 1, alignItems: 'center', paddingVertical: space.s2, borderWidth: 1, borderColor: colors.divider },
-  statValue: { fontFamily: fonts.heading, fontSize: 16, color: colors.text },
-  statLabel: { fontFamily: fonts.body, fontSize: 11, color: colors.textMuted70 },
+  stat: {
+    flex: 1, alignItems: 'center', paddingVertical: space.s3, gap: 2,
+    borderRadius: radius.md, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.divider,
+  },
+  statValue: { fontFamily: fonts.bodyBold, fontSize: 17, color: colors.text },
+  statLabel: { ...type.meta },
   row: { flexDirection: 'row', gap: space.s2 },
-  h5: { fontFamily: fonts.heading, fontSize: 16, color: colors.text, marginTop: space.s2 },
-  logPhoto: { width: 48, height: 48, marginRight: space.s3 },
-  footer: { padding: space.s4 },
+  h5: { ...type.section, marginTop: space.s3 },
+  logPhoto: { width: 52, height: 52, borderRadius: radius.sm },
 });

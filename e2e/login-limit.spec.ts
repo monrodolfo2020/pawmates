@@ -4,7 +4,7 @@ import { createOwner, PASSWORD } from './helpers';
 test('después de 5 contraseñas equivocadas la cuenta espera 15 minutos', async ({ page }) => {
   const owner = await createOwner();
   await page.goto('/');
-  await page.getByText('Ya tengo cuenta — iniciar sesión').click();
+  await page.getByText('Ya tengo cuenta · Iniciar sesión').click();
   await page.getByPlaceholder('tu@correo.com').fill(owner.email);
 
   for (let i = 1; i <= 5; i++) {

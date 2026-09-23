@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { ChevronLeft } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
-import { IconButton } from '../components/Button';
 import Button from '../components/Button';
 import TextField from '../components/TextField';
-import Card from '../components/Card';
-import { CardBody } from '../components/CardText';
+import Notice from '../components/Notice';
+import ScreenHeader from '../components/ScreenHeader';
 import { colors, fonts, space } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
 
@@ -33,12 +31,11 @@ export default function LoginScreen({ navigation }: Props) {
 
   return (
     <ScreenContainer>
-      <View style={styles.header}>
-        <IconButton onPress={() => navigation.goBack()}>
-          <ChevronLeft size={18} strokeWidth={1.5} color={colors.text} />
-        </IconButton>
-        <Text style={styles.title}>Iniciar sesión</Text>
-      </View>
+      <ScreenHeader
+        onBack={() => navigation.goBack()}
+        title="Iniciar sesión"
+        subtitle="Qué gusto verte de nuevo."
+      />
       <View style={styles.body}>
         <TextField
           label="Correo"
@@ -57,11 +54,7 @@ export default function LoginScreen({ navigation }: Props) {
         <Pressable onPress={() => navigation.navigate('ForgotPassword')}>
           <Text style={styles.forgotLink}>¿Olvidaste tu contraseña?</Text>
         </Pressable>
-        {s.authError && (
-          <Card>
-            <CardBody style={{ color: colors.accent }}>{s.authError}</CardBody>
-          </Card>
-        )}
+        {s.authError && <Notice tone="danger">{s.authError}</Notice>}
         <View style={styles.footer}>
           <Button
             variant="primary"
@@ -78,12 +71,7 @@ export default function LoginScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    paddingHorizontal: space.s3, paddingVertical: space.s2,
-    flexDirection: 'row', alignItems: 'center', gap: space.s3,
-  },
-  title: { fontFamily: fonts.heading, fontSize: 20, color: colors.text },
   body: { paddingHorizontal: space.s4, gap: space.s4 },
-  forgotLink: { fontFamily: fonts.bodyMedium, fontSize: 13, color: colors.accent, marginTop: -space.s2 },
+  forgotLink: { fontFamily: fonts.bodySemiBold, fontSize: 14, color: colors.accent, marginTop: -space.s1 },
   footer: { marginTop: space.s2 },
 });

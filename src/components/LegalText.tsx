@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, fonts, space } from '../theme/tokens';
+import { colors, fonts, space, type } from '../theme/tokens';
 
 /**
  * Renders the legal documents, which are authored as markdown in
@@ -136,14 +136,14 @@ export default function LegalText({ markdown }: { markdown: string }) {
 
 const styles = StyleSheet.create({
   wrap: { gap: space.s3 },
-  h1: { fontFamily: fonts.heading, fontSize: 24, color: colors.text, marginTop: space.s2 },
-  h2: { fontFamily: fonts.heading, fontSize: 17, color: colors.text, marginTop: space.s3 },
-  h3: { fontFamily: fonts.bodyBold, fontSize: 14.5, color: colors.text, marginTop: space.s2 },
-  body: { fontFamily: fonts.body, fontSize: 13.5, lineHeight: 21, color: colors.text, opacity: 0.9 },
-  bold: { fontFamily: fonts.bodyBold, opacity: 1 },
+  h1: { ...type.title, marginTop: space.s2 },
+  h2: { ...type.section, marginTop: space.s3 },
+  h3: { fontFamily: fonts.bodyBold, fontSize: 15.5, color: colors.text, marginTop: space.s2 },
+  body: { fontFamily: fonts.body, fontSize: 15, lineHeight: 23, color: colors.text },
+  bold: { fontFamily: fonts.bodyBold },
   list: { gap: 6 },
   listRow: { flexDirection: 'row', gap: space.s2 },
   listBody: { flex: 1 },
-  bullet: { fontFamily: fonts.body, fontSize: 13.5, lineHeight: 21, color: colors.accent },
+  bullet: { fontFamily: fonts.body, fontSize: 15, lineHeight: 23, color: colors.textMuted },
   rule: { height: 1, backgroundColor: colors.divider, marginVertical: space.s2 },
 });

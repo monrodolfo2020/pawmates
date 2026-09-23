@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { colors, fonts } from '../theme/tokens';
+import { Check } from 'lucide-react-native';
+import { colors, fonts, space } from '../theme/tokens';
 
 type Props = {
   label: string;
@@ -13,22 +14,32 @@ type Props = {
 // selectable dot with an accent-filled ring when checked.
 export default function RadioRow({ label, selected, onPress, square }: Props) {
   return (
-    <Pressable onPress={onPress} style={styles.row}>
-      <View style={[styles.dot, square && styles.dotSquare, selected && styles.dotSelected]} />
+    <Pressable
+      accessibilityRole={square ? 'checkbox' : 'radio'}
+      accessibilityState={{ checked: selected }}
+      onPress={onPress}
+      style={styles.row}
+    >
+      <View style={[styles.dot, square && styles.dotSquare, selected && styles.dotSelected]}>
+        {selected && square && <Check size={13} strokeWidth={3} color={colors.onAccent} />}
+        {selected && !square && <View style={styles.inner} />}
+      </View>
       <Text style={styles.label}>{label}</Text>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 4 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: space.s3, paddingVertical: space.s2, minHeight: 40 },
   dot: {
-    width: 16, height: 16, borderRadius: 8, borderWidth: 1.5, borderColor: colors.divider,
+    width: 20, height: 20, borderRadius: 10, borderWidth: 1, borderColor: colors.border,
+    backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center',
   },
-  dotSquare: { borderRadius: 5 },
+  dotSquare: { borderRadius: 6 },
+  inner: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.onAccent },
   dotSelected: {
     borderColor: colors.accent,
     backgroundColor: colors.accent,
   },
-  label: { fontFamily: fonts.body, fontSize: 14, color: colors.text },
+  label: { fontFamily: fonts.body, fontSize: 15, color: colors.text, flexShrink: 1 },
 });

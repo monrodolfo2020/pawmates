@@ -4,7 +4,7 @@ import { uniqueEmail } from './helpers';
 test.describe('Registro de un dueño', () => {
   test('se registra, acepta los documentos, agrega su mascota y llega al inicio', async ({ page }) => {
     await page.goto('/');
-    await page.getByText('Soy dueño de mascota — Registrarse').click();
+    await page.getByText('Soy dueño').click();
 
     await page.getByPlaceholder('Tu nombre').fill('Lucía');
     await page.getByPlaceholder('tu@correo.com').fill(uniqueEmail('lucia'));
@@ -28,7 +28,7 @@ test.describe('Registro de un dueño', () => {
 
   test('no deja crear la cuenta si las contraseñas no coinciden', async ({ page }) => {
     await page.goto('/');
-    await page.getByText('Soy dueño de mascota — Registrarse').click();
+    await page.getByText('Soy dueño').click();
     await page.getByPlaceholder('Tu nombre').fill('Lucía');
     await page.getByPlaceholder('tu@correo.com').fill(uniqueEmail('lucia'));
     await page.getByPlaceholder('Mínimo 8 caracteres').fill('Password1!');

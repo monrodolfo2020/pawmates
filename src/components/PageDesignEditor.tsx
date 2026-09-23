@@ -3,7 +3,7 @@ import { View, Text, TextInput, Pressable, StyleSheet, Switch } from 'react-nati
 import { ArrowUp, ArrowDown, X, Plus } from 'lucide-react-native';
 import PhotoPicker from './PhotoPicker';
 import Card from './Card';
-import { CardBody, CardMeta } from './CardText';
+import { CardMeta, CardTitle } from './CardText';
 import {
   FONT_LABELS,
   PAGE_FONTS,
@@ -28,9 +28,9 @@ const MAX_TESTIMONIALS = 6; // matches parsePageDesign on the backend
 // alone is a good way to end up with unreadable pages, so each color is a
 // row of curated swatches — with the hex still editable underneath for
 // anyone matching an exact brand color.
-const PRIMARY_SWATCHES = ['#FF6B4A', '#E85234', '#00C2A0', '#2E86DE', '#8E44AD', '#F2A33C', '#1D1533'];
-const BACKGROUND_SWATCHES = ['#FFF7F0', '#FFFFFF', '#F7F0E8', '#F2F7F6', '#1D1533', '#221E2E'];
-const TEXT_SWATCHES = ['#1D1533', '#3A3350', '#FFFFFF', '#F7F0E8'];
+const PRIMARY_SWATCHES = ['#C8492A', '#FF6B4A', '#2F7A55', '#2E6F95', '#6B4FA3', '#B7791F', '#261E2C'];
+const BACKGROUND_SWATCHES = ['#FBF6F1', '#FFFFFF', '#F4ECE3', '#F2F7F6', '#261E2C', '#1E1A24'];
+const TEXT_SWATCHES = ['#261E2C', '#3A3350', '#FFFFFF', '#F4ECE3'];
 
 const isHex = (value: string) => /^#[0-9a-fA-F]{6}$/.test(value);
 
@@ -95,7 +95,7 @@ function ColorRow({
         autoCorrect={false}
         maxLength={7}
         placeholder="#FF6B4A"
-        placeholderTextColor={colors.textMuted50}
+        placeholderTextColor={colors.textMuted}
         style={styles.hexInput}
       />
     </View>
@@ -133,7 +133,7 @@ export default function PageDesignEditor({ design, onChange }: Props) {
   return (
     <View style={styles.wrap}>
       <Card>
-        <CardBody style={{ margin: 0 }}>Plantilla</CardBody>
+        <CardTitle>Plantilla</CardTitle>
         <Chips options={PAGE_TEMPLATES} labels={TEMPLATE_LABELS} value={design.template}
           onChange={(template: PageTemplate) => set({ template })} />
         <CardMeta>
@@ -142,13 +142,13 @@ export default function PageDesignEditor({ design, onChange }: Props) {
       </Card>
 
       <Card>
-        <CardBody style={{ margin: 0 }}>Tipografía</CardBody>
+        <CardTitle>Tipografía</CardTitle>
         <Chips options={PAGE_FONTS} labels={FONT_LABELS} value={design.font}
           onChange={(font: PageFont) => set({ font })} />
       </Card>
 
       <Card>
-        <CardBody style={{ margin: 0 }}>Colores</CardBody>
+        <CardTitle>Colores</CardTitle>
         <ColorRow label="Color principal" value={design.primaryColor} swatches={PRIMARY_SWATCHES}
           onChange={(primaryColor) => set({ primaryColor })} />
         <ColorRow label="Fondo" value={design.backgroundColor} swatches={BACKGROUND_SWATCHES}
@@ -158,7 +158,7 @@ export default function PageDesignEditor({ design, onChange }: Props) {
       </Card>
 
       <Card>
-        <CardBody style={{ margin: 0 }}>Logo y portada</CardBody>
+        <CardTitle>Logo y portada</CardTitle>
         <View style={styles.imageRow}>
           <View style={styles.imageSlot}>
             <Text style={styles.fieldLabel}>Logo</Text>
@@ -199,18 +199,18 @@ export default function PageDesignEditor({ design, onChange }: Props) {
       </Card>
 
       <Card>
-        <CardBody style={{ margin: 0 }}>Secciones</CardBody>
+        <CardTitle>Secciones</CardTitle>
         <CardMeta>Arrástralas con las flechas para cambiar el orden, o apágalas para ocultarlas.</CardMeta>
         {design.sections.map((section, i) => (
           <View key={section.id} style={styles.sectionRow}>
             <View style={styles.arrows}>
               <Pressable onPress={() => moveSection(i, -1)} disabled={i === 0} hitSlop={4}>
                 <ArrowUp size={16} strokeWidth={2}
-                  color={i === 0 ? colors.textMuted50 : colors.text} />
+                  color={i === 0 ? colors.textMuted : colors.text} />
               </Pressable>
               <Pressable onPress={() => moveSection(i, 1)} disabled={i === design.sections.length - 1} hitSlop={4}>
                 <ArrowDown size={16} strokeWidth={2}
-                  color={i === design.sections.length - 1 ? colors.textMuted50 : colors.text} />
+                  color={i === design.sections.length - 1 ? colors.textMuted : colors.text} />
               </Pressable>
             </View>
             <Text style={styles.sectionName}>{SECTION_LABELS[section.id]}</Text>
@@ -225,7 +225,7 @@ export default function PageDesignEditor({ design, onChange }: Props) {
       </Card>
 
       <Card>
-        <CardBody style={{ margin: 0 }}>Testimonios</CardBody>
+        <CardTitle>Testimonios</CardTitle>
         <CardMeta>
           Lo que dicen tus clientes, en tus palabras: los escribes tú, no se recogen desde la app.
         </CardMeta>
@@ -237,14 +237,14 @@ export default function PageDesignEditor({ design, onChange }: Props) {
                 onPress={() => set({ testimonials: design.testimonials.filter((_, idx) => idx !== i) })}
                 hitSlop={8}
               >
-                <X size={14} strokeWidth={2} color={colors.textMuted70} />
+                <X size={14} strokeWidth={2} color={colors.textMuted} />
               </Pressable>
             </View>
             <TextInput
               value={t.text}
               onChangeText={(text) => setTestimonial(i, { text })}
               placeholder="Excelente trato con mi perro…"
-              placeholderTextColor={colors.textMuted50}
+              placeholderTextColor={colors.textMuted}
               multiline
               maxLength={280}
               style={[styles.input, styles.inputMultiline]}
@@ -253,7 +253,7 @@ export default function PageDesignEditor({ design, onChange }: Props) {
               value={t.author}
               onChangeText={(author) => setTestimonial(i, { author })}
               placeholder="Nombre del cliente"
-              placeholderTextColor={colors.textMuted50}
+              placeholderTextColor={colors.textMuted}
               maxLength={60}
               style={styles.input}
             />
@@ -277,12 +277,12 @@ export default function PageDesignEditor({ design, onChange }: Props) {
 
 const styles = StyleSheet.create({
   wrap: { gap: space.s4 },
-  fieldLabel: { fontFamily: fonts.bodyMedium, fontSize: 12, color: colors.textMuted70 },
+  fieldLabel: { fontFamily: fonts.bodyMedium, fontSize: 12, color: colors.textMuted },
 
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s2, alignItems: 'center' },
   chip: {
     paddingHorizontal: space.s3, paddingVertical: 6,
-    borderRadius: radius.pill, borderWidth: 1.5, borderColor: colors.divider,
+    borderRadius: radius.pill, borderWidth: 1, borderColor: colors.divider,
   },
   chipSelected: { backgroundColor: colors.accent, borderColor: colors.accent },
   chipText: { fontFamily: fonts.bodyMedium, fontSize: 13, color: colors.text },
@@ -294,15 +294,15 @@ const styles = StyleSheet.create({
   hexInput: {
     alignSelf: 'flex-start', minWidth: 110,
     paddingHorizontal: space.s3, paddingVertical: 6,
-    borderWidth: 1.5, borderColor: colors.divider, borderRadius: radius.sm,
+    borderWidth: 1, borderColor: colors.divider, borderRadius: radius.sm,
     fontFamily: fonts.body, fontSize: 13, color: colors.text,
   },
 
   imageRow: { flexDirection: 'row', gap: space.s4 },
   imageSlot: { gap: space.s2, alignItems: 'flex-start' },
-  logoSlot: { width: 84, height: 84, borderRadius: 42, backgroundColor: colors.accent100 },
-  coverSlot: { width: 150, height: 84, borderRadius: radius.md, backgroundColor: colors.accent100 },
-  removeLink: { fontFamily: fonts.bodyMedium, fontSize: 12, color: colors.textMuted70 },
+  logoSlot: { width: 84, height: 84, borderRadius: 42, backgroundColor: colors.accentTint },
+  coverSlot: { width: 150, height: 84, borderRadius: radius.md, backgroundColor: colors.accentTint },
+  removeLink: { fontFamily: fonts.bodyMedium, fontSize: 12, color: colors.textMuted },
 
   sectionRow: { flexDirection: 'row', alignItems: 'center', gap: space.s3 },
   arrows: { gap: 2 },
@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
   testimonialHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   input: {
     paddingHorizontal: space.s3, paddingVertical: 8,
-    borderWidth: 1.5, borderColor: colors.divider, borderRadius: radius.sm,
+    borderWidth: 1, borderColor: colors.divider, borderRadius: radius.sm,
     fontFamily: fonts.body, fontSize: 13.5, color: colors.text,
   },
   inputMultiline: { minHeight: 64, textAlignVertical: 'top' },

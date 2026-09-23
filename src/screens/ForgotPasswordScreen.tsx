@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { ChevronLeft, MailCheck } from 'lucide-react-native';
+import { MailCheck } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
-import { IconButton } from '../components/Button';
 import Button from '../components/Button';
 import TextField from '../components/TextField';
-import Card from '../components/Card';
 import { CardBody } from '../components/CardText';
-import { colors, fonts, space } from '../theme/tokens';
+import { colors, space, type } from '../theme/tokens';
 import { api } from '../api/client';
+import ScreenHeader from '../components/ScreenHeader';
+import Notice from '../components/Notice';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ForgotPassword'>;
 
@@ -39,7 +39,7 @@ export default function ForgotPasswordScreen({ navigation }: Props) {
     return (
       <ScreenContainer>
         <View style={styles.body}>
-          <MailCheck size={40} strokeWidth={1.5} color={colors.accent} />
+          <MailCheck size={40} strokeWidth={1.25} color={colors.text} />
           <Text style={styles.title}>Revisa tu correo</Text>
           <CardBody style={{ textAlign: 'center' }}>
             Si {email.trim()} tiene una cuenta con nosotros, te enviamos un enlace para restablecer tu
@@ -55,12 +55,7 @@ export default function ForgotPasswordScreen({ navigation }: Props) {
 
   return (
     <ScreenContainer>
-      <View style={styles.header}>
-        <IconButton onPress={() => navigation.goBack()}>
-          <ChevronLeft size={18} strokeWidth={1.5} color={colors.text} />
-        </IconButton>
-        <Text style={styles.headerTitle}>Olvidé mi contraseña</Text>
-      </View>
+      <ScreenHeader onBack={() => navigation.goBack()} title="Olvidé mi contraseña" />
       <View style={styles.form}>
         <CardBody>Escribe tu correo y te enviamos un enlace para crear una contraseña nueva.</CardBody>
         <TextField
@@ -70,11 +65,7 @@ export default function ForgotPasswordScreen({ navigation }: Props) {
           keyboardType="email-address"
           placeholder="tu@correo.com"
         />
-        {error && (
-          <Card>
-            <CardBody style={{ color: colors.accent }}>{error}</CardBody>
-          </Card>
-        )}
+        {error && <Notice tone="danger">{error}</Notice>}
         <Button variant="primary" block disabled={submitting || !email.trim()} onPress={handleSubmit}>
           {submitting ? 'Enviando…' : 'Enviar enlace'}
         </Button>
@@ -84,12 +75,7 @@ export default function ForgotPasswordScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    paddingHorizontal: space.s3, paddingVertical: space.s2,
-    flexDirection: 'row', alignItems: 'center', gap: space.s3,
-  },
-  headerTitle: { fontFamily: fonts.heading, fontSize: 20, color: colors.text },
   form: { paddingHorizontal: space.s4, gap: space.s4 },
   body: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.s3, paddingHorizontal: space.s6 },
-  title: { fontFamily: fonts.heading, fontSize: 26, color: colors.text },
+  title: { ...type.title },
 });

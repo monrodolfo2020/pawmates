@@ -1,42 +1,22 @@
 import React from 'react';
 import { Text, TextStyle, StyleProp } from 'react-native';
-import { colors, fonts } from '../theme/tokens';
+import { type } from '../theme/tokens';
 
-type P = { children: React.ReactNode; style?: StyleProp<TextStyle> };
+type P = { children: React.ReactNode; style?: StyleProp<TextStyle>; numberOfLines?: number };
 
-export function CardKicker({ children, style }: P) {
-  return (
-    <Text
-      style={[
-        { fontFamily: fonts.body, fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', color: colors.accent },
-        style,
-      ]}
-    >
-      {children}
-    </Text>
-  );
+/** Small uppercase label above a title — muted, never a color. */
+export function CardKicker({ children, style, numberOfLines }: P) {
+  return <Text numberOfLines={numberOfLines} style={[type.kicker, style]}>{children}</Text>;
 }
 
-export function CardTitle({ children, style }: P) {
-  return (
-    <Text style={[{ fontFamily: fonts.heading, fontSize: 17, lineHeight: 20, color: colors.text }, style]}>
-      {children}
-    </Text>
-  );
+export function CardTitle({ children, style, numberOfLines }: P) {
+  return <Text numberOfLines={numberOfLines} style={[type.cardTitle, style]}>{children}</Text>;
 }
 
-export function CardBody({ children, style }: P) {
-  return (
-    <Text style={[{ fontFamily: fonts.body, fontSize: 13, color: colors.text, opacity: 0.8 }, style]}>
-      {children}
-    </Text>
-  );
+export function CardBody({ children, style, numberOfLines }: P) {
+  return <Text numberOfLines={numberOfLines} style={[type.small, { fontSize: 14.5, lineHeight: 21 }, style]}>{children}</Text>;
 }
 
-export function CardMeta({ children, style }: P) {
-  return (
-    <Text style={[{ fontFamily: fonts.body, fontSize: 11, color: colors.textMuted50 }, style]}>
-      {children}
-    </Text>
-  );
+export function CardMeta({ children, style, numberOfLines }: P) {
+  return <Text numberOfLines={numberOfLines} style={[type.meta, style]}>{children}</Text>;
 }

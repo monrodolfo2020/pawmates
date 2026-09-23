@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import Field from './Field';
 import Tag from './Tag';
 import { CardMeta } from './CardText';
-import { colors, fonts } from '../theme/tokens';
+import { space, type } from '../theme/tokens';
 import { bookableDays, dayLabel, slotLabel, slotsFor } from '../utils/bookingSlots';
 
 export type When = { day: Date; slot: number | null };
@@ -87,10 +87,10 @@ export function chosenSlot(value: When, now = new Date()): number | null {
 }
 
 const styles = StyleSheet.create({
-  chipRow: { gap: 6, paddingRight: 24 },
-  groups: { gap: 12 },
-  group: { gap: 6 },
-  groupLabel: { fontFamily: fonts.bodyMedium, fontSize: 12, color: colors.textMuted70 },
-  slotGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  chipRow: { gap: space.s2, paddingRight: space.s6 },
+  groups: { gap: space.s4 },
+  group: { gap: space.s2 },
+  groupLabel: { ...type.kicker },
+  slotGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s2 },
   slot: { minWidth: 64, alignItems: 'center' },
 });

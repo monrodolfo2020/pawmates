@@ -1,70 +1,84 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { PawPrint } from 'lucide-react-native';
+import { Dog, GraduationCap, House, Scissors, Stethoscope } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
 import Button from '../components/Button';
-import { colors, fonts, radius, space } from '../theme/tokens';
+import Notice from '../components/Notice';
+import Wordmark from '../components/Wordmark';
+import { colors, fonts, radius, space, tintFor, type } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Welcome'>;
+
+const CATEGORIES = [
+  { label: 'Veterinarias', Icon: Stethoscope },
+  { label: 'Estéticas', Icon: Scissors },
+  { label: 'Paseadores', Icon: Dog },
+  { label: 'Hoteles', Icon: House },
+  { label: 'Entrenadores', Icon: GraduationCap },
+];
 
 export default function WelcomeScreen({ navigation }: Props) {
   const s = useAppState();
   return (
     <ScreenContainer>
+      <View style={styles.top}>
+        <Wordmark size={24} />
+      </View>
       <View style={styles.body}>
         {/* A session that ended because the account was suspended lands
             here, not on Login — so the reason has to be shown here too,
             or it just looks like the app logged them out for nothing. */}
-        {s.authError && (
-          <View style={styles.notice}>
-            <Text style={styles.noticeText}>{s.authError}</Text>
-          </View>
-        )}
-        <PawPrint size={40} strokeWidth={1.5} color={colors.accent} />
-        <Text style={styles.title}>PawMates</Text>
+        {s.authError && <Notice tone="danger">{s.authError}</Notice>}
+        <View style={styles.icons} accessibilityElementsHidden>
+          {CATEGORIES.map(({ label, Icon }) => {
+            const tint = tintFor(label);
+            return (
+              <View key={label} style={[styles.icon, { backgroundColor: tint.bg }]}>
+                <Icon size={24} strokeWidth={1.75} color={tint.fg} />
+              </View>
+            );
+          })}
+        </View>
+        <Text style={styles.headline}>Todo lo que tu mascota necesita, cerca de ti.</Text>
         <Text style={styles.subtitle}>
-          Veterinarias, estéticas, paseadores, hoteles y más: encuentra todo lo que tu mascota
-          necesita, o registra tu negocio y consigue tu propia página para compartir.
+          Encuentra negocios de confianza y contáctalos directo. Si tienes un negocio, consigue tu
+          propia página para compartir.
         </Text>
+        <Text style={styles.category}>{CATEGORIES.map((c) => c.label).join(' · ')}</Text>
+      </View>
 
-        <View style={styles.footer}>
-          <Button variant="secondary" block onPress={() => navigation.navigate('Home')}>
-            Ver servicios cerca de ti
+      <View style={styles.footer}>
+        <Button variant="primary" block onPress={() => navigation.navigate('Home')}>
+          Ver servicios cerca de ti
+        </Button>
+        <View style={styles.pair}>
+          <Button style={styles.half} onPress={() => navigation.navigate('Signup', { role: 'owner' })}>
+            Soy dueño
           </Button>
-          <Button
-            variant="primary"
-            block
-            onPress={() => navigation.navigate('Signup', { role: 'owner' })}
-          >
-            Soy dueño de mascota — Registrarse
-          </Button>
-          <Button
-            variant="secondary"
-            block
-            onPress={() => navigation.navigate('Signup', { role: 'provider' })}
-          >
-            Tengo un negocio de mascotas — Registrarse
-          </Button>
-          <Button variant="ghost" block onPress={() => navigation.navigate('Login')}>
-            Ya tengo cuenta — iniciar sesión
+          <Button style={styles.half} onPress={() => navigation.navigate('Signup', { role: 'provider' })}>
+            Tengo un negocio
           </Button>
         </View>
+        <Button variant="ghost" block onPress={() => navigation.navigate('Login')}>
+          Ya tengo cuenta · Iniciar sesión
+        </Button>
       </View>
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  body: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.s3, paddingHorizontal: space.s6 },
-  title: { fontFamily: fonts.heading, fontSize: 32, color: colors.text },
-  subtitle: { fontFamily: fonts.body, fontSize: 14, color: colors.text, opacity: 0.75, textAlign: 'center' },
-  footer: { width: '100%', marginTop: space.s6, gap: space.s2 },
-  notice: {
-    width: '100%', padding: space.s3, borderRadius: radius.md,
-    backgroundColor: colors.accent100, borderWidth: 1.5, borderColor: colors.accent200,
-  },
-  noticeText: { fontFamily: fonts.bodyMedium, fontSize: 13, color: colors.text, textAlign: 'center' },
+  top: { paddingHorizontal: space.s5, paddingTop: space.s4 },
+  body: { flex: 1, justifyContent: 'flex-end', gap: space.s4, paddingHorizontal: space.s5, paddingBottom: space.s8 },
+  icons: { flexDirection: 'row', gap: space.s2, marginBottom: space.s2 },
+  icon: { width: 52, height: 52, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' },
+  headline: { ...type.display, fontSize: 42, lineHeight: 46 },
+  subtitle: { ...type.body, color: colors.textMuted, fontSize: 16, lineHeight: 24 },
+  category: { fontFamily: fonts.bodyMedium, fontSize: 13.5, color: colors.textMuted },
+  footer: { paddingHorizontal: space.s5, paddingBottom: space.s5, gap: space.s2 },
+  pair: { flexDirection: 'row', gap: space.s2 },
+  half: { flex: 1 },
 });

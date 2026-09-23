@@ -91,7 +91,7 @@ export default function LocationPicker({
 
       {hasPoint ? (
         <View style={styles.chosen}>
-          <MapPin size={16} strokeWidth={2} color={colors.accent} />
+          <MapPin size={16} strokeWidth={2} color={colors.success} />
           <View style={{ flex: 1, gap: 2 }}>
             <Text style={styles.chosenText} numberOfLines={2}>
               {chosenLabel ?? 'Ubicación guardada'}
@@ -113,7 +113,7 @@ export default function LocationPicker({
             }}
             hitSlop={8}
           >
-            <X size={16} strokeWidth={2} color={colors.textMuted70} />
+            <X size={16} strokeWidth={2} color={colors.textMuted} />
           </Pressable>
         </View>
       ) : null}
@@ -123,13 +123,13 @@ export default function LocationPicker({
           value={query}
           onChangeText={setQuery}
           placeholder="Calle, número, colonia y ciudad"
-          placeholderTextColor={colors.textMuted50}
+          placeholderTextColor={colors.textMuted}
           style={styles.input}
           onSubmitEditing={() => void search()}
           returnKeyType="search"
         />
         <Pressable style={styles.searchBtn} onPress={() => void search()} disabled={searching}>
-          <Search size={15} strokeWidth={2} color={colors.bg} />
+          <Search size={15} strokeWidth={2} color={colors.text} />
           <Text style={styles.searchBtnText}>{searching ? '…' : 'Buscar'}</Text>
         </Pressable>
       </View>
@@ -138,7 +138,7 @@ export default function LocationPicker({
         <View style={styles.results}>
           {results.map((r, i) => (
             <Pressable key={`${r.latitude}-${r.longitude}-${i}`} style={styles.result} onPress={() => choose(r)}>
-              <MapPin size={14} strokeWidth={1.5} color={colors.textMuted70} />
+              <MapPin size={14} strokeWidth={1.5} color={colors.textMuted} />
               <Text style={styles.resultText} numberOfLines={2}>
                 {r.label}
               </Text>
@@ -154,34 +154,34 @@ export default function LocationPicker({
 
 const styles = StyleSheet.create({
   wrap: { gap: space.s2 },
-  label: { fontFamily: fonts.bodyMedium, fontSize: 12.5, color: colors.text },
-  note: { fontFamily: fonts.body, fontSize: 11.5, color: colors.textMuted70, lineHeight: 16 },
+  label: { fontFamily: fonts.bodySemiBold, fontSize: 13, color: colors.text },
+  note: { fontFamily: fonts.body, fontSize: 12.5, color: colors.textMuted, lineHeight: 17 },
 
   chosen: {
     flexDirection: 'row', alignItems: 'center', gap: space.s2,
     padding: space.s3, borderRadius: radius.md,
-    backgroundColor: colors.accent100, borderWidth: 1.5, borderColor: colors.accent200,
+    backgroundColor: colors.successTint, borderWidth: 1, borderColor: colors.successLine,
   },
   chosenText: { fontFamily: fonts.bodyMedium, fontSize: 12.5, color: colors.text },
-  coords: { fontFamily: fonts.body, fontSize: 11, color: colors.textMuted70 },
+  coords: { fontFamily: fonts.body, fontSize: 11, color: colors.textMuted },
 
   searchRow: { flexDirection: 'row', gap: space.s2, alignItems: 'center' },
   input: {
     flex: 1,
-    paddingHorizontal: space.s3, paddingVertical: 10,
-    borderWidth: 1.5, borderColor: colors.divider, borderRadius: radius.sm,
-    fontFamily: fonts.body, fontSize: 13.5, color: colors.text,
+    minHeight: 48, paddingHorizontal: space.s4, paddingVertical: space.s3,
+    borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, backgroundColor: colors.surface,
+    fontFamily: fonts.body, fontSize: 15, color: colors.text,
   },
   searchBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    paddingHorizontal: space.s3, paddingVertical: 11,
-    borderRadius: radius.sm, backgroundColor: colors.accent,
+    minHeight: 48, paddingHorizontal: space.s4,
+    borderRadius: radius.md, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border,
   },
-  searchBtnText: { fontFamily: fonts.bodyBold, fontSize: 13, color: colors.bg },
+  searchBtnText: { fontFamily: fonts.bodySemiBold, fontSize: 14, color: colors.text },
 
-  results: { gap: 2, borderWidth: 1.5, borderColor: colors.divider, borderRadius: radius.sm },
+  results: { gap: 2, borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, backgroundColor: colors.surface },
   result: { flexDirection: 'row', alignItems: 'center', gap: space.s2, padding: space.s3 },
   resultText: { flex: 1, fontFamily: fonts.body, fontSize: 12.5, color: colors.text },
 
-  message: { fontFamily: fonts.body, fontSize: 12, color: colors.textMuted70, lineHeight: 17 },
+  message: { fontFamily: fonts.body, fontSize: 12, color: colors.textMuted, lineHeight: 17 },
 });

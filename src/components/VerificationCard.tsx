@@ -4,13 +4,14 @@ import { ShieldCheck, ShieldAlert, Clock } from 'lucide-react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import Card from './Card';
 import Button from './Button';
-import { CardBody, CardMeta } from './CardText';
+import { CardMeta, CardTitle } from './CardText';
 import Tag from './Tag';
 import PhotoPicker, { PhotoResult } from './PhotoPicker';
 import LegalAcceptRow, { LegalLink } from './LegalAcceptRow';
 import { api, MyVerification } from '../api/client';
 import { colors, fonts, space } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
+import Notice from './Notice';
 
 type Props = {
   /** Opens the consent text; the card only links to it, the screen owns
@@ -71,9 +72,8 @@ export default function VerificationCard({ onOpenConsent }: Props) {
     return (
       <Card>
         <View style={styles.row}>
-          <ShieldCheck size={18} strokeWidth={1.5} color={colors.accent} />
-          <CardBody style={{ margin: 0, flex: 1 }}>Identidad verificada</CardBody>
-          <Tag variant="accent">Verificada ✓</Tag>
+          <ShieldCheck size={20} strokeWidth={1.75} color={colors.success} />
+          <CardTitle style={{ flex: 1, color: colors.success }}>Identidad verificada</CardTitle>
         </View>
         <CardMeta>
           Tu página muestra la insignia de identidad verificada. Tus fotos de identificación ya
@@ -87,9 +87,9 @@ export default function VerificationCard({ onOpenConsent }: Props) {
     return (
       <Card>
         <View style={styles.row}>
-          <Clock size={18} strokeWidth={1.5} color={colors.accent} />
-          <CardBody style={{ margin: 0, flex: 1 }}>Identidad: fotos recibidas</CardBody>
-          <Tag variant="outline">Revisando</Tag>
+          <Clock size={20} strokeWidth={1.75} color={colors.warning} />
+          <CardTitle style={{ flex: 1 }}>Identidad: fotos recibidas</CardTitle>
+          <Tag variant="warning">Revisando</Tag>
         </View>
         {/* Deliberately says nothing about whether the page is live: that
             depends on the business being approved, which is a separate
@@ -108,10 +108,15 @@ export default function VerificationCard({ onOpenConsent }: Props) {
   return (
     <Card>
       <View style={styles.row}>
-        <ShieldAlert size={18} strokeWidth={1.5} color={colors.accent} />
-        <CardBody style={{ margin: 0, flex: 1 }}>
+        <ShieldAlert
+          size={20}
+          strokeWidth={1.75}
+          color={state.status === 'rejected' ? colors.danger : colors.textMuted}
+        />
+        <CardTitle style={{ flex: 1 }}>
           {state.status === 'rejected' ? 'Verificación rechazada' : 'Verifica tu identidad'}
-        </CardBody>
+        </CardTitle>
+        <Tag variant={state.status === 'rejected' ? 'danger' : 'neutral'}>Opcional</Tag>
       </View>
       <CardMeta>
         {state.status === 'rejected'
@@ -148,7 +153,7 @@ export default function VerificationCard({ onOpenConsent }: Props) {
         <LegalLink onPress={onOpenConsent}>consentimiento de verificación</LegalLink>.
       </LegalAcceptRow>
 
-      {error && <CardMeta style={{ color: colors.accent }}>{error}</CardMeta>}
+      {error && <Notice tone="danger">{error}</Notice>}
 
       <Button variant="secondary" disabled={busy || !ready} onPress={() => void submit()}>
         {busy ? 'Enviando…' : 'Enviar para revisión'}
@@ -161,6 +166,6 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: space.s2 },
   photos: { flexDirection: 'row', gap: space.s3 },
   slot: { flex: 1, gap: 4 },
-  slotLabel: { fontFamily: fonts.bodyMedium, fontSize: 12, color: colors.textMuted70 },
+  slotLabel: { fontFamily: fonts.bodySemiBold, fontSize: 13, color: colors.text },
   photo: { width: '100%', aspectRatio: 1 },
 });

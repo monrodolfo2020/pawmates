@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
-import { ArrowRight, ChevronLeft } from 'lucide-react-native';
+import { View, ScrollView, StyleSheet } from 'react-native';
+import { ArrowRight } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
@@ -10,12 +10,13 @@ import PhotoPicker from '../components/PhotoPicker';
 import Segmented from '../components/Segmented';
 import Tag from '../components/Tag';
 import RadioRow from '../components/RadioRow';
-import Button, { IconButton } from '../components/Button';
-import Card from '../components/Card';
-import { CardBody } from '../components/CardText';
-import { colors, fonts, space } from '../theme/tokens';
+import Button from '../components/Button';
+import { colors, radius, space } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
 import { sizeOptions, temperamentOptions, vaccineOptions } from '../state/mockData';
+import Notice from '../components/Notice';
+import BottomBar from '../components/BottomBar';
+import ScreenHeader from '../components/ScreenHeader';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Onboarding'>;
 
@@ -67,21 +68,17 @@ export default function OnboardingScreen({ navigation, route }: Props) {
 
   return (
     <ScreenContainer>
-      <View style={styles.header}>
-        {isForcedFirstTime ? (
-          <Text style={styles.kicker}>Último paso</Text>
-        ) : (
-          <IconButton onPress={() => (navigation.canGoBack() ? navigation.goBack() : navigation.navigate('Home'))}>
-            <ChevronLeft size={18} strokeWidth={1.5} color={colors.text} />
-          </IconButton>
-        )}
-      </View>
+      <ScreenHeader
+        onBack={
+          isForcedFirstTime
+            ? undefined
+            : () => (navigation.canGoBack() ? navigation.goBack() : navigation.navigate('Home'))
+        }
+        kicker={isForcedFirstTime ? 'Último paso' : undefined}
+        title={title}
+        subtitle="Así los negocios que contactes saben a quién van a atender: su tamaño, su carácter y sus vacunas."
+      />
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.subtitle}>
-          Así los negocios que contactes saben a quién van a atender: su tamaño, su carácter y sus
-          vacunas.
-        </Text>
 
         <View style={styles.petRow}>
           <PhotoPicker
@@ -119,7 +116,7 @@ export default function OnboardingScreen({ navigation, route }: Props) {
         </Field>
 
         <Field label="Vacunas al día">
-          <View style={{ gap: 2 }}>
+          <View>
             {vaccineOptions.map((opt) => (
               <RadioRow
                 key={opt}
@@ -132,35 +129,26 @@ export default function OnboardingScreen({ navigation, route }: Props) {
           </View>
         </Field>
 
-        {error && (
-          <Card>
-            <CardBody style={{ color: colors.accent }}>{error}</CardBody>
-          </Card>
-        )}
+        {error && <Notice tone="danger">{error}</Notice>}
       </ScrollView>
-      <View style={styles.footer}>
+      <BottomBar>
         <Button
           variant="primary"
           block
           disabled={saving || !s.petName || !s.breed}
-          icon={<ArrowRight size={14} strokeWidth={1.5} color={colors.bg} />}
+          icon={<ArrowRight size={14} strokeWidth={1.5} color={colors.onAccent} />}
           onPress={handleSave}
         >
           {saving ? 'Guardando…' : saveLabel}
         </Button>
-      </View>
+      </BottomBar>
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  header: { paddingHorizontal: space.s4, paddingTop: space.s4, paddingBottom: space.s2 },
-  kicker: { fontFamily: fonts.body, fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', color: colors.accent },
-  scroll: { paddingHorizontal: space.s4, gap: space.s4, paddingBottom: space.s4 },
-  title: { fontFamily: fonts.heading, fontSize: 26, color: colors.text },
-  subtitle: { fontFamily: fonts.body, fontSize: 13, color: colors.text, opacity: 0.75 },
+  scroll: { paddingHorizontal: space.s4, gap: space.s5, paddingTop: space.s2, paddingBottom: space.s6 },
   petRow: { flexDirection: 'row', gap: space.s4, alignItems: 'center' },
-  petPhoto: { width: 84, height: 84 },
-  wrapRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  footer: { padding: space.s4 },
+  petPhoto: { width: 96, height: 96, borderRadius: radius.pill },
+  wrapRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s2 },
 });

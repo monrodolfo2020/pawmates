@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { colors, fonts, radius } from '../theme/tokens';
+import { colors, fonts, radius, shadow } from '../theme/tokens';
 
 type Option = { label: string; value: string };
 
@@ -10,21 +10,20 @@ type Props = {
   onChange: (value: string) => void;
 };
 
-// Mirrors .seg + .seg-opt: a segmented control, selected step filled accent.
+// A segmented control: a bone track with the chosen option lifted onto a
+// white pill — a clear "this one" without another fill color.
 export default function Segmented({ options, value, onChange }: Props) {
   return (
-    <View style={styles.wrap}>
-      {options.map((opt, i) => {
+    <View style={styles.wrap} accessibilityRole="tablist">
+      {options.map((opt) => {
         const selected = opt.value === value;
         return (
           <Pressable
             key={opt.value}
+            accessibilityRole="tab"
+            accessibilityState={{ selected }}
             onPress={() => onChange(opt.value)}
-            style={[
-              styles.opt,
-              i > 0 && styles.divider,
-              selected && styles.selected,
-            ]}
+            style={[styles.opt, selected && styles.selected]}
           >
             <Text style={[styles.text, selected && styles.textSelected]}>{opt.label}</Text>
           </Pressable>
@@ -37,20 +36,20 @@ export default function Segmented({ options, value, onChange }: Props) {
 const styles = StyleSheet.create({
   wrap: {
     flexDirection: 'row',
-    borderWidth: 1.5,
-    borderColor: colors.divider,
+    padding: 3,
+    gap: 3,
     borderRadius: radius.md,
-    overflow: 'hidden',
+    backgroundColor: colors.panel,
   },
   opt: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    minHeight: 38,
+    paddingHorizontal: 10,
+    borderRadius: radius.md - 3,
   },
-  divider: { borderLeftWidth: 1.5, borderLeftColor: colors.divider },
-  selected: { backgroundColor: colors.accent },
-  text: { fontFamily: fonts.bodyMedium, fontSize: 13, color: colors.text },
-  textSelected: { fontFamily: fonts.bodyBold, color: '#fff' },
+  selected: { backgroundColor: colors.surface, ...shadow.sm },
+  text: { fontFamily: fonts.bodyMedium, fontSize: 14, color: colors.textMuted },
+  textSelected: { fontFamily: fonts.bodySemiBold, color: colors.text },
 });

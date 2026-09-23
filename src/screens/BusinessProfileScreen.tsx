@@ -1,17 +1,17 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, Image, ScrollView, StyleSheet, Linking } from 'react-native';
-import { ChevronLeft, MessageCircle, MapPin, Clock, Phone } from 'lucide-react-native';
+import { ChevronRight, MessageCircle, MapPin, Clock, Phone, ShieldCheck, Sparkles } from 'lucide-react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
-import { IconButton } from '../components/Button';
 import Button from '../components/Button';
-import ImagePlaceholder from '../components/ImagePlaceholder';
-import Tag from '../components/Tag';
+import Avatar from '../components/Avatar';
+import BottomBar from '../components/BottomBar';
+import ScreenHeader from '../components/ScreenHeader';
 import Card from '../components/Card';
-import { CardMeta, CardBody } from '../components/CardText';
-import { colors, fonts, space } from '../theme/tokens';
+import { CardMeta } from '../components/CardText';
+import { colors, fonts, radius, space, type } from '../theme/tokens';
 import {
   api,
   BookingSummary,
@@ -21,6 +21,7 @@ import {
 } from '../api/client';
 import { useAppState } from '../state/AppState';
 import { whatsappUrl } from '../utils/contactLinks';
+import Notice from '../components/Notice';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Business'>;
 
@@ -88,71 +89,79 @@ export default function BusinessProfileScreen({ navigation, route }: Props) {
         : null
     : null;
 
+  const priceText = provider?.price ? money(provider.price.amount, provider.price.currency) : null;
+
   return (
     <ScreenContainer>
-      <View style={styles.header}>
-        <IconButton onPress={() => navigation.goBack()}>
-          <ChevronLeft size={18} strokeWidth={1.5} color={colors.text} />
-        </IconButton>
-      </View>
+      <ScreenHeader onBack={() => navigation.goBack()} />
       <ScrollView contentContainerStyle={styles.scroll}>
-        {error && <CardMeta style={{ color: colors.accent }}>{error}</CardMeta>}
+        {error && <Notice tone="danger">{error}</Notice>}
         {!error && !provider && <CardMeta>Cargando…</CardMeta>}
         {provider && (
           <>
-            {provider.photo ? (
-              <Image source={{ uri: provider.photo }} style={styles.hero} resizeMode="contain" />
-            ) : (
-              <ImagePlaceholder label="Foto del negocio" style={styles.hero} />
+            {provider.photo && (
+              <Image source={{ uri: provider.photo }} style={styles.hero} resizeMode="cover" />
             )}
-            <View>
-              <Text style={styles.name}>{provider.name}</Text>
-              <CardMeta style={{ fontSize: 13, marginTop: 2 }}>
-                {CATEGORY_LABELS_SINGULAR[provider.category]}
-                {provider.serviceArea ? ` · ${provider.serviceArea}` : ''}
-              </CardMeta>
+            <View style={styles.identity}>
+              {!provider.photo && <Avatar name={provider.name} size={72} square />}
+              <View style={{ flex: 1, gap: space.s1 }}>
+                <Text style={styles.name}>{provider.name}</Text>
+                <Text style={type.small}>
+                  {[CATEGORY_LABELS_SINGULAR[provider.category], provider.serviceArea].filter(Boolean).join(' · ')}
+                </Text>
+              </View>
             </View>
-            <View style={styles.badges}>
-              {provider.identityVerified && <Tag variant="accent">Identidad verificada ✓</Tag>}
-              {provider.specialty && <Tag variant="accent">{provider.specialty}</Tag>}
-              {provider.price && (
-                <Tag variant="outline">{money(provider.price.amount, provider.price.currency)}/paseo</Tag>
-              )}
-            </View>
+            {(provider.identityVerified || provider.specialty) && (
+              <View style={styles.facts}>
+                {provider.identityVerified && (
+                  <View style={styles.fact}>
+                    <ShieldCheck size={16} strokeWidth={2} color={colors.success} />
+                    <Text style={[styles.factText, { color: colors.success }]}>Identidad verificada por PawMates</Text>
+                  </View>
+                )}
+                {provider.specialty && (
+                  <View style={styles.fact}>
+                    <Sparkles size={16} strokeWidth={1.75} color={colors.textMuted} />
+                    <Text style={styles.factText}>{provider.specialty}</Text>
+                  </View>
+                )}
+              </View>
+            )}
 
             {chatBooking && (
               <Card
                 row
-                elevation="sm"
                 style={chatBooking.hasUnreadMessages ? styles.chatCardUnread : undefined}
                 onPress={() => navigation.navigate('Chat', { bookingId: chatBooking.id })}
               >
-                <MessageCircle
-                  size={20}
-                  strokeWidth={1.5}
-                  color={chatBooking.hasUnreadMessages ? '#fff' : colors.accent}
-                />
-                <CardBody
-                  style={[
-                    { flex: 1, margin: 0, marginLeft: space.s2 },
-                    chatBooking.hasUnreadMessages && { color: '#fff', opacity: 1 },
-                  ]}
-                >
+                <MessageCircle size={20} strokeWidth={1.75} color={colors.accent} />
+                <Text style={[styles.chatText, chatBooking.hasUnreadMessages && styles.chatTextUnread]}>
                   {chatBooking.hasUnreadMessages
                     ? `Mensaje nuevo de ${provider.name}`
                     : `Enviar mensaje a ${provider.name}`}
-                </CardBody>
+                </Text>
                 {chatBooking.hasUnreadMessages && <View style={styles.chatDot} />}
+                <ChevronRight size={18} strokeWidth={1.75} color={colors.textFaint} />
               </Card>
             )}
 
             {provider.bio && <Text style={styles.bio}>{provider.bio}</Text>}
 
+            {bookable && (
+              <Card row onPress={() => navigation.navigate('MeetGreet', { walkerId: providerId })}>
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Text style={type.cardTitle}>Conócenos primero</Text>
+                  <Text style={type.meta}>Un encuentro sin costo antes del primer paseo.</Text>
+                </View>
+                <ChevronRight size={18} strokeWidth={1.75} color={colors.textFaint} />
+              </Card>
+            )}
+
             {(provider.publicAddress || provider.hours) && (
-              <View style={{ gap: space.s2 }}>
+              <View style={styles.section}>
                 {provider.publicAddress && (
                   <View style={styles.infoRow}>
-                    <MapPin size={16} strokeWidth={1.5} color={colors.accent} />
+                    <MapPin size={18} strokeWidth={1.75} color={colors.textMuted} />
                     <Text style={styles.infoText}>{provider.publicAddress}</Text>
                     {mapUrl && (
                       <Text style={styles.link} onPress={() => void Linking.openURL(mapUrl)}>
@@ -163,7 +172,7 @@ export default function BusinessProfileScreen({ navigation, route }: Props) {
                 )}
                 {provider.hours && (
                   <View style={styles.infoRow}>
-                    <Clock size={16} strokeWidth={1.5} color={colors.accent} />
+                    <Clock size={18} strokeWidth={1.75} color={colors.textMuted} />
                     <Text style={styles.infoText}>{provider.hours}</Text>
                   </View>
                 )}
@@ -171,8 +180,8 @@ export default function BusinessProfileScreen({ navigation, route }: Props) {
             )}
 
             {provider.photos.length > 0 && (
-              <View style={{ gap: space.s2 }}>
-                <Text style={styles.h5}>Fotos</Text>
+              <View style={styles.section}>
+                <Text style={type.section}>Fotos</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space.s2 }}>
                   {provider.photos.map((uri) => (
                     <Image key={uri} source={{ uri }} style={styles.galleryPhoto} resizeMode="cover" />
@@ -182,72 +191,70 @@ export default function BusinessProfileScreen({ navigation, route }: Props) {
             )}
 
             {provider.plansOffered && (
-              <View style={{ gap: space.s2 }}>
-                <Text style={styles.h5}>Planes y servicios</Text>
+              <View style={styles.section}>
+                <Text style={type.section}>Planes y servicios</Text>
                 <Text style={styles.bio}>{provider.plansOffered}</Text>
               </View>
             )}
             {provider.walkingSpots && (
-              <View style={{ gap: space.s2 }}>
-                <Text style={styles.h5}>Parques y sitios donde pasea</Text>
+              <View style={styles.section}>
+                <Text style={type.section}>Parques y sitios donde pasea</Text>
                 <Text style={styles.bio}>{provider.walkingSpots}</Text>
               </View>
             )}
           </>
         )}
       </ScrollView>
-      {provider && (
-        <View style={styles.footer}>
-          {bookable ? (
-            <>
-              <Button
-                variant="secondary"
-                style={{ flex: 1 }}
-                onPress={() => navigation.navigate('MeetGreet', { walkerId: providerId })}
-              >
-                Conócenos primero
-              </Button>
-              <Button variant="primary" style={{ flex: 1 }} onPress={handleReservar}>
-                Reservar
-              </Button>
-            </>
-          ) : (
-            // Nothing to book for a vet or a groomer yet — the directory's
-            // job for those is to hand the customer a way to reach them.
+      {provider &&
+        (bookable ? (
+          <BottomBar
+            summary={
+              <>
+                <Text style={styles.barPrice}>{priceText ?? 'Por acordar'}</Text>
+                <Text style={type.meta}>{priceText ? 'por paseo · pagas directo' : 'precio con el negocio'}</Text>
+              </>
+            }
+          >
+            <Button variant="primary" onPress={handleReservar} style={{ minWidth: 140 }}>
+              Reservar
+            </Button>
+          </BottomBar>
+        ) : (
+          // Nothing to book for a vet or a groomer yet — the directory's
+          // job for those is to hand the customer a way to reach them.
+          <BottomBar>
             <Button
               variant="primary"
               block
               disabled={!waUrl}
-              icon={<Phone size={14} strokeWidth={1.5} color={waUrl ? colors.bg : colors.text} />}
+              icon={<Phone size={16} strokeWidth={1.75} color={colors.onAccent} />}
               onPress={() => waUrl && void Linking.openURL(waUrl)}
             >
               {waUrl ? 'Contactar por WhatsApp' : 'Sin contacto disponible'}
             </Button>
-          )}
-        </View>
-      )}
+          </BottomBar>
+        ))}
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  link: { fontFamily: fonts.bodyBold, fontSize: 13, color: colors.accent },
-  header: { paddingHorizontal: space.s3, paddingVertical: space.s2 },
-  scroll: { paddingHorizontal: space.s4, gap: space.s4, paddingBottom: space.s4 },
-  hero: {
-    width: '100%',
-    height: 220,
-    backgroundColor: colors.surface,
-  },
-  name: { fontFamily: fonts.heading, fontSize: 22, color: colors.text },
-  badges: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  bio: { fontFamily: fonts.body, fontSize: 13, color: colors.text, opacity: 0.85 },
-  infoRow: { flexDirection: 'row', alignItems: 'center', gap: space.s2 },
-  infoText: { flex: 1, fontFamily: fonts.body, fontSize: 13, color: colors.text, opacity: 0.85 },
-  galleryPhoto: { width: 140, height: 104, backgroundColor: colors.surface },
-  hr: { height: 1, backgroundColor: colors.divider },
-  h5: { fontFamily: fonts.heading, fontSize: 16, color: colors.text, marginBottom: space.s2 },
-  footer: { flexDirection: 'row', gap: space.s2, padding: space.s4 },
-  chatCardUnread: { backgroundColor: colors.accent, borderColor: colors.accent },
-  chatDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#fff' },
+  link: { fontFamily: fonts.bodySemiBold, fontSize: 14, color: colors.accent },
+  scroll: { paddingHorizontal: space.s4, gap: space.s5, paddingBottom: space.s6 },
+  hero: { width: '100%', height: 200, borderRadius: radius.lg, backgroundColor: colors.panel },
+  identity: { flexDirection: 'row', alignItems: 'center', gap: space.s4 },
+  name: { ...type.display },
+  facts: { gap: space.s2 },
+  fact: { flexDirection: 'row', alignItems: 'center', gap: space.s2 },
+  factText: { fontFamily: fonts.bodyMedium, fontSize: 14, color: colors.text, flexShrink: 1 },
+  bio: { ...type.body },
+  section: { gap: space.s3, paddingTop: space.s4, borderTopWidth: 1, borderTopColor: colors.divider },
+  infoRow: { flexDirection: 'row', alignItems: 'center', gap: space.s3 },
+  infoText: { flex: 1, ...type.body, fontSize: 14.5 },
+  galleryPhoto: { width: 150, height: 112, borderRadius: radius.md, backgroundColor: colors.panel },
+  barPrice: { fontFamily: fonts.bodyBold, fontSize: 18, color: colors.text },
+  chatText: { flex: 1, fontFamily: fonts.bodyMedium, fontSize: 14.5, color: colors.text },
+  chatTextUnread: { fontFamily: fonts.bodyBold },
+  chatCardUnread: { backgroundColor: colors.accentTint, borderColor: colors.accentTintLine },
+  chatDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.accent },
 });

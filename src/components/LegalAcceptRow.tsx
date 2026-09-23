@@ -28,7 +28,7 @@ export default function LegalAcceptRow({ checked, onToggle, children }: Props) {
         accessibilityState={{ checked }}
         style={[styles.box, checked && styles.boxChecked]}
       >
-        {checked && <Check size={14} strokeWidth={3} color={colors.bg} />}
+        {checked && <Check size={14} strokeWidth={3} color={colors.onAccent} />}
       </Pressable>
       <Text style={styles.label} onPress={onToggle}>
         {children}
@@ -49,10 +49,10 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: space.s3, alignItems: 'flex-start' },
   box: {
     width: 22, height: 22, borderRadius: radius.sm,
-    borderWidth: 1.5, borderColor: colors.divider, backgroundColor: colors.surface,
+    borderWidth: 1.5, borderColor: colors.border, backgroundColor: colors.surface,
     alignItems: 'center', justifyContent: 'center', marginTop: 1,
   },
   boxChecked: { backgroundColor: colors.accent, borderColor: colors.accent },
-  label: { flex: 1, fontFamily: fonts.body, fontSize: 13, lineHeight: 19, color: colors.text },
-  link: { fontFamily: fonts.bodyBold, color: colors.accent, textDecorationLine: 'underline' },
+  label: { flex: 1, fontFamily: fonts.body, fontSize: 14, lineHeight: 20, color: colors.text },
+  link: { fontFamily: fonts.bodySemiBold, color: colors.accent, textDecorationLine: 'underline' },
 });

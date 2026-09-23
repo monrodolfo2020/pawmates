@@ -1,9 +1,14 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
-import { ChevronLeft } from 'lucide-react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
+import ScreenHeader from '../components/ScreenHeader';
+import Card from '../components/Card';
+import Button from '../components/Button';
+import Avatar from '../components/Avatar';
+import Notice from '../components/Notice';
+import Tag, { bookingStatusVariant } from '../components/Tag';
 import {
   api,
   BOOKING_STATUS_LABELS,
@@ -11,21 +16,11 @@ import {
   BookingSummary,
   MEET_GREET_SERVICE_TYPE_CODE,
 } from '../api/client';
-import { colors, fonts, radius } from '../theme/tokens';
+import { colors, fonts, space, type } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
 import { formatWhen } from '../utils/bookingSlots';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Bookings'>;
-
-// Confirmed/in-progress/completed read as "on the books" (mint tint);
-// cancelled as a soft stop (rose tint); requested — still
-// waiting on the paseador — stays neutral.
-const STATUS_TINT: Record<string, { bg: string; border: string; text: string }> = {
-  confirmed: { bg: colors.mintTint, border: colors.mintTintLine, text: colors.mintDark },
-  in_progress: { bg: colors.mintTint, border: colors.mintTintLine, text: colors.mintDark },
-  completed: { bg: colors.mintTint, border: colors.mintTintLine, text: colors.mintDark },
-  cancelled: { bg: colors.roseTint, border: colors.roseTintLine, text: colors.rose },
-};
 
 const money = (cents: number, currency: string) =>
   '$' + (cents / 100).toFixed(2).replace(/\.00$/, '') + ' ' + currency;
@@ -83,102 +78,84 @@ export default function BookingsScreen({ navigation }: Props) {
     .sort((x, y) => y.scheduledAt.localeCompare(x.scheduledAt));
 
   const renderCard = (b: BookingSummary) => {
-    const tint = STATUS_TINT[b.status] ?? { bg: colors.panel, border: colors.divider, text: colors.neutral600 };
     const isMeetGreet = b.lines.some((l) => l.serviceTypeCode === MEET_GREET_SERVICE_TYPE_CODE);
     // Whoever is on the other side of this booking.
     const other = b.ownerId === s.accountId ? b.providerName : b.ownerName;
     const pets = b.lines.map((l) => l.petName?.split(' · ')[0]).filter(Boolean).join(', ');
     return (
-      <View key={b.id} style={styles.card}>
+      <Card key={b.id}>
         <View style={styles.rowBetween}>
-          <Text style={styles.who} numberOfLines={1}>
-            {other ?? 'Negocio'}
-          </Text>
-          <View style={[styles.statusTag, { backgroundColor: tint.bg, borderColor: tint.border }]}>
-            <Text style={[styles.statusTagText, { color: tint.text }]}>
-              {BOOKING_STATUS_LABELS[b.status as BookingStatusCode] ?? b.status}
+          <Avatar name={other ?? 'Negocio'} size={40} square />
+          <View style={{ flex: 1, gap: 2 }}>
+            <Text style={type.cardTitle} numberOfLines={1}>
+              {other ?? 'Negocio'}
+            </Text>
+            <Text style={styles.date}>
+              {isMeetGreet ? 'Meet & Greet' : 'Paseo'}
+              {pets ? ` de ${pets}` : ''} · {formatWhen(b.scheduledAt)}
             </Text>
           </View>
+          <Tag variant={bookingStatusVariant(b.status)}>
+            {BOOKING_STATUS_LABELS[b.status as BookingStatusCode] ?? b.status}
+          </Tag>
         </View>
-        <Text style={styles.date}>
-          {isMeetGreet ? 'Meet & Greet' : 'Paseo'}
-          {pets ? ` de ${pets}` : ''} · {formatWhen(b.scheduledAt)}
-        </Text>
         {isMeetGreet ? (
-          <Text style={styles.mutedBody}>Sin costo</Text>
+          <Text style={type.meta}>Sin costo</Text>
         ) : (
           b.priceBreakdown && (
-            <Text style={styles.mutedBody}>
+            <Text style={type.meta}>
               Tarifa: {money(b.priceBreakdown.rateAmount, b.priceBreakdown.currency)} · se paga directo al negocio
             </Text>
           )
         )}
-        {!isMeetGreet && WALK_LINK[b.status] && (
-          <Pressable
-            style={[styles.cancelBtn, styles.walkBtn]}
-            onPress={() => navigation.navigate('Live', { bookingId: b.id })}
-          >
-            <Text style={[styles.cancelBtnText, styles.walkBtnText]}>{WALK_LINK[b.status]}</Text>
-          </Pressable>
+        {((!isMeetGreet && WALK_LINK[b.status]) || CANCELLABLE.has(b.status)) && (
+          <View style={styles.actions}>
+            {!isMeetGreet && WALK_LINK[b.status] && (
+              <Button
+                size="sm"
+                variant={b.status === 'in_progress' ? 'primary' : 'secondary'}
+                onPress={() => navigation.navigate('Live', { bookingId: b.id })}
+              >
+                {WALK_LINK[b.status]}
+              </Button>
+            )}
+            {CANCELLABLE.has(b.status) && (
+              <Button
+                size="sm"
+                variant="ghost"
+                disabled={cancellingId === b.id}
+                onPress={() => void cancel(b.id)}
+              >
+                {cancellingId === b.id ? 'Cancelando…' : 'Cancelar'}
+              </Button>
+            )}
+          </View>
         )}
-        {CANCELLABLE.has(b.status) && (
-          <Pressable
-            style={styles.cancelBtn}
-            disabled={cancellingId === b.id}
-            onPress={() => void cancel(b.id)}
-          >
-            <Text style={styles.cancelBtnText}>{cancellingId === b.id ? 'Cancelando…' : 'Cancelar'}</Text>
-          </Pressable>
-        )}
-      </View>
+      </Card>
     );
   };
 
   return (
     <ScreenContainer>
-      <View style={styles.root}>
-        <View style={styles.header}>
-          <Pressable style={styles.backBtn} onPress={() => navigation.goBack()}>
-            <ChevronLeft size={16} strokeWidth={2} color={colors.text} />
-          </Pressable>
-          <Text style={styles.title}>Tus reservas</Text>
-        </View>
-        <ScrollView contentContainerStyle={styles.body}>
-          {error && <Text style={styles.error}>{error}</Text>}
-          {bookings?.length === 0 && <Text style={styles.mutedBody}>Todavía no tienes reservas.</Text>}
-          {upcoming.length > 0 && <Text style={styles.sectionTitle}>Próximas</Text>}
-          {upcoming.map(renderCard)}
-          {past.length > 0 && <Text style={styles.sectionTitle}>Anteriores</Text>}
-          {past.map(renderCard)}
-        </ScrollView>
-      </View>
+      <ScreenHeader onBack={() => navigation.goBack()} title="Tus reservas" />
+      <ScrollView contentContainerStyle={styles.body}>
+        {error && <Notice tone="danger">{error}</Notice>}
+        {bookings?.length === 0 && (
+          <Notice>Todavía no tienes reservas. Cuando le pidas algo a un negocio, aparecerá aquí.</Notice>
+        )}
+        {upcoming.length > 0 && <Text style={type.section}>Próximas</Text>}
+        {upcoming.map(renderCard)}
+        {past.length > 0 && <Text style={[type.section, styles.later]}>Anteriores</Text>}
+        {past.map(renderCard)}
+      </ScrollView>
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.bg },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingTop: 20, paddingBottom: 14 },
-  backBtn: {
-    width: 36, height: 36, borderRadius: radius.pill, borderWidth: 1, borderColor: colors.divider,
-    backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center',
-  },
-  title: { fontFamily: fonts.heading, fontSize: 26, color: colors.text },
-  body: { paddingHorizontal: 20, paddingBottom: 24, gap: 12 },
-  error: { fontFamily: fonts.body, fontSize: 13, color: colors.rose },
-  mutedBody: { fontFamily: fonts.body, fontSize: 13.5, color: colors.neutral600 },
-  card: { padding: 16, borderRadius: radius.lg, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.divider, gap: 6 },
-  rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  who: { flex: 1, fontFamily: fonts.bodyBold, fontSize: 15.5, color: colors.text },
-  sectionTitle: { fontFamily: fonts.heading, fontSize: 17, color: colors.text, marginTop: 8 },
-  date: { fontFamily: fonts.bodyMedium, fontSize: 13.5, color: colors.text },
-  statusTag: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: radius.pill, borderWidth: 1 },
-  statusTagText: { fontFamily: fonts.bodySemiBold, fontSize: 11 },
-  cancelBtn: {
-    alignSelf: 'flex-start', marginTop: 4, paddingHorizontal: 14, paddingVertical: 7,
-    borderRadius: radius.pill, borderWidth: 1, borderColor: colors.divider,
-  },
-  cancelBtnText: { fontFamily: fonts.bodySemiBold, fontSize: 12.5, color: colors.text },
-  walkBtn: { backgroundColor: colors.mint, borderColor: colors.mint },
-  walkBtnText: { color: '#fff' },
+  body: { paddingHorizontal: space.s4, paddingBottom: space.s8, gap: space.s3 },
+  later: { marginTop: space.s4 },
+  rowBetween: { flexDirection: 'row', alignItems: 'center', gap: space.s3 },
+  date: { fontFamily: fonts.body, fontSize: 13.5, lineHeight: 18, color: colors.textMuted },
+  actions: { flexDirection: 'row', gap: space.s2, marginTop: space.s1 },
 });

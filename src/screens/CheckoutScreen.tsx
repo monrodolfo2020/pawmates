@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
-import { ChevronLeft } from 'lucide-react-native';
+import { Check, Clock, X } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
-import { IconButton } from '../components/Button';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import { CardBody, CardKicker, CardMeta } from '../components/CardText';
-import { colors, fonts, space } from '../theme/tokens';
+import { colors, fonts, radius, space, type } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
 import { api, ProviderDetail } from '../api/client';
 import { formatWhen } from '../utils/bookingSlots';
+import ScreenHeader from '../components/ScreenHeader';
+import Notice from '../components/Notice';
+import BottomBar from '../components/BottomBar';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Checkout'>;
 
@@ -117,16 +119,15 @@ export default function CheckoutScreen({ navigation, route }: Props) {
     const canCancel = phase === 'waiting' || phase === 'confirmed';
     return (
       <ScreenContainer>
-        <View style={styles.header}>
-          <Text style={styles.title}>{copy[phase].title}</Text>
-        </View>
         <View style={styles.waitingBody}>
-          <Card>
-            <CardBody>{copy[phase].body}</CardBody>
-          </Card>
-          {cancelError && <CardMeta style={{ color: colors.accent }}>{cancelError}</CardMeta>}
+          <View style={[styles.statusIcon, { backgroundColor: PHASE_TONE[phase].bg }]}>
+            {React.createElement(PHASE_TONE[phase].icon, { size: 28, strokeWidth: 1.75, color: PHASE_TONE[phase].fg })}
+          </View>
+          <Text style={styles.statusTitle}>{copy[phase].title}</Text>
+          <Text style={styles.statusBody}>{copy[phase].body}</Text>
+          {cancelError && <Notice tone="danger">{cancelError}</Notice>}
         </View>
-        <View style={styles.footer}>
+        <BottomBar>
           {phase === 'confirmed' && s.bookingId ? (
             <Button
               variant="primary"
@@ -141,7 +142,7 @@ export default function CheckoutScreen({ navigation, route }: Props) {
             </Button>
           )}
           {canCancel && (
-            <Button variant="secondary" block disabled={cancelling} onPress={() => void cancel()}>
+            <Button variant="danger" block disabled={cancelling} onPress={() => void cancel()}>
               {cancelling ? 'Cancelando…' : phase === 'confirmed' ? 'Cancelar paseo' : 'Cancelar solicitud'}
             </Button>
           )}
@@ -150,21 +151,16 @@ export default function CheckoutScreen({ navigation, route }: Props) {
               Volver al inicio
             </Button>
           )}
-        </View>
+        </BottomBar>
       </ScreenContainer>
     );
   }
 
   return (
     <ScreenContainer>
-      <View style={styles.header}>
-        <IconButton onPress={() => navigation.goBack()}>
-          <ChevronLeft size={18} strokeWidth={1.5} color={colors.text} />
-        </IconButton>
-        <Text style={styles.title}>Revisa tu solicitud</Text>
-      </View>
+      <ScreenHeader onBack={() => navigation.goBack()} title="Revisa tu solicitud" />
       <ScrollView contentContainerStyle={styles.scroll}>
-        {loadError && <CardMeta style={{ color: colors.accent }}>{loadError}</CardMeta>}
+        {loadError && <Notice tone="danger">{loadError}</Notice>}
 
         <Card>
           <Row label="Negocio" value={business?.name ?? '…'} />
@@ -179,7 +175,7 @@ export default function CheckoutScreen({ navigation, route }: Props) {
           />
         </Card>
 
-        <Card>
+        <Card tone="panel">
           <CardKicker>Cómo se paga</CardKicker>
           <CardBody>
             PawMates no cobra este paseo ni ninguna comisión. El precio final, la forma de pago y
@@ -193,14 +189,14 @@ export default function CheckoutScreen({ navigation, route }: Props) {
         </CardMeta>
 
         {s.bookingStatus === 'error' && s.bookingError && (
-          <CardMeta style={{ color: colors.accent }}>{s.bookingError}</CardMeta>
+          <Notice tone="danger">{s.bookingError}</Notice>
         )}
       </ScrollView>
-      <View style={styles.footer}>
+      <BottomBar>
         <Button variant="primary" block disabled={sending || !business} onPress={() => void send()}>
           {sending ? 'Enviando…' : 'Enviar solicitud'}
         </Button>
-      </View>
+      </BottomBar>
     </ScreenContainer>
   );
 }
@@ -214,19 +210,27 @@ function Row({ label, value, strong }: { label: string; value: string; strong?: 
   );
 }
 
+// The answer screens: an icon in the state's color, then the words.
+const PHASE_TONE: Record<Exclude<Phase, 'review'>, { icon: typeof Clock; bg: string; fg: string }> = {
+  waiting: { icon: Clock, bg: colors.warningTint, fg: colors.warning },
+  confirmed: { icon: Check, bg: colors.successTint, fg: colors.success },
+  rejected: { icon: X, bg: colors.dangerTint, fg: colors.danger },
+  cancelled: { icon: X, bg: colors.panel, fg: colors.textMuted },
+};
+
 const styles = StyleSheet.create({
-  waitingBody: { paddingHorizontal: space.s4, paddingTop: space.s2, flex: 1, gap: space.s3 },
-  header: {
-    paddingHorizontal: space.s3, paddingVertical: space.s2,
-    flexDirection: 'row', alignItems: 'center', gap: space.s3,
+  waitingBody: {
+    flex: 1, paddingHorizontal: space.s6, gap: space.s3,
+    alignItems: 'center', justifyContent: 'center',
   },
-  title: { fontFamily: fonts.heading, fontSize: 20, color: colors.text },
-  scroll: { paddingHorizontal: space.s4, gap: space.s4, paddingBottom: space.s4 },
-  row: { flexDirection: 'row', justifyContent: 'space-between', gap: space.s3, paddingVertical: 3 },
-  rowLabel: { fontFamily: fonts.body, fontSize: 13, color: colors.textMuted70 },
-  rowText: { fontFamily: fonts.body, fontSize: 13, color: colors.text },
+  statusIcon: { width: 64, height: 64, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' },
+  statusTitle: { ...type.title, textAlign: 'center' },
+  statusBody: { ...type.body, color: colors.textMuted, textAlign: 'center' },
+  scroll: { paddingHorizontal: space.s4, gap: space.s4, paddingBottom: space.s6 },
+  row: { flexDirection: 'row', justifyContent: 'space-between', gap: space.s3, paddingVertical: space.s1 },
+  rowLabel: { fontFamily: fonts.body, fontSize: 14, color: colors.textMuted },
+  rowText: { fontFamily: fonts.bodyMedium, fontSize: 14, color: colors.text },
   rowValue: { flexShrink: 1, textAlign: 'right' },
-  rowStrong: { fontFamily: fonts.heading, fontSize: 15, color: colors.text },
-  hr: { height: 1, backgroundColor: colors.divider, marginVertical: 6 },
-  footer: { padding: space.s4, gap: space.s2 },
+  rowStrong: { fontFamily: fonts.bodyBold, fontSize: 16, color: colors.text },
+  hr: { height: 1, backgroundColor: colors.divider, marginVertical: space.s1 },
 });

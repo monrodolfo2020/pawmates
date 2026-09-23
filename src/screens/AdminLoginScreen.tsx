@@ -3,10 +3,9 @@ import { View, Text, StyleSheet } from 'react-native';
 import { ShieldCheck } from 'lucide-react-native';
 import Button from '../components/Button';
 import TextField from '../components/TextField';
-import Card from '../components/Card';
-import { CardBody } from '../components/CardText';
-import { colors, fonts, space } from '../theme/tokens';
+import { colors, space, type } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
+import Notice from '../components/Notice';
 
 // Reached only via the /admin URL (see RootNavigator) — a single password
 // field rather than the normal signup/login flow. The account behind it
@@ -33,7 +32,7 @@ export default function AdminLoginScreen() {
   return (
     <View style={styles.root}>
       <View style={styles.body}>
-        <ShieldCheck size={36} strokeWidth={1.5} color={colors.accent} />
+        <ShieldCheck size={36} strokeWidth={1.25} color={colors.text} />
         <Text style={styles.title}>Acceso de administrador</Text>
         <TextField
           label="Contraseña"
@@ -43,11 +42,7 @@ export default function AdminLoginScreen() {
           placeholder="••••••••"
           autoFocus
         />
-        {s.authError && (
-          <Card>
-            <CardBody style={{ color: colors.accent }}>{s.authError}</CardBody>
-          </Card>
-        )}
+        {s.authError && <Notice tone="danger">{s.authError}</Notice>}
         <Button variant="primary" block disabled={submitting || !password} onPress={handleSubmit}>
           {submitting ? 'Entrando…' : 'Entrar'}
         </Button>
@@ -59,5 +54,5 @@ export default function AdminLoginScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center' },
   body: { width: '100%', maxWidth: 340, gap: space.s4, paddingHorizontal: space.s6 },
-  title: { fontFamily: fonts.heading, fontSize: 22, color: colors.text, textAlign: 'center' },
+  title: { ...type.title, textAlign: 'center' },
 });

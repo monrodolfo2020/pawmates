@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { TextInput, View, Pressable, StyleSheet, TextInputProps } from 'react-native';
 import { Eye, EyeOff } from 'lucide-react-native';
-import { colors, fonts, radius } from '../theme/tokens';
+import { colors, fonts, radius, space } from '../theme/tokens';
 import Field from './Field';
 
 type Props = Omit<TextInputProps, 'style'> & {
@@ -21,7 +21,7 @@ export default function TextField({ label, secureTextEntry, ...inputProps }: Pro
     <Field label={label}>
       <View style={styles.wrap}>
         <TextInput
-          placeholderTextColor={colors.textMuted50}
+          placeholderTextColor={colors.textFaint}
           autoCapitalize="none"
           autoCorrect={false}
           {...inputProps}
@@ -31,9 +31,9 @@ export default function TextField({ label, secureTextEntry, ...inputProps }: Pro
         {isPassword && (
           <Pressable style={styles.eyeBtn} onPress={() => setVisible((v) => !v)} hitSlop={8}>
             {visible ? (
-              <EyeOff size={18} strokeWidth={1.5} color={colors.textMuted70} />
+              <EyeOff size={18} strokeWidth={1.5} color={colors.textMuted} />
             ) : (
-              <Eye size={18} strokeWidth={1.5} color={colors.textMuted70} />
+              <Eye size={18} strokeWidth={1.5} color={colors.textMuted} />
             )}
           </Pressable>
         )}
@@ -45,21 +45,21 @@ export default function TextField({ label, secureTextEntry, ...inputProps }: Pro
 const styles = StyleSheet.create({
   wrap: { position: 'relative', justifyContent: 'center' },
   input: {
-    minHeight: 44,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+    minHeight: 48,
+    paddingVertical: space.s3,
+    paddingHorizontal: space.s4,
     backgroundColor: colors.surface,
-    borderWidth: 1.5,
-    borderColor: colors.divider,
+    borderWidth: 1,
+    borderColor: colors.border,
     borderRadius: radius.md,
     fontFamily: fonts.body,
-    fontSize: 14,
+    fontSize: 15,
     color: colors.text,
   },
-  inputWithIcon: { paddingRight: 44 },
+  inputWithIcon: { paddingRight: 48 },
   eyeBtn: {
     position: 'absolute',
-    right: 12,
+    right: space.s4,
     top: 0,
     bottom: 0,
     justifyContent: 'center',

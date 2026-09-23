@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, Pressable, StyleSheet, useWindowDimensions } from 'react-native';
 import { Menu, X } from 'lucide-react-native';
 import { colors, fonts, space, radius } from '../theme/tokens';
+import Wordmark from './Wordmark';
 
 export type NavItem = { label: string; onPress: () => void };
 
@@ -21,11 +22,14 @@ export default function AppNav({ items, activeIndex }: { items: NavItem[]; activ
   if (isWide) {
     return (
       <View style={styles.webBar}>
+        <Wordmark />
+        <View style={styles.webItems}>
         {items.map((item, i) => (
           <Pressable key={item.label} style={styles.webItem} onPress={item.onPress}>
             <Text style={[styles.itemText, i === activeIndex && styles.itemTextActive]}>{item.label}</Text>
           </Pressable>
         ))}
+        </View>
       </View>
     );
   }
@@ -33,7 +37,8 @@ export default function AppNav({ items, activeIndex }: { items: NavItem[]; activ
   return (
     <View style={styles.mobileWrap}>
       <View style={styles.mobileRow}>
-        <Pressable style={styles.menuBtn} onPress={() => setOpen((v) => !v)}>
+        <Wordmark />
+        <Pressable accessibilityRole="button" accessibilityState={{ expanded: open }} style={styles.menuBtn} onPress={() => setOpen((v) => !v)}>
           {open ? (
             <X size={16} strokeWidth={2} color={colors.text} />
           ) : (
@@ -65,32 +70,32 @@ export default function AppNav({ items, activeIndex }: { items: NavItem[]; activ
 const styles = StyleSheet.create({
   webBar: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    gap: space.s8,
-    borderBottomWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderBottomWidth: 1,
     borderBottomColor: colors.divider,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.bg,
     paddingVertical: space.s3,
+    paddingHorizontal: space.s6,
   },
-  webItem: { paddingHorizontal: space.s2 },
+  webItems: { flexDirection: 'row', gap: space.s6 },
+  webItem: { paddingHorizontal: space.s1, paddingVertical: space.s1 },
   itemText: {
-    fontFamily: fonts.bodyBold,
-    fontSize: 13,
-    letterSpacing: 0.6,
-    textTransform: 'uppercase',
-    color: colors.text,
-    opacity: 0.45,
+    fontFamily: fonts.bodyMedium,
+    fontSize: 15,
+    color: colors.textMuted,
   },
-  itemTextActive: { color: colors.accent, opacity: 1 },
+  itemTextActive: { color: colors.text, fontFamily: fonts.bodyBold },
 
   mobileWrap: {
-    borderBottomWidth: 1.5,
+    borderBottomWidth: 1,
     borderBottomColor: colors.divider,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.bg,
   },
   mobileRow: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: space.s4,
     paddingVertical: space.s2,
   },
@@ -98,14 +103,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    minHeight: 40,
+    paddingHorizontal: space.s4,
     borderRadius: radius.pill,
-    borderWidth: 1.5,
-    borderColor: colors.divider,
-    backgroundColor: colors.bg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
   },
-  menuBtnText: { fontFamily: fonts.bodyBold, fontSize: 12.5, color: colors.text },
+  menuBtnText: { fontFamily: fonts.bodySemiBold, fontSize: 14, color: colors.text },
 
   accordion: {
     borderTopWidth: 1,

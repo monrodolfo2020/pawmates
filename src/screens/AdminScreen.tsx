@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Image, ScrollView, StyleSheet, TextInput } from 'react-native';
-import { ChevronLeft } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
-import { IconButton } from '../components/Button';
 import Button from '../components/Button';
 import Segmented from '../components/Segmented';
 import Card from '../components/Card';
-import { CardKicker, CardBody, CardMeta } from '../components/CardText';
+import { CardBody, CardKicker, CardMeta, CardTitle } from '../components/CardText';
 import Tag from '../components/Tag';
 import AdminAccountCard from '../components/AdminAccountCard';
 import {
@@ -21,15 +19,17 @@ import {
   PERIOD_LABELS,
   PlanCode,
 } from '../api/client';
-import { colors, fonts, space } from '../theme/tokens';
+import { colors, fonts, radius, space, type } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
+import ScreenHeader from '../components/ScreenHeader';
+import Notice from '../components/Notice';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Admin'>;
 
-const VERIFICATION_LABEL: Record<AdminVerification['status'], { text: string; variant: 'accent' | 'outline' }> = {
-  pending: { text: 'Por revisar', variant: 'accent' },
-  verified: { text: 'Verificada ✓', variant: 'outline' },
-  rejected: { text: 'Rechazada', variant: 'outline' },
+const VERIFICATION_LABEL: Record<AdminVerification['status'], { text: string; variant: 'warning' | 'success' | 'danger' }> = {
+  pending: { text: 'Por revisar', variant: 'warning' },
+  verified: { text: 'Verificada ✓', variant: 'success' },
+  rejected: { text: 'Rechazada', variant: 'danger' },
 };
 
 const formatDate = (iso: string) =>
@@ -73,12 +73,7 @@ export default function AdminScreen({ navigation }: Props) {
 
   return (
     <ScreenContainer>
-      <View style={styles.header}>
-        <IconButton onPress={() => navigation.goBack()}>
-          <ChevronLeft size={18} strokeWidth={1.5} color={colors.text} />
-        </IconButton>
-        <Text style={styles.title}>Panel de administrador</Text>
-      </View>
+      <ScreenHeader onBack={() => navigation.goBack()} title="Panel de administrador" />
       <View style={styles.segRow}>
         <Segmented
           options={[
@@ -92,11 +87,7 @@ export default function AdminScreen({ navigation }: Props) {
         />
       </View>
       <ScrollView contentContainerStyle={styles.body}>
-        {error && (
-          <Card>
-            <CardBody style={{ color: colors.accent }}>{error}</CardBody>
-          </Card>
-        )}
+        {error && <Notice tone="danger">{error}</Notice>}
 
         {section === 'cuentas' && (
           <View style={{ gap: space.s2 }}>
@@ -111,18 +102,18 @@ export default function AdminScreen({ navigation }: Props) {
           <View style={{ gap: space.s2 }}>
             <Text style={styles.h5}>Negocios ({businesses?.length ?? '…'})</Text>
             {pendingBusinesses > 0 && (
-              <Card style={styles.pendingBanner}>
-                <CardBody style={{ margin: 0 }}>
-                  {pendingBusinesses === 1
+              <Notice
+                tone="warning"
+                title={
+                  pendingBusinesses === 1
                     ? '1 negocio espera tu aprobación'
-                    : `${pendingBusinesses} negocios esperan tu aprobación`}
-                </CardBody>
-                <CardMeta>
-                  Ya pueden entrar y preparar su página, pero no aparecen en el directorio y su enlace
-                  no abre hasta que los apruebes. Al aprobarlos les llega un correo con su enlace y su
-                  código QR.
-                </CardMeta>
-              </Card>
+                    : `${pendingBusinesses} negocios esperan tu aprobación`
+                }
+              >
+                Ya pueden entrar y preparar su página, pero no aparecen en el directorio y su enlace
+                no abre hasta que los apruebes. Al aprobarlos les llega un correo con su enlace y su
+                código QR.
+              </Notice>
             )}
             <CardMeta>
               Para un negocio que ya pagó, lo normal es generarle un código en la pestaña Códigos:
@@ -150,7 +141,7 @@ export default function AdminScreen({ navigation }: Props) {
               <Card key={c.code}>
                 <View style={styles.row}>
                   <Text style={styles.codeText}>{c.code}</Text>
-                  <Tag variant={c.isSpent ? 'outline' : 'accent'}>
+                  <Tag variant={c.isSpent ? 'neutral' : 'success'}>
                     {c.isSpent ? 'Usado' : 'Disponible'}
                   </Tag>
                 </View>
@@ -214,7 +205,7 @@ function SecureLegacyPhotosCard() {
 
   return (
     <Card>
-      <CardBody style={{ margin: 0 }}>Resguardar fotos de identificación antiguas</CardBody>
+      <CardTitle>Resguardar fotos de identificación antiguas</CardTitle>
       <CardMeta>
         Las fotos de rostro y documento subidas antes del cambio a almacenamiento privado quedaron
         en direcciones públicas: no son adivinables, pero cualquiera con el enlace las abre. Esto las
@@ -233,11 +224,11 @@ function SecureLegacyPhotosCard() {
         </CardMeta>
       )}
       {result && result.failed.length > 0 && (
-        <CardMeta style={{ color: colors.accent }}>
+        <Notice tone="danger">
           Vuelve a ejecutarlo: las que fallaron siguen siendo públicas.
-        </CardMeta>
+        </Notice>
       )}
-      {error && <CardMeta style={{ color: colors.accent }}>{error}</CardMeta>}
+      {error && <Notice tone="danger">{error}</Notice>}
       <Button variant="secondary" disabled={busy} onPress={() => void run()}>
         {busy ? 'Resguardando…' : 'Ejecutar limpieza'}
       </Button>
@@ -277,7 +268,7 @@ function NewCodeForm({ onCreated }: { onCreated: () => void }) {
 
   return (
     <Card>
-      <CardBody style={{ margin: 0 }}>Generar un código</CardBody>
+      <CardTitle>Generar un código</CardTitle>
       <Segmented
         options={[
           { label: 'Mensual', value: 'monthly' },
@@ -290,11 +281,11 @@ function NewCodeForm({ onCreated }: { onCreated: () => void }) {
         value={note}
         onChangeText={setNote}
         placeholder="Para quién es (ej. Spa Canino — transferencia 20 sep)"
-        placeholderTextColor={colors.textMuted50}
+        placeholderTextColor={colors.textMuted}
         maxLength={120}
         style={styles.noteInput}
       />
-      {error && <CardMeta style={{ color: colors.accent }}>{error}</CardMeta>}
+      {error && <Notice tone="danger">{error}</Notice>}
       {created && (
         <View style={styles.createdBox}>
           <CardMeta>Pásale este código al negocio:</CardMeta>
@@ -379,21 +370,21 @@ function BusinessRow({ business: b, onChange }: { business: AdminBusiness; onCha
     <Card>
       <View style={styles.row}>
         <CardKicker style={{ margin: 0 }}>{b.email ?? b.accountId.slice(0, 8)}</CardKicker>
-        <Tag variant={vip ? 'accent' : 'outline'}>
+        <Tag variant={vip ? 'success' : 'neutral'}>
           {vip ? 'VIP' : lapsed ? 'VIP vencido' : 'Gratis'}
         </Tag>
       </View>
       <CardBody>{b.name ?? 'Sin nombre'}</CardBody>
       <View style={styles.wrapRow}>
-        <Tag variant="outline">{CATEGORY_LABELS_SINGULAR[b.category]}</Tag>
-        <Tag variant={approved ? 'accent' : 'outline'}>
+        <Tag>{CATEGORY_LABELS_SINGULAR[b.category]}</Tag>
+        <Tag variant={approved ? 'success' : 'warning'}>
           {approved ? 'Aprobado ✓' : 'Pendiente de aprobación'}
         </Tag>
-        <Tag variant={b.isPublished ? 'accent' : 'outline'}>
+        <Tag variant={b.isPublished ? 'success' : 'neutral'}>
           {b.isPublished ? 'Página completa' : 'Página incompleta'}
         </Tag>
-        {b.slug && <Tag variant="outline">/s/{b.slug}</Tag>}
-        {b.isPubliclyVisible && <Tag variant="accent">Visible en el directorio</Tag>}
+        {b.slug && <Tag>/s/{b.slug}</Tag>}
+        {b.isPubliclyVisible && <Tag variant="success">Visible en el directorio</Tag>}
       </View>
       {approved && b.isPublished && !b.isPubliclyVisible && (
         <CardMeta>
@@ -417,7 +408,7 @@ function BusinessRow({ business: b, onChange }: { business: AdminBusiness; onCha
           {vip ? 'Vence' : 'Venció'} el {new Date(b.planExpiresAt).toLocaleDateString('es-MX')}
         </CardMeta>
       )}
-      {error && <CardMeta style={{ color: colors.accent }}>{error}</CardMeta>}
+      {error && <Notice tone="danger">{error}</Notice>}
       {approved && (
         <View style={{ flexDirection: 'row', gap: space.s2 }}>
           <Button variant={vip ? 'secondary' : 'primary'} style={{ flex: 1 }} disabled={busy} onPress={() => void setPlan()}>
@@ -466,7 +457,7 @@ function VerificationRow({ verification: v, onChange }: { verification: AdminVer
   return (
     <Card>
       <View style={styles.row}>
-        <CardBody style={{ margin: 0, flex: 1 }}>{who}</CardBody>
+        <CardTitle style={{ flex: 1 }}>{who}</CardTitle>
         <Tag variant={label.variant}>{label.text}</Tag>
       </View>
       {v.email && v.email !== who && <CardMeta>{v.email}</CardMeta>}
@@ -474,7 +465,7 @@ function VerificationRow({ verification: v, onChange }: { verification: AdminVer
         Enviada el {formatDate(v.createdAt)}
         {!pending && v.photosDeletedAt ? ` · resuelta el ${formatDate(v.photosDeletedAt)}` : ''}
       </CardMeta>
-      <Tag variant={v.profilePublished ? 'accent' : 'outline'}>
+      <Tag variant={v.profilePublished ? 'success' : 'neutral'}>
         {v.profilePublished ? 'Página completa ✓' : 'Página sin completar todavía'}
       </Tag>
 
@@ -491,9 +482,9 @@ function VerificationRow({ verification: v, onChange }: { verification: AdminVer
             </View>
           </View>
           <CardMeta>Al decidir, las dos fotos se borran definitivamente.</CardMeta>
-          {error && <CardMeta style={{ color: colors.accent }}>{error}</CardMeta>}
+          {error && <Notice tone="danger">{error}</Notice>}
           <View style={{ flexDirection: 'row', gap: space.s2 }}>
-            <Button variant="secondary" style={{ flex: 1 }} disabled={busy} onPress={() => void decide('rejected')}>
+            <Button variant="danger" style={{ flex: 1 }} disabled={busy} onPress={() => void decide('rejected')}>
               Rechazar
             </Button>
             <Button variant="primary" style={{ flex: 1 }} disabled={busy} onPress={() => void decide('verified')}>
@@ -508,7 +499,7 @@ function VerificationRow({ verification: v, onChange }: { verification: AdminVer
               ? 'Su página muestra "Identidad verificada". Las fotos ya se borraron.'
               : 'Las fotos ya se borraron. El negocio puede enviar unas nuevas desde su panel; aparecerán aquí como una revisión nueva.'}
           </CardMeta>
-          {error && <CardMeta style={{ color: colors.accent }}>{error}</CardMeta>}
+          {error && <Notice tone="danger">{error}</Notice>}
           {v.status === 'verified' &&
             (confirmWithdraw ? (
               <View style={{ flexDirection: 'row', gap: space.s2 }}>
@@ -537,26 +528,20 @@ function VerificationRow({ verification: v, onChange }: { verification: AdminVer
 }
 
 const styles = StyleSheet.create({
-  header: {
-    paddingHorizontal: space.s3, paddingVertical: space.s2,
-    flexDirection: 'row', alignItems: 'center', gap: space.s3,
-  },
-  title: { fontFamily: fonts.heading, fontSize: 20, color: colors.text },
-  segRow: { paddingHorizontal: space.s4, paddingBottom: space.s2 },
-  body: { paddingHorizontal: space.s4, gap: space.s4, paddingBottom: space.s4 },
-  h5: { fontFamily: fonts.heading, fontSize: 16, color: colors.text },
+  segRow: { paddingHorizontal: space.s4, paddingBottom: space.s3 },
+  body: { paddingHorizontal: space.s4, gap: space.s4, paddingBottom: space.s8 },
+  h5: { ...type.section },
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  wrapRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  wrapRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s1 + 2 },
   photoRow: { flexDirection: 'row', gap: space.s2 },
-  verificationPhoto: { width: '100%', aspectRatio: 1, backgroundColor: colors.accent100 },
+  verificationPhoto: { width: '100%', aspectRatio: 1, backgroundColor: colors.panel, borderRadius: radius.md },
   photoMissing: { alignItems: 'center', justifyContent: 'center', padding: space.s2 },
-  photoMissingText: { fontFamily: fonts.body, fontSize: 11.5, color: colors.textMuted70, textAlign: 'center' },
-  pendingBanner: { borderColor: colors.accent, backgroundColor: colors.accent100 },
-  codeText: { fontFamily: fonts.heading, fontSize: 20, letterSpacing: 2, color: colors.text },
+  photoMissingText: { fontFamily: fonts.body, fontSize: 11.5, color: colors.textMuted, textAlign: 'center' },
+  codeText: { fontFamily: fonts.bodyBold, fontSize: 20, letterSpacing: 2, color: colors.text },
   noteInput: {
-    paddingHorizontal: space.s3, paddingVertical: 10,
-    borderWidth: 1.5, borderColor: colors.divider, borderRadius: 8,
-    fontFamily: fonts.body, fontSize: 13.5, color: colors.text,
+    minHeight: 44, paddingHorizontal: space.s3, paddingVertical: space.s2,
+    borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, backgroundColor: colors.surface,
+    fontFamily: fonts.body, fontSize: 15, color: colors.text,
   },
   createdBox: { gap: 4, paddingVertical: space.s2 },
 });

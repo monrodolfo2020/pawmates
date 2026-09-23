@@ -7,8 +7,9 @@ import ScreenContainer from '../components/ScreenContainer';
 import Button from '../components/Button';
 import TextField from '../components/TextField';
 import { CardBody } from '../components/CardText';
-import { colors, fonts, space } from '../theme/tokens';
+import { colors, space, type } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
+import Notice from '../components/Notice';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'VerifyEmail'>;
 
@@ -64,7 +65,7 @@ export default function VerifyEmailScreen({ navigation }: Props) {
   return (
     <ScreenContainer>
       <View style={styles.body}>
-        <MailCheck size={40} strokeWidth={1.5} color={colors.accent} />
+        <MailCheck size={40} strokeWidth={1.25} color={colors.text} />
         <Text style={styles.title}>Verifica tu correo</Text>
         {verified ? (
           <>
@@ -82,7 +83,7 @@ export default function VerifyEmailScreen({ navigation }: Props) {
                 ? `Enviamos un código de 6 dígitos a ${s.email}. Revisa tu bandeja (y spam) y escríbelo aquí.`
                 : 'Enviando un código de verificación a tu correo…'}
             </CardBody>
-            {error && <CardBody style={{ color: colors.accent, textAlign: 'center' }}>{error}</CardBody>}
+            {error && <Notice tone="danger">{error}</Notice>}
             <TextField
               label="Código de 6 dígitos"
               value={code}
@@ -114,5 +115,5 @@ export default function VerifyEmailScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   body: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.s3, paddingHorizontal: space.s6 },
-  title: { fontFamily: fonts.heading, fontSize: 26, color: colors.text },
+  title: { ...type.title },
 });

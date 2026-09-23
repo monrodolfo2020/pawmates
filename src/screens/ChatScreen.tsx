@@ -13,7 +13,8 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
 import { IconButton } from '../components/Button';
-import { colors, fonts, radius, space } from '../theme/tokens';
+import Avatar from '../components/Avatar';
+import { colors, fonts, radius, space, type } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
 import { api, BookingSummary } from '../api/client';
 import { formatWhen } from '../utils/bookingSlots';
@@ -68,9 +69,10 @@ export default function ChatScreen({ navigation, route }: Props) {
   return (
     <ScreenContainer>
       <View style={styles.header}>
-        <IconButton onPress={() => navigation.goBack()}>
-          <ChevronLeft size={18} strokeWidth={1.5} color={colors.text} />
+        <IconButton onPress={() => navigation.goBack()} label="Regresar">
+          <ChevronLeft size={20} strokeWidth={1.75} color={colors.text} />
         </IconButton>
+        {other && <Avatar name={other} size={40} square />}
         <View style={{ flex: 1 }}>
           <Text style={styles.title} numberOfLines={1}>
             {other ?? 'Mensajes'}
@@ -118,12 +120,16 @@ export default function ChatScreen({ navigation, route }: Props) {
             value={draft}
             onChangeText={setDraft}
             placeholder="Escribe un mensaje…"
-            placeholderTextColor={colors.textMuted}
+            placeholderTextColor={colors.textFaint}
             multiline
             onSubmitEditing={() => void handleSend()}
           />
-          <IconButton onPress={() => void handleSend()}>
-            <Send size={18} strokeWidth={1.5} color={colors.accent} />
+          <IconButton
+            label="Enviar"
+            onPress={() => void handleSend()}
+            style={[styles.send, !draft.trim() && { opacity: 0.4 }]}
+          >
+            <Send size={18} strokeWidth={1.75} color={colors.onAccent} />
           </IconButton>
         </View>
       </KeyboardAvoidingView>
@@ -133,32 +139,34 @@ export default function ChatScreen({ navigation, route }: Props) {
 
 const styles = StyleSheet.create({
   header: {
-    paddingHorizontal: space.s3, paddingVertical: space.s2,
+    paddingHorizontal: space.s4, paddingVertical: space.s3,
     flexDirection: 'row', alignItems: 'center', gap: space.s3,
+    borderBottomWidth: 1, borderBottomColor: colors.divider,
   },
-  title: { fontFamily: fonts.heading, fontSize: 20, color: colors.text },
+  title: { fontFamily: fonts.display, fontSize: 24, lineHeight: 28, color: colors.text },
+  subtitle: { ...type.meta },
   scroll: { padding: space.s4, gap: space.s2, flexGrow: 1 },
-  empty: { fontFamily: fonts.body, fontSize: 13, color: colors.textMuted, textAlign: 'center', marginTop: space.s6 },
+  empty: { ...type.small, textAlign: 'center', marginTop: space.s6 },
   bubbleRow: { flexDirection: 'row', justifyContent: 'flex-start' },
   bubbleRowMine: { justifyContent: 'flex-end' },
   bubble: {
-    maxWidth: '78%', paddingHorizontal: space.s3, paddingVertical: space.s2, borderWidth: 1,
-    borderRadius: radius.md, gap: 2,
+    maxWidth: '80%', paddingHorizontal: space.s3 + 2, paddingVertical: space.s2 + 2, borderWidth: 1,
+    borderRadius: radius.lg, gap: 2,
   },
   bubbleTheirs: { backgroundColor: colors.surface, borderColor: colors.divider, borderBottomLeftRadius: 4 },
-  bubbleMine: { backgroundColor: colors.accent, borderColor: colors.accent, borderBottomRightRadius: 4 },
-  time: { fontFamily: fonts.body, fontSize: 10.5, color: colors.textMuted },
-  timeMine: { color: colors.accent100, textAlign: 'right' },
-  subtitle: { fontFamily: fonts.body, fontSize: 12, color: colors.textMuted70 },
-  bubbleText: { fontFamily: fonts.body, fontSize: 14, color: colors.text },
-  bubbleTextMine: { color: colors.bg },
+  bubbleMine: { backgroundColor: colors.accentTint, borderColor: colors.accentTintLine, borderBottomRightRadius: 4 },
+  time: { fontFamily: fonts.body, fontSize: 11, color: colors.textMuted },
+  timeMine: { textAlign: 'right' },
+  bubbleText: { ...type.body },
+  bubbleTextMine: {},
   inputRow: {
     flexDirection: 'row', alignItems: 'flex-end', gap: space.s2,
-    padding: space.s4, borderTopWidth: 1, borderTopColor: colors.divider,
+    paddingHorizontal: space.s4, paddingVertical: space.s3, borderTopWidth: 1, borderTopColor: colors.divider,
   },
   input: {
-    flex: 1, fontFamily: fonts.body, fontSize: 14, color: colors.text,
-    borderWidth: 1, borderColor: colors.divider, paddingHorizontal: space.s3,
-    paddingVertical: space.s2, maxHeight: 100,
+    flex: 1, fontFamily: fonts.body, fontSize: 15, color: colors.text, minHeight: 44,
+    borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, backgroundColor: colors.surface,
+    paddingHorizontal: space.s3 + 2, paddingVertical: space.s3 - 2, maxHeight: 120,
   },
+  send: { width: 44, height: 44, backgroundColor: colors.accent, borderColor: colors.accent },
 });

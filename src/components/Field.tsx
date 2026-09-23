@@ -1,13 +1,12 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, fonts, radius } from '../theme/tokens';
+import { colors, fonts, radius, space } from '../theme/tokens';
 
 type Props = { label: string; children: React.ReactNode };
 
-// Mirrors .field > label + .input wrapper.
 export default function Field({ label, children }: Props) {
   return (
-    <View style={{ gap: 5 }}>
+    <View style={{ gap: space.s2 - 2 }}>
       <Text style={styles.label}>{label}</Text>
       {children}
     </View>
@@ -23,16 +22,16 @@ export function InputDisplay({ value }: { value: string }) {
 }
 
 const styles = StyleSheet.create({
-  label: { fontFamily: fonts.body, fontSize: 12, color: colors.textMuted70 },
+  label: { fontFamily: fonts.bodySemiBold, fontSize: 13, color: colors.text },
   input: {
-    minHeight: 44,
+    minHeight: 48,
     justifyContent: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+    paddingVertical: space.s3,
+    paddingHorizontal: space.s4,
     backgroundColor: colors.surface,
-    borderWidth: 1.5,
-    borderColor: colors.divider,
+    borderWidth: 1,
+    borderColor: colors.border,
     borderRadius: radius.md,
   },
-  inputText: { fontFamily: fonts.body, fontSize: 14, color: colors.text },
+  inputText: { fontFamily: fonts.body, fontSize: 15, color: colors.text },
 });

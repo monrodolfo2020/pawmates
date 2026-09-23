@@ -4,12 +4,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
-import { useFonts, Barlow_400Regular, Barlow_500Medium, Barlow_700Bold } from '@expo-google-fonts/barlow';
 import {
-  BarlowCondensed_400Regular,
-  BarlowCondensed_600SemiBold,
-} from '@expo-google-fonts/barlow-condensed';
-import {
+  useFonts,
   Figtree_400Regular,
   Figtree_500Medium,
   Figtree_600SemiBold,
@@ -44,11 +40,6 @@ function AppShell({ fontsLoaded }: { fontsLoaded: boolean }) {
 
 export default function App() {
   const [fontsLoaded] = useFonts({
-    Barlow_400Regular,
-    Barlow_500Medium,
-    Barlow_700Bold,
-    BarlowCondensed_400Regular,
-    BarlowCondensed_600SemiBold,
     Figtree_400Regular,
     Figtree_500Medium,
     Figtree_600SemiBold,

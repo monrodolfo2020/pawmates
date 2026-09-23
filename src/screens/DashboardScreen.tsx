@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { View, Text, Image, ScrollView, StyleSheet, Pressable, Linking } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable, Linking } from 'react-native';
 import { Check } from 'lucide-react-native';
 import VerificationCard from '../components/VerificationCard';
 import { useFocusEffect } from '@react-navigation/native';
@@ -7,7 +7,13 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
 import AppNav from '../components/AppNav';
-import { colors, fonts, radius, tintFor } from '../theme/tokens';
+import Avatar from '../components/Avatar';
+import Button from '../components/Button';
+import Card from '../components/Card';
+import { CardBody, CardKicker, CardMeta } from '../components/CardText';
+import Notice from '../components/Notice';
+import Tag from '../components/Tag';
+import { colors, fonts, radius, space, type } from '../theme/tokens';
 import {
   api,
   BookingSummary,
@@ -133,7 +139,6 @@ export default function DashboardScreen({ navigation }: Props) {
   };
 
   const businessName = profile?.businessName ?? s.name ?? s.email ?? 'tu negocio';
-  const avatarTint = tintFor(businessName);
   const photo = profile?.photo ?? null;
   const url = profile?.slug ? micrositeUrl(profile.slug) : null;
   const approved = profile?.approvedAt != null;
@@ -153,392 +158,293 @@ export default function DashboardScreen({ navigation }: Props) {
     }
   };
 
+  const timeTag = (iso: string, variant: 'warning' | 'success') => (
+    <Tag variant={variant}>{requestTimeLabel(iso)}</Tag>
+  );
+
+  const bookingLine = (b: BookingSummary) => {
+    const firstLine = b.lines[0];
+    const isMeetGreet = b.lines.some((l) => l.serviceTypeCode === MEET_GREET_SERVICE_TYPE_CODE);
+    return (
+      (isMeetGreet
+        ? 'Meet & Greet — sesión de conocernos (sin costo)'
+        : firstLine
+          ? `Paseo de ${firstLine.durationValue} min`
+          : 'Paseo') + (b.ownerName ? ` · Dueño: ${b.ownerName}` : '')
+    );
+  };
+
+  const messageButton = (b: BookingSummary, label: string) => (
+    <Button
+      size="sm"
+      style={{ flex: 1 }}
+      icon={b.hasUnreadMessages ? <View style={styles.messageDot} /> : undefined}
+      onPress={() => navigation.navigate('Chat', { bookingId: b.id })}
+    >
+      {b.hasUnreadMessages ? 'Mensaje nuevo' : label}
+    </Button>
+  );
+
   return (
     <ScreenContainer>
-      <View style={styles.root}>
-        <AppNav
-          items={[
-            { label: 'Panel', onPress: () => navigation.navigate('Dashboard') },
-            ...(bookable
-              ? [{ label: 'Solicitudes', onPress: () => navigation.navigate('ComingSoon', { title: 'Solicitudes' }) }]
-              : []),
-            { label: 'Mi página', onPress: () => navigation.navigate('MyPage') },
-            { label: 'Perfil', onPress: () => navigation.navigate('Profile') },
-          ]}
-          activeIndex={0}
-        />
-        <ScrollView contentContainerStyle={styles.body}>
-          <View style={styles.header}>
-            <View style={styles.headerLeft}>
-              <Pressable onPress={() => navigation.navigate('ProviderProfileEdit')}>
-                {photo ? (
-                  <Image source={{ uri: photo }} style={styles.avatar} resizeMode="cover" />
-                ) : (
-                  <View style={[styles.avatarPlaceholder, { backgroundColor: avatarTint.bg }]}>
-                    <Text style={[styles.avatarPlaceholderText, { color: avatarTint.fg }]}>
-                      {businessName[0].toUpperCase()}
-                    </Text>
-                  </View>
-                )}
-              </Pressable>
-              <View>
-                <Text style={styles.kicker}>Mi negocio</Text>
-                <Text style={styles.title}>{businessName}</Text>
-              </View>
-            </View>
-            <View style={{ flexDirection: 'row', gap: 8 }}>
-              {s.roles.includes('owner') && (
-                <Pressable
-                  style={styles.pillBtn}
-                  onPress={() => (navigation.canGoBack() ? navigation.goBack() : navigation.navigate('Home'))}
-                >
-                  <Text style={styles.pillBtnText}>Modo dueño</Text>
-                </Pressable>
-              )}
-              <Pressable style={styles.pillBtn} onPress={() => void s.logout()}>
-                <Text style={styles.pillBtnText}>Salir</Text>
-              </Pressable>
-            </View>
+      <AppNav
+        items={[
+          { label: 'Panel', onPress: () => navigation.navigate('Dashboard') },
+          ...(bookable
+            ? [{ label: 'Solicitudes', onPress: () => navigation.navigate('ComingSoon', { title: 'Solicitudes' }) }]
+            : []),
+          { label: 'Mi página', onPress: () => navigation.navigate('MyPage') },
+          { label: 'Perfil', onPress: () => navigation.navigate('Profile') },
+          ...(s.roles.includes('owner')
+            ? [{
+                label: 'Modo dueño',
+                onPress: () => (navigation.canGoBack() ? navigation.goBack() : navigation.navigate('Home')),
+              }]
+            : []),
+        ]}
+        activeIndex={0}
+      />
+      <ScrollView contentContainerStyle={styles.body}>
+        <Pressable style={styles.header} onPress={() => navigation.navigate('ProviderProfileEdit')}>
+          <Avatar name={businessName} uri={photo} size={60} square />
+          <View style={{ flex: 1, gap: 2 }}>
+            <Text style={type.kicker}>Mi negocio</Text>
+            <Text style={type.title}>{businessName}</Text>
           </View>
+        </Pressable>
 
-          {!s.emailVerified && (
-            <Pressable style={styles.alertCard} onPress={() => navigation.navigate('VerifyEmail')}>
-              <Text style={styles.alertTitle}>Verifica tu correo</Text>
-              <Text style={styles.alertBody}>
-                Dale más confianza a los dueños confirmando que tu correo es real. Toca para verificarlo.
-              </Text>
-            </Pressable>
-          )}
+        {!s.emailVerified && (
+          <Pressable onPress={() => navigation.navigate('VerifyEmail')}>
+            <Notice tone="warning" title="Verifica tu correo">
+              Dale más confianza a los dueños confirmando que tu correo es real. Toca para verificarlo.
+            </Notice>
+          </Pressable>
+        )}
 
-          {/* Shown to every provider, in both layouts: an account whose
-              signup half-failed has no verification and no page, and this
-              is the only way back from that. */}
-          <VerificationCard
-            onOpenConsent={() =>
-              navigation.navigate('LegalDocument', { type: 'identity_verification_consent' })
-            }
-          />
+        {/* Shown to every provider, in both layouts: an account whose
+            signup half-failed has no verification and no page, and this
+            is the only way back from that. */}
+        <VerificationCard
+          onOpenConsent={() =>
+            navigation.navigate('LegalDocument', { type: 'identity_verification_consent' })
+          }
+        />
 
-          {profile === undefined && <Text style={styles.mutedBody}>Cargando…</Text>}
+        {profile === undefined && <Text style={type.small}>Cargando…</Text>}
 
-          {profile === null && (
-            <>
-              <View style={styles.pageCard}>
-                <Text style={styles.earningsKicker}>Tu página todavía no existe</Text>
-                <Text style={styles.pageCardTitle}>Empecemos</Text>
-                <Text style={styles.earningsMeta}>
-                  Crea la página de tu negocio para aparecer en el directorio.
-                </Text>
-              </View>
-              <Pressable style={styles.outlineBtn} onPress={() => navigation.navigate('ProviderProfileEdit')}>
-                <Text style={styles.outlineBtnText}>Crear mi página</Text>
-              </Pressable>
-            </>
-          )}
+        {profile === null && (
+          <Card>
+            <CardKicker>Tu página todavía no existe</CardKicker>
+            <Text style={type.title}>Empecemos</Text>
+            <CardBody>Crea la página de tu negocio para aparecer en el directorio.</CardBody>
+            <Button variant="primary" block onPress={() => navigation.navigate('ProviderProfileEdit')}>
+              Crear mi página
+            </Button>
+          </Card>
+        )}
 
-          {profile && !bookable && (
-            <>
-              <View style={styles.pageCard}>
-                <Text style={styles.earningsKicker}>
-                  {published
-                    ? 'Tu página está en línea'
-                    : !approved
-                      ? 'Tu negocio está en revisión'
-                      : 'Tu página todavía no es visible'}
-                </Text>
-                <Text style={styles.pageCardTitle}>{businessName}</Text>
-                <Text style={styles.earningsMeta}>
-                  {published
-                    ? url ?? ''
-                    : !approved
-                      ? 'Prepara tu página mientras la revisamos. Te avisamos por correo, con tu enlace y tu QR, en cuanto esté en línea.'
-                      : missing.length
-                        ? `Falta ${listInSpanish(missing)}.`
-                        : 'Completa tu página para publicarla.'}
-                </Text>
-              </View>
-
+        {profile && !bookable && (
+          <>
+            <Card>
+              <Tag variant={published ? 'success' : !approved ? 'warning' : 'neutral'}>
+                {published
+                  ? 'Tu página está en línea'
+                  : !approved
+                    ? 'Tu negocio está en revisión'
+                    : 'Tu página todavía no es visible'}
+              </Tag>
+              <CardBody>
+                {published
+                  ? url ?? ''
+                  : !approved
+                    ? 'Prepara tu página mientras la revisamos. Te avisamos por correo, con tu enlace y tu QR, en cuanto esté en línea.'
+                    : missing.length
+                      ? `Falta ${listInSpanish(missing)}.`
+                      : 'Completa tu página para publicarla.'}
+              </CardBody>
               {published && url && (
                 <View style={styles.actionsRow}>
-                  <Pressable style={styles.halfBtn} onPress={() => void copyLink()}>
-                    <Text style={styles.halfBtnText}>{copied ? 'Copiado ✓' : 'Copiar enlace'}</Text>
-                  </Pressable>
-                  <Pressable style={styles.halfBtnPrimary} onPress={() => void Linking.openURL(url)}>
-                    <Text style={styles.halfBtnPrimaryText}>Ver mi página</Text>
-                  </Pressable>
+                  <Button style={{ flex: 1 }} onPress={() => void copyLink()}>
+                    {copied ? 'Copiado ✓' : 'Copiar enlace'}
+                  </Button>
+                  <Button variant="primary" style={{ flex: 1 }} onPress={() => void Linking.openURL(url)}>
+                    Ver mi página
+                  </Button>
                 </View>
               )}
+            </Card>
 
-              <View>
-                <Text style={styles.sectionTitle}>Tu página</Text>
-                <View style={{ gap: 10 }}>
-                  {PAGE_CHECKLIST.map((item) => {
-                    const done = item.done(profile);
-                    return (
-                      <Pressable
-                        key={item.label}
-                        style={styles.checkRow}
-                        onPress={() => navigation.navigate('ProviderProfileEdit')}
+            <View style={styles.section}>
+              <Text style={type.section}>Tu página</Text>
+              <Card style={styles.checklist}>
+                {PAGE_CHECKLIST.map((item, i) => {
+                  const done = item.done(profile);
+                  return (
+                    <Pressable
+                      key={item.label}
+                      style={[styles.checkRow, i > 0 && styles.rowDivider]}
+                      onPress={() => navigation.navigate('ProviderProfileEdit')}
+                    >
+                      <View style={[styles.checkDot, done && styles.checkDotDone]}>
+                        {done && <Check size={12} strokeWidth={3} color={colors.onAccent} />}
+                      </View>
+                      <Text style={[styles.checkLabel, done && styles.checkLabelDone]}>{item.label}</Text>
+                      {!done && <Text style={styles.checkAdd}>Agregar</Text>}
+                    </Pressable>
+                  );
+                })}
+              </Card>
+              {!profile.whatsapp && (
+                <Notice tone="warning">Sin un WhatsApp, quien llegue a tu página no tiene cómo contactarte.</Notice>
+              )}
+            </View>
+
+            <Button block onPress={() => navigation.navigate('ProviderProfileEdit')}>
+              Editar información de mi negocio
+            </Button>
+
+            {profile.isVip && (
+              <Button variant="ghost" block onPress={() => navigation.navigate('MyPage')}>
+                Personalizar el diseño de mi página
+              </Button>
+            )}
+          </>
+        )}
+
+        {bookable && (
+          <>
+            <Button block onPress={() => navigation.navigate('ProviderProfileEdit')}>
+              Editar mi página
+            </Button>
+
+            <Card>
+              <CardKicker>Ingresos estimados esta semana</CardKicker>
+              <Text style={styles.earnings}>
+                {summary ? money(summary.earnings.amount, summary.earnings.currency) : '—'}
+              </Text>
+              <CardMeta>
+                {summary
+                  ? `${summary.completedThisWeek} paseo${summary.completedThisWeek === 1 ? '' : 's'} completado${summary.completedThisWeek === 1 ? '' : 's'} · según tu tarifa, te pagan directo`
+                  : 'Cargando…'}
+              </CardMeta>
+              <View style={styles.weekRow}>
+                {(summary?.days ?? []).map((wd, i) => {
+                  const active = wd.count > 0;
+                  return (
+                    <View key={i} style={[styles.weekCell, active && styles.weekCellActive]}>
+                      <Text style={[styles.weekLabel, active && styles.weekActiveText]}>{wd.label}</Text>
+                      <Text style={[styles.weekCount, active && styles.weekActiveText]}>{wd.count}</Text>
+                    </View>
+                  );
+                })}
+              </View>
+            </Card>
+
+            <View style={styles.section}>
+              <Text style={type.section}>Solicitudes nuevas</Text>
+              {requests === null && <Text style={type.small}>Cargando…</Text>}
+              {requests?.length === 0 && <Notice>No tienes solicitudes nuevas por ahora.</Notice>}
+              {requests?.map((req) => {
+                const petLabel = req.lines.map((l) => l.petName).filter(Boolean).join(', ') || 'Mascota';
+                const isMeetGreet = req.lines.some((l) => l.serviceTypeCode === MEET_GREET_SERVICE_TYPE_CODE);
+                const busy = actingOn === req.id;
+                return (
+                  <Card key={req.id}>
+                    <View style={styles.rowBetween}>
+                      <Text style={[type.cardTitle, { flex: 1 }]}>{petLabel}</Text>
+                      {timeTag(req.scheduledAt, 'warning')}
+                    </View>
+                    <CardMeta>{bookingLine(req)}</CardMeta>
+                    {isMeetGreet && messageButton(req, 'Enviar mensaje')}
+                    <View style={styles.actionsRow}>
+                      <Button
+                        size="sm"
+                        variant="danger"
+                        style={{ flex: 1 }}
+                        disabled={busy}
+                        onPress={() => void respond(req.id, 'reject')}
                       >
-                        <View style={[styles.checkDot, done && styles.checkDotDone]}>
-                          {done && <Check size={12} strokeWidth={3} color="#fff" />}
-                        </View>
-                        <Text style={[styles.checkLabel, done && styles.checkLabelDone]}>{item.label}</Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-                {!profile.whatsapp && (
-                  <Text style={styles.warnBody}>
-                    Sin un WhatsApp, quien llegue a tu página no tiene cómo contactarte.
-                  </Text>
-                )}
-              </View>
-
-              <Pressable style={styles.outlineBtn} onPress={() => navigation.navigate('ProviderProfileEdit')}>
-                <Text style={styles.outlineBtnText}>Editar información de mi negocio</Text>
-              </Pressable>
-
-              {profile.isVip && (
-                <Pressable style={styles.ghostBtn} onPress={() => navigation.navigate('MyPage')}>
-                  <Text style={styles.ghostBtnText}>Personalizar el diseño de mi página</Text>
-                </Pressable>
-              )}
-            </>
-          )}
-
-          {bookable && (
-            <>
-              <Pressable style={styles.outlineBtn} onPress={() => navigation.navigate('ProviderProfileEdit')}>
-                <Text style={styles.outlineBtnText}>Editar mi página</Text>
-              </Pressable>
-
-              <View style={styles.earningsCard}>
-                <Text style={styles.earningsKicker}>Ingresos estimados esta semana</Text>
-                <Text style={styles.earnings}>
-                  {summary ? money(summary.earnings.amount, summary.earnings.currency) : '—'}
-                </Text>
-                <Text style={styles.earningsMeta}>
-                  {summary
-                    ? `${summary.completedThisWeek} paseo${summary.completedThisWeek === 1 ? '' : 's'} completado${summary.completedThisWeek === 1 ? '' : 's'} · según tu tarifa, te pagan directo`
-                    : 'Cargando…'}
-                </Text>
-              </View>
-
-              <View>
-                <Text style={styles.sectionTitle}>Esta semana</Text>
-                <View style={styles.weekRow}>
-                  {(summary?.days ?? []).map((wd, i) => {
-                    const active = wd.count > 0;
-                    return (
-                      <View key={i} style={[styles.weekCell, active && styles.weekCellActive]}>
-                        <Text style={[styles.weekLabel, active && styles.weekLabelActive]}>{wd.label}</Text>
-                        <Text style={[styles.weekCount, active && styles.weekCountActive]}>{wd.count}</Text>
-                      </View>
-                    );
-                  })}
-                </View>
-              </View>
-
-              <View style={{ gap: 12 }}>
-                <Text style={styles.sectionTitle}>Solicitudes nuevas</Text>
-                {requests === null && <Text style={styles.mutedBody}>Cargando…</Text>}
-                {requests?.length === 0 && <Text style={styles.mutedBody}>No tienes solicitudes nuevas por ahora.</Text>}
-                {requests?.map((req) => {
-                  const petLabel = req.lines.map((l) => l.petName).filter(Boolean).join(', ') || 'Mascota';
-                  const firstLine = req.lines[0];
-                  const isMeetGreet = req.lines.some((l) => l.serviceTypeCode === MEET_GREET_SERVICE_TYPE_CODE);
-                  const busy = actingOn === req.id;
-                  return (
-                    <View key={req.id} style={styles.requestCard}>
-                      <View style={styles.requestAccent} />
-                      <View style={styles.requestBody}>
-                        <View style={styles.rowBetween}>
-                          <Text style={styles.requestPet}>{petLabel}</Text>
-                          <View style={styles.timeTag}>
-                            <Text style={styles.timeTagText}>{requestTimeLabel(req.scheduledAt)}</Text>
-                          </View>
-                        </View>
-                        <Text style={styles.requestMeta}>
-                          {isMeetGreet
-                            ? 'Meet & Greet — sesión de conocernos (sin costo)'
-                            : firstLine
-                              ? `Paseo de ${firstLine.durationValue} min`
-                              : 'Paseo'}
-                          {req.ownerName ? ` · Dueño: ${req.ownerName}` : ''}
-                        </Text>
-                        {isMeetGreet && (
-                          <Pressable
-                            style={[styles.messageBtn, req.hasUnreadMessages && styles.messageBtnUnread]}
-                            onPress={() => navigation.navigate('Chat', { bookingId: req.id })}
-                          >
-                            {req.hasUnreadMessages && <View style={styles.messageDot} />}
-                            <Text style={[styles.messageBtnText, req.hasUnreadMessages && styles.messageBtnTextUnread]}>
-                              {req.hasUnreadMessages ? 'Mensaje nuevo' : 'Enviar mensaje'}
-                            </Text>
-                          </Pressable>
-                        )}
-                        <View style={styles.requestActions}>
-                          <Pressable
-                            style={[styles.rejectBtn, busy && styles.btnDisabled]}
-                            disabled={busy}
-                            onPress={() => void respond(req.id, 'reject')}
-                          >
-                            <Text style={styles.rejectBtnText}>Rechazar</Text>
-                          </Pressable>
-                          <Pressable
-                            style={[styles.acceptBtn, busy && styles.btnDisabled]}
-                            disabled={busy}
-                            onPress={() => void respond(req.id, 'accept')}
-                          >
-                            <Text style={styles.acceptBtnText}>Aceptar</Text>
-                          </Pressable>
-                        </View>
-                      </View>
+                        Rechazar
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="primary"
+                        style={{ flex: 1 }}
+                        disabled={busy}
+                        onPress={() => void respond(req.id, 'accept')}
+                      >
+                        Aceptar
+                      </Button>
                     </View>
-                  );
-                })}
-              </View>
+                  </Card>
+                );
+              })}
+            </View>
 
-              <View style={{ gap: 12 }}>
-                <Text style={styles.sectionTitle}>Próximos</Text>
-                {upcoming === null && <Text style={styles.mutedBody}>Cargando…</Text>}
-                {upcoming?.length === 0 && <Text style={styles.mutedBody}>No tienes paseos confirmados todavía.</Text>}
-                {upcoming?.map((b) => {
-                  const petLabel = b.lines.map((l) => l.petName).filter(Boolean).join(', ') || 'Mascota';
-                  const firstLine = b.lines[0];
-                  const isMeetGreet = b.lines.some((l) => l.serviceTypeCode === MEET_GREET_SERVICE_TYPE_CODE);
-                  return (
-                    <View key={b.id} style={styles.requestCard}>
-                      <View style={[styles.requestAccent, { backgroundColor: colors.mint }]} />
-                      <View style={styles.requestBody}>
-                        <View style={styles.rowBetween}>
-                          <Text style={styles.requestPet}>{petLabel}</Text>
-                          <View style={styles.timeTag}>
-                            <Text style={styles.timeTagText}>{requestTimeLabel(b.scheduledAt)}</Text>
-                          </View>
-                        </View>
-                        <Text style={styles.requestMeta}>
-                          {isMeetGreet
-                            ? 'Meet & Greet — sesión de conocernos (sin costo)'
-                            : firstLine
-                              ? `Paseo de ${firstLine.durationValue} min`
-                              : 'Paseo'}
-                          {b.ownerName ? ` · Dueño: ${b.ownerName}` : ''}
-                        </Text>
-                        <View style={styles.requestActions}>
-                          <Pressable
-                            style={[styles.messageBtn, { flex: 1 }, b.hasUnreadMessages && styles.messageBtnUnread]}
-                            onPress={() => navigation.navigate('Chat', { bookingId: b.id })}
-                          >
-                            {b.hasUnreadMessages && <View style={styles.messageDot} />}
-                            <Text style={[styles.messageBtnText, b.hasUnreadMessages && styles.messageBtnTextUnread]}>
-                              {b.hasUnreadMessages ? 'Mensaje nuevo' : 'Mensaje'}
-                            </Text>
-                          </Pressable>
-                          {!isMeetGreet && (
-                            <Pressable
-                              style={[styles.acceptBtn, { paddingVertical: 10 }]}
-                              onPress={() => navigation.navigate('Live', { bookingId: b.id })}
-                            >
-                              <Text style={styles.acceptBtnText}>
-                                {b.status === 'in_progress' ? 'Continuar paseo' : 'Iniciar paseo'}
-                              </Text>
-                            </Pressable>
-                          )}
-                        </View>
-                      </View>
+            <View style={styles.section}>
+              <Text style={type.section}>Próximos</Text>
+              {upcoming === null && <Text style={type.small}>Cargando…</Text>}
+              {upcoming?.length === 0 && <Notice>No tienes paseos confirmados todavía.</Notice>}
+              {upcoming?.map((b) => {
+                const petLabel = b.lines.map((l) => l.petName).filter(Boolean).join(', ') || 'Mascota';
+                const isMeetGreet = b.lines.some((l) => l.serviceTypeCode === MEET_GREET_SERVICE_TYPE_CODE);
+                return (
+                  <Card key={b.id}>
+                    <View style={styles.rowBetween}>
+                      <Text style={[type.cardTitle, { flex: 1 }]}>{petLabel}</Text>
+                      {timeTag(b.scheduledAt, 'success')}
                     </View>
-                  );
-                })}
-              </View>
-            </>
-          )}
-
-        </ScrollView>
-      </View>
+                    <CardMeta>{bookingLine(b)}</CardMeta>
+                    <View style={styles.actionsRow}>
+                      {messageButton(b, 'Mensaje')}
+                      {!isMeetGreet && (
+                        <Button
+                          size="sm"
+                          variant="primary"
+                          style={{ flex: 1 }}
+                          onPress={() => navigation.navigate('Live', { bookingId: b.id })}
+                        >
+                          {b.status === 'in_progress' ? 'Continuar paseo' : 'Iniciar paseo'}
+                        </Button>
+                      )}
+                    </View>
+                  </Card>
+                );
+              })}
+            </View>
+          </>
+        )}
+      </ScrollView>
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.bg },
-  body: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 24, gap: 18 },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  avatar: { width: 48, height: 48, borderRadius: radius.pill },
-  avatarPlaceholder: { width: 48, height: 48, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' },
-  avatarPlaceholderText: { fontFamily: fonts.heading, fontSize: 20 },
-  kicker: { fontFamily: fonts.bodyBold, fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: colors.accent },
-  title: { fontFamily: fonts.heading, fontSize: 19, color: colors.text, marginTop: 2 },
-  pillBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: radius.pill, backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.divider },
-  pillBtnText: { fontFamily: fonts.bodyBold, fontSize: 12.5, color: colors.text },
-
-  alertCard: { padding: 16, borderRadius: radius.md, backgroundColor: colors.sunTint, borderWidth: 1.5, borderColor: colors.sunTintLine, gap: 4 },
-  alertTitle: { fontFamily: fonts.bodyBold, fontSize: 14, color: colors.text },
-  alertBody: { fontFamily: fonts.body, fontSize: 12.5, color: colors.neutral600, lineHeight: 17 },
-
-  outlineBtn: { paddingVertical: 14, borderRadius: radius.md, borderWidth: 1.5, borderColor: colors.grapeTintLine, backgroundColor: colors.grapeTint, alignItems: 'center' },
-  outlineBtnText: { fontFamily: fonts.bodyBold, fontSize: 14, color: colors.grape },
-
-  earningsCard: { padding: 20, borderRadius: radius.lg, backgroundColor: colors.accent, gap: 4 },
-  earningsKicker: { fontFamily: fonts.bodyBold, fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: colors.accent100 },
-  earnings: { fontFamily: fonts.heading, fontSize: 40, color: '#fff', marginTop: 2 },
-  earningsMeta: { fontFamily: fonts.bodyMedium, fontSize: 12.5, color: colors.accent100 },
-
-  // The directory business's counterpart to earningsCard: same weight on
-  // the screen, but it leads with the page and its link, which is the
-  // only thing PawMates actually does for a non-paseador today.
-  pageCard: { padding: 20, borderRadius: radius.lg, backgroundColor: colors.accent, gap: 4 },
-  pageCardTitle: { fontFamily: fonts.heading, fontSize: 26, color: '#fff', marginTop: 2 },
-
-  actionsRow: { flexDirection: 'row', gap: 8 },
-  halfBtn: { flex: 1, paddingVertical: 13, borderRadius: radius.md, borderWidth: 1.5, borderColor: colors.divider, backgroundColor: colors.surface, alignItems: 'center' },
-  halfBtnText: { fontFamily: fonts.bodyBold, fontSize: 13.5, color: colors.text },
-  halfBtnPrimary: { flex: 1, paddingVertical: 13, borderRadius: radius.md, backgroundColor: colors.text, alignItems: 'center' },
-  halfBtnPrimaryText: { fontFamily: fonts.bodyBold, fontSize: 13.5, color: '#fff' },
-
-  ghostBtn: { paddingVertical: 12, alignItems: 'center' },
-  ghostBtnText: { fontFamily: fonts.bodyBold, fontSize: 13.5, color: colors.grape },
-
-  checkRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  checkDot: { width: 20, height: 20, borderRadius: radius.pill, borderWidth: 1.5, borderColor: colors.divider, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
-  checkDotDone: { backgroundColor: colors.mint, borderColor: colors.mint },
-  checkLabel: { flex: 1, fontFamily: fonts.body, fontSize: 13.5, color: colors.neutral600 },
-  checkLabelDone: { fontFamily: fonts.bodyMedium, color: colors.text },
-  warnBody: { marginTop: 10, fontFamily: fonts.body, fontSize: 12.5, color: colors.neutral600, lineHeight: 17 },
-
-  sectionTitle: { fontFamily: fonts.heading, fontSize: 17, color: colors.text, marginBottom: 10 },
-  weekRow: { flexDirection: 'row', gap: 8 },
-  weekCell: { flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: radius.md, backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.divider, gap: 4 },
-  weekCellActive: { backgroundColor: colors.mintTint, borderColor: colors.mintTintLine },
-  weekLabel: { fontFamily: fonts.bodyBold, fontSize: 10.5, letterSpacing: 0.5, textTransform: 'uppercase', color: colors.textFaint },
-  weekLabelActive: { color: '#00947C' },
-  weekCount: { fontFamily: fonts.heading, fontSize: 18, color: colors.neutral600 },
-  weekCountActive: { color: colors.text },
-
-  mutedBody: { fontFamily: fonts.body, fontSize: 13.5, color: colors.neutral600 },
-
-  requestCard: { flexDirection: 'row', borderRadius: radius.lg, backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.divider, overflow: 'hidden' },
-  requestAccent: { width: 6, backgroundColor: colors.accent },
-  requestBody: { flex: 1, padding: 16, gap: 8 },
-  rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  requestPet: { fontFamily: fonts.bodyBold, fontSize: 15, color: colors.text },
-  timeTag: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: radius.pill, backgroundColor: colors.sunTint },
-  timeTagText: { fontFamily: fonts.bodyBold, fontSize: 11, color: '#8A6400' },
-  requestMeta: { fontFamily: fonts.body, fontSize: 13, color: colors.neutral600 },
-  messageBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-    paddingVertical: 10, borderRadius: radius.md, borderWidth: 1.5, borderColor: colors.grapeTintLine, backgroundColor: colors.grapeTint,
+  body: { paddingHorizontal: space.s4, paddingTop: space.s5, paddingBottom: space.s8, gap: space.s5 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: space.s4 },
+  section: { gap: space.s3 },
+  actionsRow: { flexDirection: 'row', gap: space.s2 },
+  rowBetween: { flexDirection: 'row', alignItems: 'center', gap: space.s3 },
+  earnings: { fontFamily: fonts.bodyBold, fontSize: 36, lineHeight: 42, color: colors.text },
+  weekRow: { flexDirection: 'row', gap: space.s1, marginTop: space.s2 },
+  weekCell: {
+    flex: 1, alignItems: 'center', gap: 2, paddingVertical: space.s2,
+    borderRadius: radius.sm, backgroundColor: colors.panel,
   },
-  messageBtnText: { fontFamily: fonts.bodyBold, fontSize: 12.5, color: colors.grape },
-  messageBtnUnread: { borderColor: colors.accent, backgroundColor: colors.accent },
-  messageBtnTextUnread: { color: '#fff' },
-  messageDot: { width: 7, height: 7, borderRadius: radius.pill, backgroundColor: '#fff' },
-  requestActions: { flexDirection: 'row', gap: 8, marginTop: 4 },
-  rejectBtn: { flex: 1, paddingVertical: 12, borderRadius: radius.md, borderWidth: 1.5, borderColor: colors.divider, backgroundColor: colors.surface, alignItems: 'center' },
-  rejectBtnText: { fontFamily: fonts.bodyBold, fontSize: 13.5, color: colors.text },
-  acceptBtn: { flex: 1, paddingVertical: 12, borderRadius: radius.md, backgroundColor: colors.mint, alignItems: 'center' },
-  acceptBtnText: { fontFamily: fonts.bodyBold, fontSize: 13.5, color: '#fff' },
-  btnDisabled: { opacity: 0.5 },
+  weekCellActive: { backgroundColor: colors.successTint },
+  weekLabel: { fontFamily: fonts.bodySemiBold, fontSize: 11, color: colors.textMuted },
+  weekCount: { fontFamily: fonts.bodyBold, fontSize: 16, color: colors.textMuted },
+  weekActiveText: { color: colors.success },
+  checklist: { paddingVertical: space.s1, gap: 0 },
+  checkRow: { flexDirection: 'row', alignItems: 'center', gap: space.s3, paddingVertical: space.s3 },
+  rowDivider: { borderTopWidth: 1, borderTopColor: colors.divider },
+  checkDot: {
+    width: 22, height: 22, borderRadius: 11, borderWidth: 1.5, borderColor: colors.border,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  checkDotDone: { backgroundColor: colors.success, borderColor: colors.success },
+  checkLabel: { flex: 1, fontFamily: fonts.bodyMedium, fontSize: 14.5, color: colors.text },
+  checkLabelDone: { color: colors.textMuted },
+  checkAdd: { fontFamily: fonts.bodySemiBold, fontSize: 13.5, color: colors.accent },
+  messageDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.accent },
 });

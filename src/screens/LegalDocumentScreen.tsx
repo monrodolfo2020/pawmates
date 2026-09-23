@@ -1,12 +1,11 @@
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet, useWindowDimensions, Platform } from 'react-native';
-import { ChevronLeft } from 'lucide-react-native';
+import { View, ScrollView, StyleSheet, useWindowDimensions, Platform } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
-import { IconButton } from '../components/Button';
+import ScreenHeader from '../components/ScreenHeader';
 import LegalText from '../components/LegalText';
-import { colors, fonts, space } from '../theme/tokens';
+import { space } from '../theme/tokens';
 import { LegalDocumentType } from '../api/client';
 import { privacyNotice } from '../legal/privacyNotice';
 import { ownerTerms } from '../legal/ownerTerms';
@@ -62,23 +61,17 @@ export default function LegalDocumentScreen({ navigation, route }: Props) {
 
   return (
     <ScreenContainer>
-      <View style={styles.header}>
-        {navigation.canGoBack() ? (
-          <IconButton onPress={() => navigation.goBack()}>
-            <ChevronLeft size={18} strokeWidth={1.5} color={colors.text} />
-          </IconButton>
-        ) : (
-          Platform.OS === 'web' && (
-            // Opened from its own public link: the way out is the app.
-            <IconButton onPress={() => window.location.assign('/')}>
-              <ChevronLeft size={18} strokeWidth={1.5} color={colors.text} />
-            </IconButton>
-          )
-        )}
-        <Text style={styles.title} numberOfLines={1}>
-          {document.title}
-        </Text>
-      </View>
+      <ScreenHeader
+        onBack={
+          navigation.canGoBack()
+            ? () => navigation.goBack()
+            : Platform.OS === 'web'
+              ? // Opened from its own public link: the way out is the app.
+                () => window.location.assign('/')
+              : undefined
+        }
+        title={document.title}
+      />
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={{ width: Math.min(width, READING_MAX_WIDTH) }}>
           {/* The header already names the document. */}
@@ -90,10 +83,5 @@ export default function LegalDocumentScreen({ navigation, route }: Props) {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    paddingHorizontal: space.s3, paddingVertical: space.s2,
-    flexDirection: 'row', alignItems: 'center', gap: space.s3,
-  },
-  title: { flex: 1, fontFamily: fonts.heading, fontSize: 19, color: colors.text },
   scroll: { alignItems: 'center', paddingHorizontal: space.s4, paddingBottom: space.s8 },
 });

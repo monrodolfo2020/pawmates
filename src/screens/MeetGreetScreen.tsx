@@ -1,20 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
-import { ChevronLeft, Handshake } from 'lucide-react-native';
+import { Handshake } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
-import { IconButton } from '../components/Button';
 import Button from '../components/Button';
 import RadioRow from '../components/RadioRow';
 import Field from '../components/Field';
 import Card from '../components/Card';
 import { CardBody, CardMeta } from '../components/CardText';
-import { colors, fonts, space } from '../theme/tokens';
+import { colors, radius, space, type } from '../theme/tokens';
 import { api, ProviderDetail } from '../api/client';
 import { useAppState } from '../state/AppState';
 import WhenPicker, { chosenSlot, initialWhen } from '../components/WhenPicker';
 import { atSlot, formatWhen } from '../utils/bookingSlots';
+import ScreenHeader from '../components/ScreenHeader';
+import Notice from '../components/Notice';
+import BottomBar from '../components/BottomBar';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MeetGreet'>;
 
@@ -55,11 +57,11 @@ export default function MeetGreetScreen({ navigation, route }: Props) {
   if (sentBookingId) {
     return (
       <ScreenContainer>
-        <View style={styles.header}>
-          <Text style={styles.title}>Solicitud enviada</Text>
-        </View>
         <View style={styles.sentBody}>
-          <Handshake size={40} strokeWidth={1.5} color={colors.accent} />
+          <View style={styles.sentIcon}>
+            <Handshake size={28} strokeWidth={1.75} color={colors.warning} />
+          </View>
+          <Text style={type.kicker}>Solicitud enviada</Text>
           <Text style={styles.sentTitle}>
             Le avisamos a {provider?.name ?? 'el negocio'}
           </Text>
@@ -71,7 +73,7 @@ export default function MeetGreetScreen({ navigation, route }: Props) {
             Mientras tanto, pueden escribirse para acordar el punto de encuentro.
           </Text>
         </View>
-        <View style={styles.footer}>
+        <BottomBar>
           <Button
             variant="secondary"
             block
@@ -82,21 +84,16 @@ export default function MeetGreetScreen({ navigation, route }: Props) {
           <Button variant="primary" block onPress={() => navigation.navigate('Home')}>
             Volver al inicio
           </Button>
-        </View>
+        </BottomBar>
       </ScreenContainer>
     );
   }
 
   return (
     <ScreenContainer>
-      <View style={styles.header}>
-        <IconButton onPress={() => navigation.goBack()}>
-          <ChevronLeft size={18} strokeWidth={1.5} color={colors.text} />
-        </IconButton>
-        <Text style={styles.title}>Conócenos primero</Text>
-      </View>
+      <ScreenHeader onBack={() => navigation.goBack()} title="Conócenos primero" />
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Card>
+        <Card tone="panel">
           <CardBody>
             Un Meet &amp; Greet es una sesión breve y sin costo para que tú, tu mascota y{' '}
             {provider?.name ?? 'el negocio'} se conozcan antes de reservar paseos. Elige cuándo te gustaría.
@@ -120,17 +117,13 @@ export default function MeetGreetScreen({ navigation, route }: Props) {
 
         <WhenPicker value={when} onChange={setWhen} />
 
-        {error && (
-          <Card>
-            <CardBody style={{ color: colors.accent }}>{error}</CardBody>
-          </Card>
-        )}
+        {error && <Notice tone="danger">{error}</Notice>}
 
         {s.pets.length === 0 && (
           <CardMeta>Agrega primero los datos de tu mascota para solicitar un Meet &amp; Greet.</CardMeta>
         )}
       </ScrollView>
-      <View style={styles.footer}>
+      <BottomBar>
         <Button
           variant="primary"
           block
@@ -139,20 +132,18 @@ export default function MeetGreetScreen({ navigation, route }: Props) {
         >
           {submitting ? 'Enviando…' : 'Solicitar Meet & Greet'}
         </Button>
-      </View>
+      </BottomBar>
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
-    paddingHorizontal: space.s3, paddingVertical: space.s2,
-    flexDirection: 'row', alignItems: 'center', gap: space.s3,
+  scroll: { paddingHorizontal: space.s4, gap: space.s5, paddingBottom: space.s6 },
+  sentIcon: {
+    width: 64, height: 64, borderRadius: radius.pill, backgroundColor: colors.warningTint,
+    alignItems: 'center', justifyContent: 'center',
   },
-  title: { fontFamily: fonts.heading, fontSize: 20, color: colors.text },
-  scroll: { paddingHorizontal: space.s4, gap: space.s4, paddingBottom: space.s4 },
-  footer: { padding: space.s4, gap: space.s2 },
   sentBody: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.s3, paddingHorizontal: space.s6 },
-  sentTitle: { fontFamily: fonts.heading, fontSize: 22, color: colors.text, textAlign: 'center' },
-  sentBody2: { fontFamily: fonts.body, fontSize: 14, color: colors.text, opacity: 0.75, textAlign: 'center' },
+  sentTitle: { ...type.title, textAlign: 'center' },
+  sentBody2: { ...type.body, color: colors.textMuted, textAlign: 'center' },
 });

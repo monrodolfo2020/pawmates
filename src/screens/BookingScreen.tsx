@@ -1,19 +1,20 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
-import { ChevronLeft } from 'lucide-react-native';
+import { View, ScrollView, StyleSheet } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
-import { IconButton } from '../components/Button';
 import Button from '../components/Button';
 import Field from '../components/Field';
 import RadioRow from '../components/RadioRow';
 import Segmented from '../components/Segmented';
 import { CardMeta } from '../components/CardText';
-import { colors, fonts, space } from '../theme/tokens';
+import { space } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
 import { atSlot } from '../utils/bookingSlots';
 import WhenPicker, { chosenSlot, initialWhen } from '../components/WhenPicker';
+import ScreenHeader from '../components/ScreenHeader';
+import Notice from '../components/Notice';
+import BottomBar from '../components/BottomBar';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Booking'>;
 
@@ -46,17 +47,12 @@ export default function BookingScreen({ navigation, route }: Props) {
 
   return (
     <ScreenContainer>
-      <View style={styles.header}>
-        <IconButton onPress={() => navigation.goBack()}>
-          <ChevronLeft size={18} strokeWidth={1.5} color={colors.text} />
-        </IconButton>
-        <Text style={styles.title}>Solicitar paseo</Text>
-      </View>
+      <ScreenHeader onBack={() => navigation.goBack()} title="Solicitar paseo" />
       <ScrollView contentContainerStyle={styles.scroll}>
         {s.pets.length === 0 && (
-          <CardMeta style={{ color: colors.accent }}>
+          <Notice tone="danger">
             Agrega primero los datos de tu mascota para poder solicitar un paseo.
-          </CardMeta>
+          </Notice>
         )}
 
         {s.pets.length > 1 && (
@@ -89,21 +85,15 @@ export default function BookingScreen({ navigation, route }: Props) {
           aquí mismo.
         </CardMeta>
       </ScrollView>
-      <View style={styles.footer}>
+      <BottomBar>
         <Button variant="primary" block disabled={!canContinue} onPress={handleContinue}>
           Revisar solicitud
         </Button>
-      </View>
+      </BottomBar>
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
-    paddingHorizontal: space.s3, paddingVertical: space.s2,
-    flexDirection: 'row', alignItems: 'center', gap: space.s3,
-  },
-  title: { fontFamily: fonts.heading, fontSize: 20, color: colors.text },
-  scroll: { paddingHorizontal: space.s4, gap: space.s4, paddingBottom: space.s4 },
-  footer: { padding: space.s4 },
+  scroll: { paddingHorizontal: space.s4, gap: space.s5, paddingBottom: space.s6 },
 });

@@ -3,10 +3,12 @@ import { View, Text, TextInput, StyleSheet } from 'react-native';
 import Card from './Card';
 import Button from './Button';
 import Tag from './Tag';
-import { CardBody, CardKicker, CardMeta } from './CardText';
+import Avatar from './Avatar';
+import { CardMeta, CardTitle } from './CardText';
 import { api, AdminAccount } from '../api/client';
 import { colors, fonts, radius, space } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
+import Notice from './Notice';
 
 type Mode = 'view' | 'edit' | 'delete';
 
@@ -82,18 +84,21 @@ export default function AdminAccountCard({ account: a, selfId, onChanged }: Prop
   return (
     <Card style={suspended ? styles.suspendedCard : undefined}>
       <View style={styles.headRow}>
-        <CardKicker style={{ margin: 0, flex: 1 }}>{a.email}</CardKicker>
-        {suspended && <Tag variant="accent">Suspendida</Tag>}
-        {isSelf && <Tag variant="outline">Tú</Tag>}
+        <Avatar name={a.name ?? a.email} size={40} />
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <CardTitle numberOfLines={1}>{a.name ?? 'Sin nombre'}</CardTitle>
+          <CardMeta>{a.email}</CardMeta>
+        </View>
+        {suspended && <Tag variant="danger">Suspendida</Tag>}
+        {isSelf && <Tag>Tú</Tag>}
       </View>
-      <CardBody>{a.name ?? 'Sin nombre'}</CardBody>
       <View style={styles.wrapRow}>
         {a.roles.map((r) => (
-          <Tag key={r} variant="outline">
+          <Tag key={r}>
             {ROLE_LABELS[r] ?? r}
           </Tag>
         ))}
-        {!a.emailVerified && <Tag variant="outline">Correo sin verificar</Tag>}
+        {!a.emailVerified && <Tag variant="warning">Correo sin verificar</Tag>}
       </View>
       {suspended && (
         <CardMeta>
@@ -165,8 +170,8 @@ export default function AdminAccountCard({ account: a, selfId, onChanged }: Prop
               Cancelar
             </Button>
             <Button
-              variant="primary"
-              style={[{ flex: 1 }, styles.deleteButton]}
+              variant="destructive"
+              style={{ flex: 1 }}
               disabled={busy || !emailMatches}
               onPress={() => void remove()}
             >
@@ -176,7 +181,7 @@ export default function AdminAccountCard({ account: a, selfId, onChanged }: Prop
         </View>
       )}
 
-      {error && <CardMeta style={{ color: colors.accent }}>{error}</CardMeta>}
+      {error && <Notice tone="danger">{error}</Notice>}
 
       {mode === 'view' && (
         <View style={styles.actions}>
@@ -189,7 +194,7 @@ export default function AdminAccountCard({ account: a, selfId, onChanged }: Prop
             </Button>
           )}
           {!protectedAccount && (
-            <Button variant="ghost" style={{ flex: 1 }} disabled={busy} onPress={() => setMode('delete')}>
+            <Button variant="danger" style={{ flex: 1 }} disabled={busy} onPress={() => setMode('delete')}>
               Eliminar
             </Button>
           )}
@@ -204,18 +209,17 @@ const styles = StyleSheet.create({
   headRow: { flexDirection: 'row', alignItems: 'center', gap: space.s2 },
   wrapRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   form: { gap: space.s2, paddingTop: space.s2 },
-  label: { fontFamily: fonts.bodyMedium, fontSize: 12, color: colors.textMuted70 },
+  label: { fontFamily: fonts.bodySemiBold, fontSize: 13, color: colors.text },
   input: {
-    paddingHorizontal: space.s3, paddingVertical: 10,
-    borderWidth: 1.5, borderColor: colors.divider, borderRadius: radius.sm,
-    fontFamily: fonts.body, fontSize: 13.5, color: colors.text,
+    minHeight: 44, paddingHorizontal: space.s3, paddingVertical: space.s2,
+    borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, backgroundColor: colors.surface,
+    fontFamily: fonts.body, fontSize: 15, color: colors.text,
   },
   actions: { flexDirection: 'row', gap: space.s2, marginTop: space.s1 },
   dangerZone: {
     gap: space.s2, marginTop: space.s2, padding: space.s3,
-    borderRadius: radius.md, borderWidth: 1.5, borderColor: colors.accent,
-    backgroundColor: colors.accent100,
+    borderRadius: radius.md, borderWidth: 1, borderColor: colors.dangerLine,
+    backgroundColor: colors.dangerTint,
   },
-  dangerTitle: { fontFamily: fonts.bodyBold, fontSize: 14, color: colors.accent },
-  deleteButton: { backgroundColor: colors.accent },
+  dangerTitle: { fontFamily: fonts.bodyBold, fontSize: 14, color: colors.danger },
 });
