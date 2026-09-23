@@ -1,39 +1,39 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Image, Alert, Platform } from 'react-native';
-import { MessageCircle, Phone, Camera } from 'lucide-react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { View, Text, ScrollView, StyleSheet, Image, Platform } from 'react-native';
+import { ChevronLeft, MessageCircle, Camera } from 'lucide-react-native';
 import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
 import Svg, { Polyline, Circle } from 'react-native-svg';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
-import Button from '../components/Button';
+import Button, { IconButton } from '../components/Button';
 import Card from '../components/Card';
 import { CardMeta, CardBody } from '../components/CardText';
 import Tag from '../components/Tag';
 import { colors, fonts, space } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
-import type { TripPoint } from '../api/client';
+import { api, BookingSummary, TripDetail, TripPoint } from '../api/client';
 import { mapboxRouteImageUrl } from '../utils/mapboxStaticUrl';
 import { resizeImagePhoto } from '../utils/resizeImagePhoto';
+import { formatWhen } from '../utils/bookingSlots';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Live'>;
 
 const STATUS_LABEL: Record<string, string> = {
-  confirmed: 'Iniciando…',
-  starting: 'Iniciando…',
+  confirmed: 'Por iniciar',
   in_progress: '● En vivo',
-  completing: 'Terminando…',
-  completed: '✓ Paseo terminado',
-  error: 'Error de conexión',
+  completed: '✓ Terminado',
+  cancelled: 'Cancelado',
 };
 
 const EVENT_LABEL: Record<string, string> = {
   photo: 'Foto del paseo',
-  pee: 'Pipí registrado',
-  poop: 'Popó registrado',
+  pee: 'Pipí',
+  poop: 'Popó',
 };
 
+const POLL_MS = 5000;
 const MAP_WIDTH = 300;
 const MAP_HEIGHT = 210;
 const MAP_PADDING = 24;
@@ -62,104 +62,128 @@ function formatDuration(seconds: number | null): string {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
+/**
+ * One booking's walk, seen from whichever side you're on.
+ *
+ * The business runs it from their own phone: they start it, their GPS
+ * draws the route, they log photos and pee/poop, and they finish it.
+ * The owner only watches — the screen polls the same trip data and
+ * shows the route and log as they come in, then the summary.
+ *
+ * Nothing here lives in global state: the booking id comes from the
+ * route, so a business with several walks today opens each on its own.
+ */
 export default function LiveWalkScreen({ navigation, route }: Props) {
   const s = useAppState();
-  const startedRef = useRef(false);
-  const watchRef = useRef<Location.LocationSubscription | null>(null);
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const [loggingType, setLoggingType] = useState<'pee' | 'poop' | 'photo' | null>(null);
-  const [gpsState, setGpsState] = useState<'requesting' | 'active' | 'denied'>('requesting');
+  const { bookingId } = route.params;
+  const [booking, setBooking] = useState<BookingSummary | null>(null);
+  const [trip, setTrip] = useState<TripDetail | null>(null);
+  const [businessName, setBusinessName] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [busy, setBusy] = useState<'start' | 'finish' | 'pee' | 'poop' | 'photo' | null>(null);
+  const [gpsState, setGpsState] = useState<'off' | 'requesting' | 'active' | 'denied'>('off');
 
+  const isWalker = booking !== null && booking.providerId === s.accountId;
+  const status = trip?.status ?? booking?.status ?? null;
+  const live = status === 'in_progress';
+  const finished = status === 'completed';
+  const petLabel = booking?.lines.map((l) => l.petName?.split(' · ')[0]).filter(Boolean).join(', ') || 'la mascota';
+
+  const refresh = useCallback(async () => {
+    if (!s.token) return;
+    try {
+      setTrip(await api.getTrip(s.token, bookingId));
+    } catch {
+      // Polled — the next tick tries again.
+    }
+  }, [s.token, bookingId]);
+
+  // Who's who, once.
   useEffect(() => {
-    // StrictMode/fast-refresh can mount this screen more than once — only
-    // ever start the real trip the first time this screen is reached.
-    if (startedRef.current) return;
-    startedRef.current = true;
-    void s.startTrip();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (!s.token) return;
+    api
+      .getBooking(s.token, bookingId)
+      .then((b) => {
+        setBooking(b);
+        if (b.providerId !== s.accountId) {
+          api
+            .getProvider(s.token, b.providerId)
+            .then((p) => setBusinessName(p.name))
+            .catch(() => undefined);
+        }
+      })
+      .catch((err) => setLoadError(err instanceof Error ? err.message : 'No se pudo abrir este paseo.'));
+    void refresh();
+  }, [s.token, s.accountId, bookingId, refresh]);
 
-  // Once the trip is actually in progress: start posting real GPS pings
-  // and polling the live report-card data. Both stop the moment the walk
-  // is no longer in_progress (completed, or this screen unmounts).
+  // Both sides keep polling until the walk is over: the owner to see it
+  // start and move, the business to see its own log land.
   useEffect(() => {
-    if (s.bookingStatus !== 'in_progress') return;
+    if (finished || status === 'cancelled') return;
+    const timer = setInterval(() => void refresh(), POLL_MS);
+    return () => clearInterval(timer);
+  }, [finished, status, refresh]);
 
+  // The business's phone is the one on the walk, so only it reports GPS.
+  useEffect(() => {
+    if (!isWalker || !live || !s.token) return;
+    const token = s.token;
     let cancelled = false;
+    let watch: Location.LocationSubscription | null = null;
+    const report = (lat: number, lng: number) =>
+      api.logTripLocation(token, bookingId, lat, lng).catch(() => undefined);
 
     (async () => {
+      setGpsState('requesting');
       const perm = await Location.requestForegroundPermissionsAsync();
       if (cancelled) return;
       if (!perm.granted) {
         setGpsState('denied');
-        Alert.alert(
-          'Permiso de ubicación',
-          'Sin acceso a tu ubicación no se puede mostrar la ruta del paseo en el mapa, pero puedes seguir usando los botones de foto y registro.',
-        );
         return;
       }
-      // watchPositionAsync's own first callback can take a while to fire
-      // (varies a lot by platform/browser) — get an immediate fix too so
-      // the map has something to show right away instead of sitting on
-      // "buscando ubicación" for no visible reason.
+      setGpsState('active');
       try {
-        const current = await Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.Balanced,
-        });
-        if (!cancelled) void s.logTripLocation(current.coords.latitude, current.coords.longitude);
+        const now = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+        if (!cancelled) void report(now.coords.latitude, now.coords.longitude);
       } catch {
-        // Ignored — watchPositionAsync below is the real ongoing source.
+        // The watch below is the real ongoing source.
       }
       if (cancelled) return;
-      setGpsState('active');
-      watchRef.current = await Location.watchPositionAsync(
+      watch = await Location.watchPositionAsync(
         { accuracy: Location.Accuracy.Balanced, timeInterval: 5000, distanceInterval: 10 },
-        (loc) => {
-          void s.logTripLocation(loc.coords.latitude, loc.coords.longitude);
-        },
+        (loc) => void report(loc.coords.latitude, loc.coords.longitude),
       );
+      if (cancelled) watch.remove();
     })();
-
-    pollRef.current = setInterval(() => {
-      void s.refreshTrip();
-    }, 5000);
-    void s.refreshTrip();
 
     return () => {
       cancelled = true;
-      watchRef.current?.remove();
-      watchRef.current = null;
-      if (pollRef.current) clearInterval(pollRef.current);
-      pollRef.current = null;
+      watch?.remove();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [s.bookingStatus]);
+  }, [isWalker, live, s.token, bookingId]);
 
-  const finished = s.bookingStatus === 'completed';
-
-  const handleComplete = async () => {
-    await s.completeTrip();
-    await s.refreshTrip();
-  };
-
-  const handleLog = async (type: 'pee' | 'poop') => {
-    setLoggingType(type);
+  const act = async (kind: NonNullable<typeof busy>, run: (token: string) => Promise<unknown>) => {
+    if (!s.token) return;
+    setBusy(kind);
+    setActionError(null);
     try {
-      await s.logWalkEvent({ type });
-    } catch {
-      Alert.alert('No se pudo registrar', 'Inténtalo de nuevo.');
+      await run(s.token);
+      await refresh();
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'No se pudo completar. Inténtalo de nuevo.');
     } finally {
-      setLoggingType(null);
+      setBusy(null);
     }
   };
 
-  const handlePhoto = async () => {
+  const takePhoto = async () => {
     const perm =
       Platform.OS === 'web'
         ? await ImagePicker.requestMediaLibraryPermissionsAsync()
         : await ImagePicker.requestCameraPermissionsAsync();
     if (!perm.granted) {
-      Alert.alert('Permiso necesario', 'Activa el acceso a la cámara para tomar una foto.');
+      setActionError('Activa el acceso a la cámara para tomar una foto.');
       return;
     }
     const result =
@@ -169,172 +193,234 @@ export default function LiveWalkScreen({ navigation, route }: Props) {
     if (result.canceled || !result.assets[0]) return;
     const photo = await resizeImagePhoto(result.assets[0]);
     if (!photo.base64) return;
-    setLoggingType('photo');
-    try {
-      await s.logWalkEvent({ type: 'photo', photoBase64: photo.base64 });
-    } catch {
-      Alert.alert('No se pudo subir la foto', 'Inténtalo de nuevo.');
-    } finally {
-      setLoggingType(null);
-    }
+    await act('photo', (t) => api.logWalkEvent(t, bookingId, { type: 'photo', photoBase64: photo.base64! }));
   };
 
-  const tripRoute = s.tripDetail?.route ?? [];
-  const points = projectRoute(tripRoute);
-  const polylinePoints = points.map((p) => `${p.x},${p.y}`).join(' ');
-  const events = s.tripDetail?.events ?? [];
-  const mapImageUrl = mapboxRouteImageUrl(tripRoute, 600, 420);
+  const routePoints = trip?.route ?? [];
+  const points = projectRoute(routePoints);
+  const events = trip?.events ?? [];
+  const mapImageUrl = mapboxRouteImageUrl(routePoints, 600, 420);
+  const other = isWalker ? booking?.ownerName ?? 'el dueño' : businessName ?? 'el negocio';
+
+  const mapEmptyText = (() => {
+    if (status === 'confirmed') return 'La ruta aparecerá cuando empiece el paseo';
+    if (!live) return 'Sin datos de ruta';
+    if (!isWalker) return 'Esperando la ubicación del paseo…';
+    if (gpsState === 'denied') return 'Sin acceso a tu ubicación';
+    return 'Buscando tu ubicación…';
+  })();
+
+  if (loadError) {
+    return (
+      <ScreenContainer>
+        <Header onBack={() => navigation.goBack()} title="Paseo" />
+        <View style={styles.pad}>
+          <CardMeta style={{ color: colors.accent }}>{loadError}</CardMeta>
+        </View>
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer>
-      <View style={styles.header}>
-        <Tag variant="accent">{STATUS_LABEL[s.bookingStatus] ?? '● En vivo'}</Tag>
-        {finished && s.tripDetail && (
-          <Text style={styles.kicker}>
-            {(s.tripDetail.distanceMeters / 1000).toFixed(2)} km · {formatDuration(s.tripDetail.durationSeconds)}
-          </Text>
-        )}
-      </View>
+      <Header onBack={() => navigation.goBack()} title={`Paseo de ${petLabel}`} tag={status ? STATUS_LABEL[status] : undefined} />
 
-      <View style={styles.map}>
-        {mapImageUrl ? (
-          <Image source={{ uri: mapImageUrl }} style={StyleSheet.absoluteFill} resizeMode="cover" />
-        ) : points.length >= 1 ? (
-          <Svg width="100%" height="100%" viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`} style={StyleSheet.absoluteFill}>
-            {points.length >= 2 && (
-              <Polyline
-                points={polylinePoints}
-                stroke={colors.accent}
-                strokeWidth={2}
-                fill="none"
-                strokeDasharray="5 4"
-              />
+      {!booking && <CardMeta style={styles.pad}>Cargando…</CardMeta>}
+
+      {booking && (
+        <ScrollView contentContainerStyle={styles.scroll}>
+          {status === 'confirmed' && (
+            <Card>
+              <CardBody>
+                {isWalker
+                  ? `Programado para el ${formatWhen(booking.scheduledAt)}. Cuando llegues por ${petLabel}, toca "Iniciar paseo": ${other} verá la ruta en vivo.`
+                  : `${other} todavía no inicia el paseo (programado para el ${formatWhen(booking.scheduledAt)}). Esta pantalla se actualiza sola.`}
+              </CardBody>
+            </Card>
+          )}
+
+          {isWalker && live && gpsState === 'denied' && (
+            <CardMeta style={{ color: colors.accent }}>
+              Sin permiso de ubicación no se dibuja la ruta. Puedes seguir registrando fotos y
+              necesidades; actívalo en tu navegador o teléfono para que {other} vea el recorrido.
+            </CardMeta>
+          )}
+
+          <View style={styles.map}>
+            {mapImageUrl ? (
+              <Image source={{ uri: mapImageUrl }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+            ) : points.length >= 1 ? (
+              <Svg width="100%" height="100%" viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`} style={StyleSheet.absoluteFill}>
+                {points.length >= 2 && (
+                  <Polyline
+                    points={points.map((p) => `${p.x},${p.y}`).join(' ')}
+                    stroke={colors.accent}
+                    strokeWidth={2}
+                    fill="none"
+                    strokeDasharray="5 4"
+                  />
+                )}
+                <Circle cx={points[0].x} cy={points[0].y} r={5} fill={colors.text} />
+                <Circle
+                  cx={points[points.length - 1].x}
+                  cy={points[points.length - 1].y}
+                  r={7}
+                  fill={colors.accent}
+                  stroke={colors.accent200}
+                  strokeWidth={4}
+                />
+              </Svg>
+            ) : (
+              <Text style={styles.mapEmpty}>{mapEmptyText}</Text>
             )}
-            <Circle cx={points[0].x} cy={points[0].y} r={5} fill={colors.text} />
-            <Circle
-              cx={points[points.length - 1].x}
-              cy={points[points.length - 1].y}
-              r={7}
-              fill={colors.accent}
-              stroke={colors.accent200}
-              strokeWidth={4}
-            />
-          </Svg>
-        ) : (
-          <Text style={styles.mapEmpty}>
-            {gpsState === 'denied'
-              ? 'Sin acceso a tu ubicación'
-              : s.bookingStatus === 'in_progress'
-                ? 'Buscando ubicación…'
-                : 'Sin datos de ruta'}
-          </Text>
-        )}
-      </View>
+          </View>
 
-      <View style={styles.actions}>
-        <Button
-          variant="secondary"
-          blueprint
-          style={{ flex: 1 }}
-          icon={<MessageCircle size={14} strokeWidth={1.5} color={colors.text} />}
-          disabled={!s.bookingId}
-          onPress={() => s.bookingId && navigation.navigate('Chat', { bookingId: s.bookingId })}
-        >
-          Mensaje
-        </Button>
-        <Button variant="secondary" blueprint style={{ flex: 1 }} icon={<Phone size={14} strokeWidth={1.5} color={colors.text} />}>
-          Llamar
-        </Button>
-      </View>
+          {(live || finished) && trip && (
+            <View style={styles.stats}>
+              <Stat label="Distancia" value={`${(trip.distanceMeters / 1000).toFixed(2)} km`} />
+              <Stat label="Tiempo" value={formatDuration(trip.durationSeconds)} />
+              <Stat label="Pipí" value={String(trip.peeCount)} />
+              <Stat label="Popó" value={String(trip.poopCount)} />
+            </View>
+          )}
 
-      {!finished && (
-        <View style={styles.logActions}>
+          {isWalker && live && (
+            <View style={styles.row}>
+              <Button
+                variant="secondary"
+                style={{ flex: 1 }}
+                disabled={busy !== null}
+                onPress={() => void takePhoto()}
+                icon={<Camera size={14} strokeWidth={1.5} color={colors.text} />}
+              >
+                {busy === 'photo' ? 'Subiendo…' : 'Foto'}
+              </Button>
+              <Button
+                variant="secondary"
+                style={{ flex: 1 }}
+                disabled={busy !== null}
+                onPress={() => void act('pee', (t) => api.logWalkEvent(t, bookingId, { type: 'pee' }))}
+              >
+                💧 Pipí
+              </Button>
+              <Button
+                variant="secondary"
+                style={{ flex: 1 }}
+                disabled={busy !== null}
+                onPress={() => void act('poop', (t) => api.logWalkEvent(t, bookingId, { type: 'poop' }))}
+              >
+                💩 Popó
+              </Button>
+            </View>
+          )}
+
           <Button
             variant="secondary"
-            style={{ flex: 1 }}
-            disabled={loggingType !== null}
-            onPress={handlePhoto}
-            icon={<Camera size={14} strokeWidth={1.5} color={colors.text} />}
+            blueprint
+            icon={<MessageCircle size={14} strokeWidth={1.5} color={colors.text} />}
+            onPress={() => navigation.navigate('Chat', { bookingId })}
           >
-            Foto
+            {`Mensaje a ${other}`}
           </Button>
-          <Button variant="secondary" style={{ flex: 1 }} disabled={loggingType !== null} onPress={() => void handleLog('pee')}>
-            💧 Pipí
-          </Button>
-          <Button variant="secondary" style={{ flex: 1 }} disabled={loggingType !== null} onPress={() => void handleLog('poop')}>
-            💩 Popó
-          </Button>
-        </View>
+
+          {actionError && <CardMeta style={{ color: colors.accent }}>{actionError}</CardMeta>}
+
+          <Text style={styles.h5}>{finished ? 'Resumen del paseo' : 'Bitácora'}</Text>
+          {events.length === 0 && (
+            <CardMeta>
+              {isWalker && live
+                ? 'Usa los botones de arriba para registrar el paseo.'
+                : 'Todavía no hay registros.'}
+            </CardMeta>
+          )}
+          {[...events].reverse().map((entry) => (
+            <Card key={entry.id} row={entry.type === 'photo'}>
+              {entry.type === 'photo' && entry.photoBase64 && (
+                <Image source={{ uri: entry.photoBase64 }} style={styles.logPhoto} />
+              )}
+              <View style={{ flex: 1 }}>
+                <CardMeta>
+                  {new Date(entry.recordedAt).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })}
+                </CardMeta>
+                <CardBody>{EVENT_LABEL[entry.type] ?? entry.type}</CardBody>
+              </View>
+            </Card>
+          ))}
+        </ScrollView>
       )}
 
-      {s.bookingStatus === 'error' && s.bookingError && (
-        <View style={{ paddingHorizontal: space.s4, paddingTop: space.s2 }}>
-          <Card>
-            <CardBody style={{ color: colors.accent }}>{s.bookingError}</CardBody>
-          </Card>
+      {booking && isWalker && (status === 'confirmed' || live) && (
+        <View style={styles.footer}>
+          {status === 'confirmed' ? (
+            <Button
+              variant="primary"
+              block
+              blueprint
+              disabled={busy !== null}
+              onPress={() => void act('start', (t) => api.startTrip(t, bookingId))}
+            >
+              {busy === 'start' ? 'Iniciando…' : 'Iniciar paseo'}
+            </Button>
+          ) : (
+            <Button
+              variant="primary"
+              block
+              blueprint
+              disabled={busy !== null}
+              onPress={() => void act('finish', (t) => api.completeTrip(t, bookingId))}
+            >
+              {busy === 'finish' ? 'Terminando…' : 'Terminar paseo'}
+            </Button>
+          )}
         </View>
       )}
-
-      <ScrollView contentContainerStyle={styles.scroll}>
-        <Text style={styles.h5}>Bitácora del paseo</Text>
-        {events.length === 0 && (
-          <CardMeta>Todavía no hay registros — usa los botones de arriba durante el paseo.</CardMeta>
-        )}
-        {[...events].reverse().map((entry) => (
-          <Card key={entry.id} row={entry.type === 'photo'}>
-            {entry.type === 'photo' && entry.photoBase64 && (
-              <Image source={{ uri: entry.photoBase64 }} style={styles.logPhoto} />
-            )}
-            <View style={{ flex: 1 }}>
-              <CardMeta>{new Date(entry.recordedAt).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })}</CardMeta>
-              <CardBody>{EVENT_LABEL[entry.type] ?? entry.type}</CardBody>
-            </View>
-          </Card>
-        ))}
-      </ScrollView>
-
-      <View style={styles.footer}>
-        {finished ? (
-          <Button
-            variant="primary"
-            block
-            blueprint
-            onPress={() => navigation.navigate('Home')}
-          >
-            Volver al inicio
-          </Button>
-        ) : (
-          <Button
-            variant="primary"
-            block
-            blueprint
-            disabled={s.bookingStatus === 'completing'}
-            onPress={() => void handleComplete()}
-          >
-            Finalizar paseo
-          </Button>
-        )}
-      </View>
     </ScreenContainer>
+  );
+}
+
+function Header({ onBack, title, tag }: { onBack: () => void; title: string; tag?: string }) {
+  return (
+    <View style={styles.header}>
+      <IconButton onPress={onBack}>
+        <ChevronLeft size={18} strokeWidth={1.5} color={colors.text} />
+      </IconButton>
+      <Text style={styles.title} numberOfLines={1}>
+        {title}
+      </Text>
+      {tag && <Tag variant="accent">{tag}</Tag>}
+    </View>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={styles.stat}>
+      <Text style={styles.statValue}>{value}</Text>
+      <Text style={styles.statLabel}>{label}</Text>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   header: {
-    paddingHorizontal: space.s4, paddingVertical: space.s2,
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: space.s3, paddingVertical: space.s2,
+    flexDirection: 'row', alignItems: 'center', gap: space.s3,
   },
-  kicker: { fontFamily: fonts.body, fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', color: colors.accent },
+  title: { flex: 1, fontFamily: fonts.heading, fontSize: 20, color: colors.text },
+  pad: { paddingHorizontal: space.s4 },
+  scroll: { paddingHorizontal: space.s4, gap: space.s3, paddingBottom: space.s4 },
   map: {
-    marginHorizontal: space.s4, marginBottom: space.s3, height: 210,
+    height: 210,
     backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.divider,
-    alignItems: 'center', justifyContent: 'center',
+    alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
   },
-  mapEmpty: { fontFamily: fonts.body, fontSize: 12, color: colors.text, opacity: 0.5 },
-  actions: { flexDirection: 'row', gap: space.s2, paddingHorizontal: space.s4 },
-  logActions: { flexDirection: 'row', gap: space.s2, paddingHorizontal: space.s4, paddingTop: space.s2 },
-  scroll: { padding: space.s4, gap: space.s2 },
-  h5: { fontFamily: fonts.heading, fontSize: 16, color: colors.text, marginBottom: 4 },
+  mapEmpty: { fontFamily: fonts.body, fontSize: 12, color: colors.text, opacity: 0.5, textAlign: 'center', paddingHorizontal: space.s4 },
+  stats: { flexDirection: 'row', gap: space.s2 },
+  stat: { flex: 1, alignItems: 'center', paddingVertical: space.s2, borderWidth: 1, borderColor: colors.divider },
+  statValue: { fontFamily: fonts.heading, fontSize: 16, color: colors.text },
+  statLabel: { fontFamily: fonts.body, fontSize: 11, color: colors.textMuted70 },
+  row: { flexDirection: 'row', gap: space.s2 },
+  h5: { fontFamily: fonts.heading, fontSize: 16, color: colors.text, marginTop: space.s2 },
   logPhoto: { width: 48, height: 48, marginRight: space.s3 },
   footer: { padding: space.s4 },
 });

@@ -100,7 +100,14 @@ export default function DashboardScreen({ navigation }: Props) {
     if (!s.token || !bookable) return;
     api
       .listBookings(s.token, { activeContext: 'provider' })
-      .then((all) => setUpcoming(all.filter((b) => b.status === 'confirmed' || b.status === 'in_progress')))
+      .then((all) =>
+        setUpcoming(
+          all
+            .filter((b) => b.status === 'confirmed' || b.status === 'in_progress')
+            // Soonest first — the list arrives newest-scheduled first.
+            .sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt)),
+        ),
+      )
       .catch(() => setUpcoming([]));
   }, [s.token, bookable]);
 
@@ -419,17 +426,27 @@ export default function DashboardScreen({ navigation }: Props) {
                               : 'Paseo'}
                           {b.ownerName ? ` · Dueño: ${b.ownerName}` : ''}
                         </Text>
-                        {isMeetGreet && (
+                        <View style={styles.requestActions}>
                           <Pressable
-                            style={[styles.messageBtn, b.hasUnreadMessages && styles.messageBtnUnread]}
+                            style={[styles.messageBtn, { flex: 1 }, b.hasUnreadMessages && styles.messageBtnUnread]}
                             onPress={() => navigation.navigate('Chat', { bookingId: b.id })}
                           >
                             {b.hasUnreadMessages && <View style={styles.messageDot} />}
                             <Text style={[styles.messageBtnText, b.hasUnreadMessages && styles.messageBtnTextUnread]}>
-                              {b.hasUnreadMessages ? 'Mensaje nuevo' : 'Enviar mensaje'}
+                              {b.hasUnreadMessages ? 'Mensaje nuevo' : 'Mensaje'}
                             </Text>
                           </Pressable>
-                        )}
+                          {!isMeetGreet && (
+                            <Pressable
+                              style={[styles.acceptBtn, { paddingVertical: 10 }]}
+                              onPress={() => navigation.navigate('Live', { bookingId: b.id })}
+                            >
+                              <Text style={styles.acceptBtnText}>
+                                {b.status === 'in_progress' ? 'Continuar paseo' : 'Iniciar paseo'}
+                              </Text>
+                            </Pressable>
+                          )}
+                        </View>
                       </View>
                     </View>
                   );

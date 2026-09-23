@@ -44,7 +44,8 @@ export type RootStackParamList = {
   Booking: { walkerId: string };
   /** Everything the owner chose on Booking; nothing has been sent yet. */
   Checkout: { walkerId: string; petId: string; scheduledAt: string; durationMinutes: number };
-  Live: { walkerId: string };
+  /** One booking's walk: the business runs it, the owner watches it. */
+  Live: { bookingId: string };
   Chat: { bookingId: string };
   Dashboard: undefined;
   Admin: undefined;

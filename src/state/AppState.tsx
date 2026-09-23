@@ -11,18 +11,11 @@ import {
   Role,
   LegalDocumentType,
   ServiceCategory,
-  TripDetail,
 } from '../api/client';
 
-export type BookingStatus =
-  | 'idle'
-  | 'creating'
-  | 'created'
-  | 'starting'
-  | 'in_progress'
-  | 'completing'
-  | 'completed'
-  | 'error';
+/** Where sending the owner's walk request stands (the walk itself is
+ * followed on LiveWalkScreen, per booking). */
+export type BookingStatus = 'idle' | 'creating' | 'created' | 'error';
 
 export type AuthStatus = 'checking' | 'guest' | 'authed';
 
@@ -61,7 +54,6 @@ type State = {
   bookingId: string | null;
   bookingStatus: BookingStatus;
   bookingError: string | null;
-  tripDetail: TripDetail | null;
   messages: ChatMessage[];
 };
 
@@ -118,11 +110,6 @@ type Ctx = State & {
     scheduledAt: string;
     petId?: string;
   }) => Promise<void>;
-  startTrip: () => Promise<void>;
-  completeTrip: () => Promise<void>;
-  refreshTrip: () => Promise<void>;
-  logTripLocation: (lat: number, lng: number) => Promise<void>;
-  logWalkEvent: (params: { type: 'photo' | 'pee' | 'poop'; photoBase64?: string; note?: string }) => Promise<void>;
   sendChatMessage: (bookingId: string, text: string) => Promise<void>;
   refreshMessages: (bookingId: string) => Promise<void>;
 };
@@ -161,7 +148,6 @@ const initialState: State = {
   bookingId: null,
   bookingStatus: 'idle',
   bookingError: null,
-  tripDetail: null,
   messages: [],
 };
 
@@ -415,75 +401,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const startTrip = useCallback(async () => {
-    const { token, bookingId } = stateRef.current;
-    if (!token || !bookingId) return;
-    setState((s) => ({ ...s, bookingStatus: 'starting', bookingError: null }));
-    try {
-      await api.startTrip(token, bookingId);
-      setState((s) => ({ ...s, bookingStatus: 'in_progress' }));
-    } catch (err) {
-      setState((s) => ({
-        ...s,
-        bookingStatus: 'error',
-        bookingError: err instanceof Error ? err.message : 'No se pudo iniciar el paseo.',
-      }));
-      throw err;
-    }
-  }, []);
-
-  const completeTrip = useCallback(async () => {
-    const { token, bookingId } = stateRef.current;
-    if (!token || !bookingId) return;
-    setState((s) => ({ ...s, bookingStatus: 'completing', bookingError: null }));
-    try {
-      await api.completeTrip(token, bookingId);
-      setState((s) => ({ ...s, bookingStatus: 'completed' }));
-    } catch (err) {
-      setState((s) => ({
-        ...s,
-        bookingStatus: 'error',
-        bookingError: err instanceof Error ? err.message : 'No se pudo terminar el paseo.',
-      }));
-      throw err;
-    }
-  }, []);
-
-  // Polled (owner watching live) and re-fetched after every logWalkEvent
-  // (walker's own log needs to show their new entry right away) — same
-  // endpoint serves both the in-progress map and the finished Report Card.
-  const refreshTrip = useCallback(async () => {
-    const { token, bookingId } = stateRef.current;
-    if (!token || !bookingId) return;
-    try {
-      const detail = await api.getTrip(token, bookingId);
-      setState((s) => ({ ...s, tripDetail: detail }));
-    } catch {
-      // Silent — this runs on a poll timer; a transient failure shouldn't
-      // surface as a blocking error banner mid-walk.
-    }
-  }, []);
-
-  const logTripLocation = useCallback(async (lat: number, lng: number) => {
-    const { token, bookingId } = stateRef.current;
-    if (!token || !bookingId) return;
-    try {
-      await api.logTripLocation(token, bookingId, lat, lng);
-    } catch {
-      // Silent — one dropped GPS ping isn't worth interrupting the walk over.
-    }
-  }, []);
-
-  const logWalkEvent = useCallback(
-    async (params: { type: 'photo' | 'pee' | 'poop'; photoBase64?: string; note?: string }) => {
-      const { token, bookingId } = stateRef.current;
-      if (!token || !bookingId) return;
-      await api.logWalkEvent(token, bookingId, params);
-      await refreshTrip();
-    },
-    [refreshTrip],
-  );
-
   const refreshMessages = useCallback(async (bookingId: string) => {
     const { token } = stateRef.current;
     if (!token) return;
@@ -491,7 +408,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       const messages = await api.listMessages(token, bookingId);
       setState((s) => ({ ...s, messages }));
     } catch {
-      // Silent — polled on a timer, same reasoning as refreshTrip.
+      // Silent — polled on a timer; one missed tick isn't worth a banner.
     }
   }, []);
 
@@ -527,11 +444,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       loadPetDraft,
       savePet,
       createBooking,
-      startTrip,
-      completeTrip,
-      refreshTrip,
-      logTripLocation,
-      logWalkEvent,
       sendChatMessage,
       refreshMessages,
     };
@@ -547,11 +459,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     loadPetDraft,
     savePet,
     createBooking,
-    startTrip,
-    completeTrip,
-    refreshTrip,
-    logTripLocation,
-    logWalkEvent,
     sendChatMessage,
     refreshMessages,
   ]);

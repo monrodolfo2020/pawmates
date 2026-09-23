@@ -34,6 +34,13 @@ const STATUS_TINT: Record<string, { bg: string; border: string; text: string }> 
 const money = (cents: number, currency: string) =>
   '$' + (cents / 100).toFixed(2).replace(/\.00$/, '') + ' ' + currency;
 
+/** The walk screen, from the owner's side: waiting, live, or the summary. */
+const WALK_LINK: Record<string, string> = {
+  confirmed: 'Ver paseo',
+  in_progress: '● Ver en vivo',
+  completed: 'Ver resumen',
+};
+
 /** Still on the calendar — either side can call it off until it starts. */
 const CANCELLABLE = new Set(['requested', 'confirmed']);
 
@@ -101,6 +108,14 @@ export default function BookingsScreen({ navigation }: Props) {
                     </Text>
                   )
                 )}
+                {!isMeetGreet && WALK_LINK[b.status] && (
+                  <Pressable
+                    style={[styles.cancelBtn, styles.walkBtn]}
+                    onPress={() => navigation.navigate('Live', { bookingId: b.id })}
+                  >
+                    <Text style={[styles.cancelBtnText, styles.walkBtnText]}>{WALK_LINK[b.status]}</Text>
+                  </Pressable>
+                )}
                 {CANCELLABLE.has(b.status) && (
                   <Pressable
                     style={styles.cancelBtn}
@@ -142,4 +157,6 @@ const styles = StyleSheet.create({
     borderRadius: vr.pill, borderWidth: 1, borderColor: v.line,
   },
   cancelBtnText: { fontFamily: vf.bodySemiBold, fontSize: 12.5, color: v.ink },
+  walkBtn: { backgroundColor: v.mint, borderColor: v.mint },
+  walkBtnText: { color: '#fff' },
 });
