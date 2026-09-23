@@ -23,11 +23,10 @@ described in the design doc.
 
 ## Design system
 
-Visual tokens (`src/theme/tokens.ts`) mirror the source Industry design
-system 1:1 — steel-blue accent, Barlow Condensed headings over Barlow body
-text, square-cornered "blueprint" cards with corner registration marks
-(`src/components/CornerMarks.tsx`), no rounded corners except where the
-source system uses none.
+All colors, fonts, spacing, radii and shadows come from one file,
+`src/theme/tokens.ts`: coral on warm cream, mint for done/verified, sun
+for time/attention, rose for cancelled, grape for messages; Barlow for
+headlines and Figtree for body text.
 
 ## Run it
 
@@ -43,6 +42,26 @@ npm run ios        # requires Xcode
 npm run android     # requires Android Studio
 npm run web         # runs in any browser
 ```
+
+## Tests
+
+```
+npm run typecheck    # the app and the end-to-end tests
+npm test             # unit tests (Jest, src/**/__tests__)
+npm run check:shared # the lists shared with pawmates-backend still match
+npm run test:e2e     # end-to-end, see below
+```
+
+`npm run test:e2e` opens the real app in a real browser against the real
+backend, on a throwaway database: an owner signs up, books a walk that the
+business accepts, a business waits for approval, a live walk is followed
+from the owner's phone, and the login lockout kicks in. It expects
+`pawmates-backend` next to this repo (or `PAWMATES_BACKEND_DIR`), builds
+and starts both on their own, and needs Playwright's Chromium
+(`npx playwright install chromium`, or `PW_CHROMIUM_PATH` pointing at an
+installed one).
+
+GitHub runs all of this on every push, in both repos.
 
 ## Live web preview
 
