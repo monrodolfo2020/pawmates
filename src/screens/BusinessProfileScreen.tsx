@@ -33,8 +33,12 @@ const CHATTABLE_STATUSES = new Set(['requested', 'confirmed', 'in_progress', 'co
 
 export default function BusinessProfileScreen({ navigation, route }: Props) {
   const s = useAppState();
-  const { providerId } = route.params;
+  // Arriving from a public page's "Reservar" link we only know the slug;
+  // the id comes with the business once it loads.
+  const params = route.params;
+  const slug = 'slug' in params ? params.slug : null;
   const [provider, setProvider] = useState<ProviderDetail | null>(null);
+  const providerId = 'providerId' in params ? params.providerId : (provider?.accountId ?? null);
   const [error, setError] = useState<string | null>(null);
   // Lets an owner who already has a request/booking with this business
   // (most commonly a Meet & Greet) jump straight into that chat from here,
@@ -42,11 +46,10 @@ export default function BusinessProfileScreen({ navigation, route }: Props) {
   const [chatBooking, setChatBooking] = useState<BookingSummary | null>(null);
 
   useEffect(() => {
-    api
-      .getProvider(s.token, providerId)
+    (slug ? api.getProviderBySlug(slug) : api.getProvider(s.token, (params as { providerId: string }).providerId))
       .then(setProvider)
       .catch((err) => setError(err instanceof Error ? err.message : 'No se pudo cargar este negocio.'));
-  }, [s.token, providerId]);
+  }, [s.token, params]);
 
   // Refetches on focus (not just mount) so coming back from the chat
   // clears "Mensaje nuevo" right away — hasUnreadMessages is server-side
@@ -54,7 +57,7 @@ export default function BusinessProfileScreen({ navigation, route }: Props) {
   // if the message was read from a different device.
   useFocusEffect(
     useCallback(() => {
-      if (!s.token) {
+      if (!s.token || !providerId) {
         setChatBooking(null);
         return;
       }
@@ -71,6 +74,7 @@ export default function BusinessProfileScreen({ navigation, route }: Props) {
   );
 
   const handleReservar = () => {
+    if (!providerId) return;
     if (s.authStatus !== 'authed') {
       navigation.navigate('Login');
       return;
@@ -93,7 +97,7 @@ export default function BusinessProfileScreen({ navigation, route }: Props) {
 
   return (
     <ScreenContainer>
-      <ScreenHeader onBack={() => navigation.goBack()} />
+      <ScreenHeader onBack={() => (navigation.canGoBack() ? navigation.goBack() : navigation.navigate('Home'))} />
       <ScrollView contentContainerStyle={styles.scroll}>
         {error && <Notice tone="danger">{error}</Notice>}
         {!error && !provider && <CardMeta>Cargando…</CardMeta>}
@@ -148,7 +152,14 @@ export default function BusinessProfileScreen({ navigation, route }: Props) {
             {provider.bio && <Text style={styles.bio}>{provider.bio}</Text>}
 
             {bookable && (
-              <Card row onPress={() => navigation.navigate('MeetGreet', { walkerId: providerId })}>
+              <Card
+                row
+                onPress={() =>
+                  s.authStatus !== 'authed'
+                    ? navigation.navigate('Login')
+                    : providerId && navigation.navigate('MeetGreet', { walkerId: providerId })
+                }
+              >
                 <View style={{ flex: 1, gap: 2 }}>
                   <Text style={type.cardTitle}>Conócenos primero</Text>
                   <Text style={type.meta}>Un encuentro sin costo antes del primer paseo.</Text>

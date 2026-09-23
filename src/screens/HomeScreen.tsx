@@ -19,6 +19,7 @@ import {
 import { colors, fonts, radius, space, type } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
 import Notice from '../components/Notice';
+import { clearReservation, reservationSlug } from '../navigation/reservationIntent';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
@@ -37,6 +38,20 @@ export default function HomeScreen({ navigation }: Props) {
   // The directory is public — a guest who was sent a link should be able
   // to browse it and only hit the login wall when they try to book.
   const authed = s.authStatus === 'authed';
+
+  // Signed in (or just signed up and added their pet) after following a
+  // business's "Reservar en PawMates" link: take them back to it.
+  useEffect(() => {
+    const slug = reservationSlug();
+    if (!authed || !slug) return;
+    // Deferred a tick: on a fresh page load this screen mounts in the same
+    // commit as the navigator, which ignores a navigate() that early.
+    const timer = setTimeout(() => {
+      clearReservation();
+      navigation.navigate('Business', { slug });
+    });
+    return () => clearTimeout(timer);
+  }, [authed, navigation]);
 
   useEffect(() => {
     setProviders(null);

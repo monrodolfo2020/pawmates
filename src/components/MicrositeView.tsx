@@ -1,9 +1,10 @@
 import React from 'react';
-import { View, Text, Image, Pressable, StyleSheet, Linking } from 'react-native';
-import { Clock, MapPin, MessageCircle, Navigation, PawPrint, Quote, ShieldCheck } from 'lucide-react-native';
-import { CATEGORY_LABELS_SINGULAR, PageDesign, PageSection, ProviderDetail } from '../api/client';
+import { View, Text, Image, Pressable, StyleSheet, Linking, Platform } from 'react-native';
+import { CalendarCheck, Clock, MapPin, MessageCircle, Navigation, PawPrint, Quote, ShieldCheck } from 'lucide-react-native';
+import { CATEGORY_LABELS_SINGULAR, PageDesign, PageSection, ProviderDetail, isBookable } from '../api/client';
 import { fonts, radius, space } from '../theme/tokens';
-import { whatsappUrl } from '../utils/contactLinks';
+import { micrositeUrl, whatsappUrl } from '../utils/contactLinks';
+import { reservationPath } from '../navigation/reservationIntent';
 
 type Props = {
   business: ProviderDetail;
@@ -33,6 +34,7 @@ export default function MicrositeView({ business, design, compact = false }: Pro
   // Whichever photo became the cover shouldn't repeat inside the gallery.
   const gallery = business.photos.filter((uri) => uri !== cover);
   const waUrl = business.whatsapp ? whatsappUrl(business.whatsapp, business.name) : null;
+  const canReserve = isBookable(business.category) && Boolean(business.slug);
   // Exact coordinates when the business placed itself on the map, and a
   // text search as the fallback — the point of storing the coordinate is
   // that "Cómo llegar" stops guessing.
@@ -146,13 +148,27 @@ export default function MicrositeView({ business, design, compact = false }: Pro
 
       case 'contact':
         return waUrl ? (
+          // Second to "Reservar en PawMates" when that button is on the page,
+          // so the page has one filled button, not two.
           <Pressable
             key={id}
-            style={[styles.ctaButton, { backgroundColor: design.primaryColor }]}
+            style={
+              canReserve
+                ? [styles.outlineButton, { borderColor: design.primaryColor }]
+                : [styles.ctaButton, { backgroundColor: design.primaryColor }]
+            }
             onPress={() => void Linking.openURL(waUrl)}
           >
-            <MessageCircle size={18 * scale} strokeWidth={2} color="#fff" />
-            <Text style={[styles.ctaText, { fontSize: 15 * scale }]}>Escríbenos por WhatsApp</Text>
+            <MessageCircle size={18 * scale} strokeWidth={2} color={canReserve ? design.primaryColor : '#fff'} />
+            <Text
+              style={
+                canReserve
+                  ? [styles.outlineButtonText, { color: design.primaryColor, fontSize: 14 * scale }]
+                  : [styles.ctaText, { fontSize: 15 * scale }]
+              }
+            >
+              Escríbenos por WhatsApp
+            </Text>
           </Pressable>
         ) : null;
 
@@ -230,6 +246,20 @@ export default function MicrositeView({ business, design, compact = false }: Pro
         )}
       </View>
 
+      {/* The one thing a page can do that a WhatsApp link can't: send the
+          visitor into PawMates to request a walk, with the business
+          already open. Only businesses that can be booked get it. */}
+      {canReserve && (
+        <Pressable
+          accessibilityRole="link"
+          style={[styles.ctaButton, { backgroundColor: design.primaryColor }]}
+          onPress={() => openReservation(business.slug!, compact)}
+        >
+          <CalendarCheck size={18 * scale} strokeWidth={2} color="#fff" />
+          <Text style={[styles.ctaText, { fontSize: 15 * scale }]}>Reservar en PawMates</Text>
+        </Pressable>
+      )}
+
       {sectionOrder.map(renderSection)}
 
       <View style={[styles.footer, { borderTopColor: design.textColor + '22' }]}>
@@ -240,6 +270,14 @@ export default function MicrositeView({ business, design, compact = false }: Pro
       </View>
     </View>
   );
+}
+
+/** Same tab on the public page (it's the next step, not a detour); a new
+ * one from the editor's preview, so the editor stays where it was. */
+function openReservation(slug: string, fromPreview: boolean) {
+  const url = reservationPath(micrositeUrl(slug));
+  if (Platform.OS === 'web' && typeof window !== 'undefined' && !fromPreview) window.location.assign(url);
+  else void Linking.openURL(url);
 }
 
 const styles = StyleSheet.create({

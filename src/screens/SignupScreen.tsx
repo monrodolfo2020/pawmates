@@ -298,6 +298,11 @@ export default function SignupScreen({ navigation, route }: Props) {
             Siguiente
           </Button>
         )}
+        {!isProvider && (
+          <Button variant="ghost" block onPress={() => navigation.navigate('Login')}>
+            ¿Ya tienes cuenta? Inicia sesión
+          </Button>
+        )}
       </BottomBar>
     </ScreenContainer>
   );

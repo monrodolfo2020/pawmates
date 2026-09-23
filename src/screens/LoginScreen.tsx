@@ -64,6 +64,9 @@ export default function LoginScreen({ navigation }: Props) {
           >
             {submitting ? 'Entrando…' : 'Entrar'}
           </Button>
+          <Button variant="ghost" block onPress={() => navigation.navigate('Signup', { role: 'owner' })}>
+            ¿No tienes cuenta? Regístrate
+          </Button>
         </View>
       </View>
     </ScreenContainer>
@@ -73,5 +76,5 @@ export default function LoginScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   body: { paddingHorizontal: space.s4, gap: space.s4 },
   forgotLink: { fontFamily: fonts.bodySemiBold, fontSize: 14, color: colors.accent, marginTop: -space.s1 },
-  footer: { marginTop: space.s2 },
+  footer: { marginTop: space.s2, gap: space.s2 },
 });

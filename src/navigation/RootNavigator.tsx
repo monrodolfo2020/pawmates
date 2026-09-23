@@ -37,7 +37,8 @@ export type RootStackParamList = {
   Signup: { role?: 'owner' | 'provider' } | undefined;
   Onboarding: { petId?: string } | undefined;
   Home: undefined;
-  Business: { providerId: string };
+  /** By id from inside the app; by slug from a public page's "Reservar" link. */
+  Business: { providerId: string } | { slug: string };
   Microsite: { slug: string };
   MyPage: undefined;
   MeetGreet: { walkerId: string };

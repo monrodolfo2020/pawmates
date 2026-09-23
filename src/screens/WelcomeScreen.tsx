@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Dog, GraduationCap, House, Scissors, Stethoscope } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -9,6 +9,7 @@ import Notice from '../components/Notice';
 import Wordmark from '../components/Wordmark';
 import { colors, fonts, radius, space, tintFor, type } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
+import { reservationSlug } from '../navigation/reservationIntent';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Welcome'>;
 
@@ -22,6 +23,19 @@ const CATEGORIES = [
 
 export default function WelcomeScreen({ navigation }: Props) {
   const s = useAppState();
+
+  // Came from a business's "Reservar en PawMates" link: show that business
+  // right away, with this screen behind it. The wish itself is kept until
+  // they sign in (see reservationIntent), since booking needs an account.
+  useEffect(() => {
+    const slug = reservationSlug();
+    if (!slug) return;
+    // A tick later, for the same reason as on Home: the navigator
+    // ignores a navigate() from the commit that mounts it.
+    const timer = setTimeout(() => navigation.navigate('Business', { slug }));
+    return () => clearTimeout(timer);
+  }, [navigation]);
+
   return (
     <ScreenContainer>
       <View style={styles.top}>
