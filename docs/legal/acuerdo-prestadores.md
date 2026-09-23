@@ -32,7 +32,7 @@ lo que PawMates sí hace y lo que expresamente no hace por ti.
 
 Celebran este Acuerdo:
 
-**1.1.** [[NOMBRE COMPLETO DEL TITULAR]], persona física con actividad
+**1.1.** Rodolfo Alberto Monterroza Gómez, persona física con actividad
 empresarial, con Registro Federal de Contribuyentes **MOGR730915PB1** y
 domicilio en Privada Carpe 32, Paseo Arboleda, Santín, C.P. 50214, Toluca, Estado de México, quien opera la plataforma
 digital PawMates y a quien en lo sucesivo se le denominará

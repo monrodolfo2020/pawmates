@@ -11,7 +11,7 @@ export const privacyNotice = `# Aviso de Privacidad — PawMates
 
 ## 1. Quién es responsable de tus datos
 
-[[NOMBRE COMPLETO DEL TITULAR]] ("PawMates"), persona física con
+Rodolfo Alberto Monterroza Gómez ("PawMates"), persona física con
 actividad empresarial, con Registro Federal de Contribuyentes
 **MOGR730915PB1**, domicilio en Privada Carpe 32, Paseo Arboleda, Santín, C.P. 50214, Toluca, Estado de México y
 correo de contacto **rmonterrozag@gmail.com**, es responsable del tratamiento de tus datos

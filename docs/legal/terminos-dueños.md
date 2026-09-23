@@ -32,7 +32,7 @@ Las secciones **6 (verificación y sus límites)**, **8 (pagos)** y
 
 ## 1. Quiénes somos y a qué te obligas al usar la app
 
-**1.1.** PawMates es operada por [[NOMBRE COMPLETO DEL TITULAR]], persona
+**1.1.** PawMates es operada por Rodolfo Alberto Monterroza Gómez, persona
 física con actividad empresarial, con Registro Federal de Contribuyentes
 **MOGR730915PB1** y domicilio en Privada Carpe 32, Paseo Arboleda, Santín, C.P. 50214, Toluca, Estado de México.
 
