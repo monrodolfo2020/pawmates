@@ -404,6 +404,74 @@ export const SECTION_LABELS: Record<PageSection, string> = {
   contact: 'Botón de WhatsApp',
 };
 
+/** Blocks a business adds itself, any number (see the backend's
+ * page-design.ts). The PAGE_SECTIONS above are always there once each and
+ * show what the profile already has; these carry their own content. */
+export const PAGE_BLOCK_TYPES = [
+  'hero',
+  'text',
+  'prices',
+  'faq',
+  'promo',
+  'social',
+  'video',
+  'team',
+] as const;
+export type PageBlockType = (typeof PAGE_BLOCK_TYPES)[number];
+
+export const BLOCK_LABELS: Record<PageBlockType, string> = {
+  hero: 'Portada con frase',
+  text: 'Texto libre',
+  prices: 'Lista de precios',
+  faq: 'Preguntas frecuentes',
+  promo: 'Promoción',
+  social: 'Redes sociales',
+  video: 'Video',
+  team: 'Equipo',
+};
+
+export const BLOCK_HINTS: Record<PageBlockType, string> = {
+  hero: 'Una frase grande que diga qué te hace distinto.',
+  text: 'Un título y un párrafo sobre lo que quieras.',
+  prices: 'Tus servicios con su precio, renglón por renglón.',
+  faq: 'Lo que siempre te preguntan, ya contestado.',
+  promo: 'Una oferta destacada que se oculta sola al vencer.',
+  social: 'Enlaces a Instagram, Facebook, TikTok o tu sitio.',
+  video: 'Un enlace a tu video de YouTube, TikTok o Instagram.',
+  team: 'Quién atiende a las mascotas.',
+};
+
+export interface PageBlockItem {
+  name: string;
+  detail: string;
+  price?: string;
+}
+
+export interface PageBlockData {
+  title?: string;
+  subtitle?: string;
+  body?: string;
+  until?: string | null;
+  url?: string;
+  instagram?: string;
+  facebook?: string;
+  tiktok?: string;
+  website?: string;
+  items?: PageBlockItem[];
+}
+
+/** One entry in the page's order: a built-in section (id === type, no
+ * data) or a block the business added. */
+export interface PageDesignSection {
+  id: string;
+  type: PageSection | PageBlockType;
+  enabled: boolean;
+  data?: PageBlockData;
+}
+
+export const isAddedBlock = (s: PageDesignSection): s is PageDesignSection & { type: PageBlockType } =>
+  (PAGE_BLOCK_TYPES as readonly string[]).includes(s.type);
+
 export interface PageTestimonial {
   text: string;
   author: string;
@@ -417,7 +485,7 @@ export interface PageDesign {
   textColor: string;
   logo: string | null;
   cover: string | null;
-  sections: { id: PageSection; enabled: boolean }[];
+  sections: PageDesignSection[];
   testimonials: PageTestimonial[];
 }
 
@@ -491,10 +559,20 @@ export interface MyProviderProfile {
    * `plan === 'vip'`, which stays 'vip' after a plan lapses. */
   isVip: boolean;
   planExpiresAt: string | null;
+  /** When the free month of the page editor ends; null until the first
+   * approval starts it. */
+  trialEndsAt: string | null;
+  inTrial: boolean;
+  /** Whether the editor is open to this business right now: VIP, the
+   * trial, or still waiting for approval. */
+  canCustomize: boolean;
   /** The design being edited — what the Diseño tab shows. */
   design: PageDesign;
   /** What's live at /s/<slug>; null until the first publish. */
   publishedDesign: PageDesign | null;
+  /** What /s/<slug> renders right now, resolved by the backend: the
+   * published design, or PawMates' standard one when the editor is closed. */
+  liveDesign: PageDesign;
   hasUnpublishedDesign: boolean;
 }
 

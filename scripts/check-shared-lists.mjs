@@ -44,6 +44,7 @@ const PAIRS = [
   ['Plantillas de página', FRONTEND.client, 'PAGE_TEMPLATES', BACKEND.pageDesign, 'PAGE_TEMPLATES'],
   ['Tipografías de página', FRONTEND.client, 'PAGE_FONTS', BACKEND.pageDesign, 'PAGE_FONTS'],
   ['Secciones de página', FRONTEND.client, 'PAGE_SECTIONS', BACKEND.pageDesign, 'PAGE_SECTIONS'],
+  ['Bloques de página', FRONTEND.client, 'PAGE_BLOCK_TYPES', BACKEND.pageDesign, 'PAGE_BLOCK_TYPES'],
   ['Documentos legales', FRONTEND.client, 'LEGAL_DOCUMENTS', BACKEND.legal, 'LEGAL_DOCUMENTS'],
   ['Código de Meet & Greet', FRONTEND.client, 'MEET_GREET_SERVICE_TYPE_CODE', BACKEND.booking, 'MEET_GREET_SERVICE_TYPE_CODE'],
   ['Estados de reserva', FRONTEND.client, 'BOOKING_STATUSES', BACKEND.bookingStatus, 'BookingStatus'],

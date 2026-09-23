@@ -1,8 +1,7 @@
 import React from 'react';
-import { View, Text, TextInput, Pressable, StyleSheet, Switch } from 'react-native';
-import { ArrowUp, ArrowDown, X, Plus } from 'lucide-react-native';
+import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
+import { X, Plus } from 'lucide-react-native';
 import PhotoPicker from './PhotoPicker';
-import Card from './Card';
 import { CardMeta, CardTitle } from './CardText';
 import {
   FONT_LABELS,
@@ -10,9 +9,8 @@ import {
   PAGE_TEMPLATES,
   PageDesign,
   PageFont,
-  PageSection,
   PageTemplate,
-  SECTION_LABELS,
+  PageTestimonial,
   TEMPLATE_LABELS,
 } from '../api/client';
 import { colors, fonts, radius, space } from '../theme/tokens';
@@ -102,62 +100,87 @@ function ColorRow({
   );
 }
 
+/** Ready-made color sets that always read well — most people should
+ * never need the individual colors below them. */
+export const PALETTES: { name: string; primary: string; background: string; text: string }[] = [
+  { name: 'Terracota', primary: '#C8492A', background: '#FBF6F1', text: '#261E2C' },
+  { name: 'Bosque', primary: '#2F7A55', background: '#F3F7F2', text: '#1F2A24' },
+  { name: 'Océano', primary: '#2E6F95', background: '#F2F7FA', text: '#1D2A33' },
+  { name: 'Lavanda', primary: '#6B4FA3', background: '#F7F4FB', text: '#2A2238' },
+  { name: 'Miel', primary: '#B7791F', background: '#FFF9EE', text: '#2E2416' },
+  { name: 'Frambuesa', primary: '#C2416B', background: '#FFF5F7', text: '#2E1C24' },
+  { name: 'Blanco y negro', primary: '#261E2C', background: '#FFFFFF', text: '#261E2C' },
+  { name: 'Noche', primary: '#F07A58', background: '#1E1A24', text: '#F4ECE3' },
+];
+
 /**
- * The VIP plan's page editor. It never saves or publishes anything on its
- * own — it hands a whole PageDesign back up on every change, and
- * MyPageScreen decides when that becomes a draft on the server and when
- * the draft goes live. That's what makes the live preview next to it
- * honest: it renders exactly the object this returns.
+ * How the page looks, as a whole: template, type, colors, logo and
+ * cover. What's *on* the page (blocks and their order) is edited on the
+ * page itself — see MyPageScreen's Edición mode. Like the rest of the
+ * editor it never saves anything; it hands the whole design back up.
  */
 export default function PageDesignEditor({ design, onChange }: Props) {
   const set = (patch: Partial<PageDesign>) => onChange({ ...design, ...patch });
-
-  const moveSection = (index: number, delta: number) => {
-    const next = [...design.sections];
-    const target = index + delta;
-    if (target < 0 || target >= next.length) return;
-    [next[index], next[target]] = [next[target], next[index]];
-    set({ sections: next });
-  };
-
-  const toggleSection = (id: PageSection, enabled: boolean) => {
-    set({ sections: design.sections.map((s) => (s.id === id ? { ...s, enabled } : s)) });
-  };
-
-  const setTestimonial = (index: number, patch: Partial<{ text: string; author: string }>) => {
-    set({
-      testimonials: design.testimonials.map((t, i) => (i === index ? { ...t, ...patch } : t)),
-    });
-  };
+  const [customColors, setCustomColors] = React.useState(false);
+  const activePalette = PALETTES.find(
+    (p) =>
+      p.primary.toLowerCase() === design.primaryColor.toLowerCase() &&
+      p.background.toLowerCase() === design.backgroundColor.toLowerCase() &&
+      p.text.toLowerCase() === design.textColor.toLowerCase(),
+  );
 
   return (
     <View style={styles.wrap}>
-      <Card>
+      <View style={styles.group}>
+        <CardTitle>Colores</CardTitle>
+        <View style={styles.paletteGrid}>
+          {PALETTES.map((p) => {
+            const selected = p === activePalette;
+            return (
+              <Pressable
+                key={p.name}
+                accessibilityRole="button"
+                accessibilityState={{ selected }}
+                onPress={() => set({ primaryColor: p.primary, backgroundColor: p.background, textColor: p.text })}
+                style={[styles.palette, { backgroundColor: p.background }, selected && styles.paletteSelected]}
+              >
+                <View style={[styles.paletteDot, { backgroundColor: p.primary }]} />
+                <Text style={[styles.paletteName, { color: p.text }]} numberOfLines={1}>{p.name}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+        <Pressable onPress={() => setCustomColors((v) => !v)} hitSlop={6}>
+          <Text style={styles.linkText}>{customColors ? 'Ocultar colores a mano' : 'Elegir colores a mano'}</Text>
+        </Pressable>
+        {customColors && (
+          <View style={{ gap: space.s3 }}>
+            <ColorRow label="Color principal" value={design.primaryColor} swatches={PRIMARY_SWATCHES}
+              onChange={(primaryColor) => set({ primaryColor })} />
+            <ColorRow label="Fondo" value={design.backgroundColor} swatches={BACKGROUND_SWATCHES}
+              onChange={(backgroundColor) => set({ backgroundColor })} />
+            <ColorRow label="Texto" value={design.textColor} swatches={TEXT_SWATCHES}
+              onChange={(textColor) => set({ textColor })} />
+          </View>
+        )}
+      </View>
+
+      <View style={styles.group}>
         <CardTitle>Plantilla</CardTitle>
         <Chips options={PAGE_TEMPLATES} labels={TEMPLATE_LABELS} value={design.template}
           onChange={(template: PageTemplate) => set({ template })} />
         <CardMeta>
           Galería pone tus fotos primero. Minimalista quita la portada y deja solo una franja de color.
         </CardMeta>
-      </Card>
+      </View>
 
-      <Card>
-        <CardTitle>Tipografía</CardTitle>
+      <View style={styles.group}>
+        <CardTitle>Tipografía de los títulos</CardTitle>
         <Chips options={PAGE_FONTS} labels={FONT_LABELS} value={design.font}
           onChange={(font: PageFont) => set({ font })} />
-      </Card>
+      </View>
 
-      <Card>
-        <CardTitle>Colores</CardTitle>
-        <ColorRow label="Color principal" value={design.primaryColor} swatches={PRIMARY_SWATCHES}
-          onChange={(primaryColor) => set({ primaryColor })} />
-        <ColorRow label="Fondo" value={design.backgroundColor} swatches={BACKGROUND_SWATCHES}
-          onChange={(backgroundColor) => set({ backgroundColor })} />
-        <ColorRow label="Texto" value={design.textColor} swatches={TEXT_SWATCHES}
-          onChange={(textColor) => set({ textColor })} />
-      </Card>
-
-      <Card>
+      <View style={styles.group}>
         <CardTitle>Logo y portada</CardTitle>
         <View style={styles.imageRow}>
           <View style={styles.imageSlot}>
@@ -196,97 +219,83 @@ export default function PageDesignEditor({ design, onChange }: Props) {
           </View>
         </View>
         <CardMeta>Sin portada propia usamos la primera foto de tu galería.</CardMeta>
-      </Card>
+      </View>
+    </View>
+  );
+}
 
-      <Card>
-        <CardTitle>Secciones</CardTitle>
-        <CardMeta>Arrástralas con las flechas para cambiar el orden, o apágalas para ocultarlas.</CardMeta>
-        {design.sections.map((section, i) => (
-          <View key={section.id} style={styles.sectionRow}>
-            <View style={styles.arrows}>
-              <Pressable onPress={() => moveSection(i, -1)} disabled={i === 0} hitSlop={4}>
-                <ArrowUp size={16} strokeWidth={2}
-                  color={i === 0 ? colors.textMuted : colors.text} />
-              </Pressable>
-              <Pressable onPress={() => moveSection(i, 1)} disabled={i === design.sections.length - 1} hitSlop={4}>
-                <ArrowDown size={16} strokeWidth={2}
-                  color={i === design.sections.length - 1 ? colors.textMuted : colors.text} />
-              </Pressable>
-            </View>
-            <Text style={styles.sectionName}>{SECTION_LABELS[section.id]}</Text>
-            <Switch
-              value={section.enabled}
-              onValueChange={(enabled) => toggleSection(section.id, enabled)}
-              trackColor={{ true: colors.accent, false: colors.divider }}
-              thumbColor={colors.surface}
-            />
-          </View>
-        ))}
-      </Card>
+/** The testimonials a business writes for its page (they aren't collected
+ * from customers in the app). */
+export function TestimonialsEditor({ design, onChange }: Props) {
+  const set = (testimonials: PageTestimonial[]) => onChange({ ...design, testimonials });
+  const setTestimonial = (index: number, patch: Partial<PageTestimonial>) =>
+    set(design.testimonials.map((t, i) => (i === index ? { ...t, ...patch } : t)));
 
-      <Card>
-        <CardTitle>Testimonios</CardTitle>
-        <CardMeta>
-          Lo que dicen tus clientes, en tus palabras: los escribes tú, no se recogen desde la app.
-        </CardMeta>
-        {design.testimonials.map((t, i) => (
-          <View key={i} style={styles.testimonial}>
-            <View style={styles.testimonialHead}>
-              <Text style={styles.fieldLabel}>Testimonio {i + 1}</Text>
-              <Pressable
-                onPress={() => set({ testimonials: design.testimonials.filter((_, idx) => idx !== i) })}
-                hitSlop={8}
-              >
-                <X size={14} strokeWidth={2} color={colors.textMuted} />
-              </Pressable>
-            </View>
-            <TextInput
-              value={t.text}
-              onChangeText={(text) => setTestimonial(i, { text })}
-              placeholder="Excelente trato con mi perro…"
-              placeholderTextColor={colors.textMuted}
-              multiline
-              maxLength={280}
-              style={[styles.input, styles.inputMultiline]}
-            />
-            <TextInput
-              value={t.author}
-              onChangeText={(author) => setTestimonial(i, { author })}
-              placeholder="Nombre del cliente"
-              placeholderTextColor={colors.textMuted}
-              maxLength={60}
-              style={styles.input}
-            />
+  return (
+    <View style={{ gap: space.s3 }}>
+      <CardMeta>Lo que dicen tus clientes, en sus palabras: los escribes tú.</CardMeta>
+      {design.testimonials.map((t, i) => (
+        <View key={i} style={styles.testimonial}>
+          <View style={styles.testimonialHead}>
+            <Text style={styles.fieldLabel}>Testimonio {i + 1}</Text>
+            <Pressable onPress={() => set(design.testimonials.filter((_, idx) => idx !== i))} hitSlop={8}>
+              <X size={16} strokeWidth={2} color={colors.textMuted} />
+            </Pressable>
           </View>
-        ))}
-        {design.testimonials.length < MAX_TESTIMONIALS ? (
-          <Pressable
-            style={styles.addButton}
-            onPress={() => set({ testimonials: [...design.testimonials, { text: '', author: '' }] })}
-          >
-            <Plus size={14} strokeWidth={2} color={colors.accent} />
-            <Text style={styles.addText}>Agregar testimonio</Text>
-          </Pressable>
-        ) : (
-          <CardMeta>Máximo {MAX_TESTIMONIALS} testimonios.</CardMeta>
-        )}
-      </Card>
+          <TextInput
+            value={t.text}
+            onChangeText={(text) => setTestimonial(i, { text })}
+            placeholder="Excelente trato con mi perro…"
+            placeholderTextColor={colors.textFaint}
+            multiline
+            maxLength={280}
+            style={[styles.input, styles.inputMultiline]}
+          />
+          <TextInput
+            value={t.author}
+            onChangeText={(author) => setTestimonial(i, { author })}
+            placeholder="Nombre del cliente"
+            placeholderTextColor={colors.textFaint}
+            maxLength={60}
+            style={styles.input}
+          />
+        </View>
+      ))}
+      {design.testimonials.length < MAX_TESTIMONIALS ? (
+        <Pressable style={styles.addButton} onPress={() => set([...design.testimonials, { text: '', author: '' }])}>
+          <Plus size={16} strokeWidth={2} color={colors.accent} />
+          <Text style={styles.linkText}>Agregar testimonio</Text>
+        </Pressable>
+      ) : (
+        <CardMeta>Máximo {MAX_TESTIMONIALS} testimonios.</CardMeta>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { gap: space.s4 },
-  fieldLabel: { fontFamily: fonts.bodyMedium, fontSize: 12, color: colors.textMuted },
+  wrap: { gap: space.s6 },
+  group: { gap: space.s3 },
+  fieldLabel: { fontFamily: fonts.bodySemiBold, fontSize: 13, color: colors.text },
+  linkText: { fontFamily: fonts.bodySemiBold, fontSize: 14, color: colors.accent },
+  paletteGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s2 },
+  palette: {
+    width: '48%', flexDirection: 'row', alignItems: 'center', gap: space.s2,
+    paddingHorizontal: space.s3, paddingVertical: space.s3,
+    borderRadius: radius.md, borderWidth: 1, borderColor: colors.border,
+  },
+  paletteSelected: { borderColor: colors.text, borderWidth: 2, paddingHorizontal: space.s3 - 1, paddingVertical: space.s3 - 1 },
+  paletteDot: { width: 20, height: 20, borderRadius: 10 },
+  paletteName: { flex: 1, fontFamily: fonts.bodySemiBold, fontSize: 13.5 },
 
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s2, alignItems: 'center' },
   chip: {
-    paddingHorizontal: space.s3, paddingVertical: 6,
-    borderRadius: radius.pill, borderWidth: 1, borderColor: colors.divider,
+    paddingHorizontal: space.s3 + 2, paddingVertical: space.s2,
+    borderRadius: radius.pill, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface,
   },
   chipSelected: { backgroundColor: colors.accent, borderColor: colors.accent },
-  chipText: { fontFamily: fonts.bodyMedium, fontSize: 13, color: colors.text },
-  chipTextSelected: { color: colors.bg },
+  chipText: { fontFamily: fonts.bodyMedium, fontSize: 13.5, color: colors.text },
+  chipTextSelected: { color: colors.onAccent, fontFamily: fonts.bodySemiBold },
 
   colorBlock: { gap: space.s2 },
   swatch: { width: 30, height: 30, borderRadius: 15, borderWidth: 2, borderColor: colors.divider },
@@ -300,13 +309,10 @@ const styles = StyleSheet.create({
 
   imageRow: { flexDirection: 'row', gap: space.s4 },
   imageSlot: { gap: space.s2, alignItems: 'flex-start' },
-  logoSlot: { width: 84, height: 84, borderRadius: 42, backgroundColor: colors.accentTint },
-  coverSlot: { width: 150, height: 84, borderRadius: radius.md, backgroundColor: colors.accentTint },
+  logoSlot: { width: 84, height: 84, borderRadius: 42, backgroundColor: colors.panel },
+  coverSlot: { width: 150, height: 84, borderRadius: radius.md, backgroundColor: colors.panel },
   removeLink: { fontFamily: fonts.bodyMedium, fontSize: 12, color: colors.textMuted },
 
-  sectionRow: { flexDirection: 'row', alignItems: 'center', gap: space.s3 },
-  arrows: { gap: 2 },
-  sectionName: { flex: 1, fontFamily: fonts.body, fontSize: 14, color: colors.text },
 
   testimonial: {
     gap: space.s2, paddingTop: space.s2,
@@ -314,12 +320,11 @@ const styles = StyleSheet.create({
   },
   testimonialHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   input: {
-    paddingHorizontal: space.s3, paddingVertical: 8,
-    borderWidth: 1, borderColor: colors.divider, borderRadius: radius.sm,
-    fontFamily: fonts.body, fontSize: 13.5, color: colors.text,
+    minHeight: 44, paddingHorizontal: space.s3, paddingVertical: space.s2,
+    borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, backgroundColor: colors.surface,
+    fontFamily: fonts.body, fontSize: 15, color: colors.text,
   },
   inputMultiline: { minHeight: 64, textAlignVertical: 'top' },
 
   addButton: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  addText: { fontFamily: fonts.bodyBold, fontSize: 13, color: colors.accent },
 });

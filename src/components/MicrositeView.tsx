@@ -1,7 +1,15 @@
 import React from 'react';
 import { View, Text, Image, Pressable, StyleSheet, Linking, Platform } from 'react-native';
-import { CalendarCheck, Clock, MapPin, MessageCircle, Navigation, PawPrint, Quote, ShieldCheck } from 'lucide-react-native';
-import { CATEGORY_LABELS_SINGULAR, PageDesign, PageSection, ProviderDetail, isBookable } from '../api/client';
+import { AtSign, CalendarCheck, CirclePlay, Clock, Globe, MapPin, MessageCircle, Navigation, PawPrint, Quote, ShieldCheck, Tag } from 'lucide-react-native';
+import {
+  CATEGORY_LABELS_SINGULAR,
+  PageDesign,
+  PageDesignSection,
+  PageSection,
+  ProviderDetail,
+  isAddedBlock,
+  isBookable,
+} from '../api/client';
 import { fonts, radius, space } from '../theme/tokens';
 import { micrositeUrl, whatsappUrl } from '../utils/contactLinks';
 import { reservationPath } from '../navigation/reservationIntent';
@@ -12,6 +20,9 @@ type Props = {
   /** Shrinks everything for the editor's side-by-side preview, where the
    * page renders inside a phone-sized frame rather than full screen. */
   compact?: boolean;
+  /** The editor's Edición mode: every entry (hidden or empty ones too)
+   * goes through `wrap`, which adds its tap-to-edit frame. */
+  editing?: { wrap: (section: PageDesignSection, content: React.ReactNode) => React.ReactNode };
 };
 
 const money = (cents: number, currency: string) => '$' + (cents / 100).toFixed(0) + ' ' + currency;
@@ -22,7 +33,7 @@ const money = (cents: number, currency: string) => '$' + (cents / 100).toFixed(0
 // to look like the business, not like PawMates (the free plan just gets
 // handed PawMates' defaults as its design; see the backend's
 // ProviderProfile.effectiveDesign).
-export default function MicrositeView({ business, design, compact = false }: Props) {
+export default function MicrositeView({ business, design, compact = false, editing }: Props) {
   // The page always fills whatever column it's given — the public screen
   // caps that at a readable width, the editor hands it a phone-sized
   // frame — so the only difference here is that everything inside the
@@ -46,8 +57,6 @@ export default function MicrositeView({ business, design, compact = false }: Pro
         : null;
 
   const muted = (opacity: number) => ({ color: design.textColor, opacity });
-  const enabled = (id: PageSection) =>
-    design.sections.find((s) => s.id === id)?.enabled ?? true;
 
   const sectionTitle = (text: string) => (
     <Text style={[styles.sectionTitle, { fontFamily: heading, color: design.textColor, fontSize: (design.font === 'display' ? 23 : 18) * scale }]}>
@@ -56,7 +65,6 @@ export default function MicrositeView({ business, design, compact = false }: Pro
   );
 
   const renderSection = (id: PageSection) => {
-    if (!enabled(id)) return null;
     switch (id) {
       case 'about':
         return business.bio ? (
@@ -177,13 +185,167 @@ export default function MicrositeView({ business, design, compact = false }: Pro
     }
   };
 
-  const orderedSections = design.sections.map((s) => s.id);
   // 'gallery' leads on the gallery template, whatever order the sections
   // are otherwise in — that's what makes it the gallery template.
   const sectionOrder =
     design.template === 'gallery'
-      ? ['gallery' as PageSection, ...orderedSections.filter((id) => id !== 'gallery')]
-      : orderedSections;
+      ? [
+          ...design.sections.filter((x) => x.id === 'gallery'),
+          ...design.sections.filter((x) => x.id !== 'gallery'),
+        ]
+      : design.sections;
+
+  const renderBlock = (section: PageDesignSection) => {
+    const d = section.data ?? {};
+    const title = (fallback: string) => sectionTitle(d.title || fallback);
+    const bodyText = (value: string, size = 14) => (
+      <Text style={[styles.body, muted(0.85), { paddingHorizontal: 0, fontSize: size * scale }]}>{value}</Text>
+    );
+    const rows = (d.items ?? []).filter((it) => it.name || it.detail);
+    switch (section.type) {
+      case 'hero':
+        return d.title || d.subtitle ? (
+          <View style={[styles.hero, { backgroundColor: design.primaryColor + '14', borderColor: design.primaryColor + '33' }]}>
+            {!!d.title && (
+              <Text style={{ fontFamily: heading, color: design.textColor, fontSize: (design.font === 'display' ? 30 : 24) * scale, lineHeight: 34 * scale }}>
+                {d.title}
+              </Text>
+            )}
+            {!!d.subtitle && bodyText(d.subtitle, 15)}
+          </View>
+        ) : null;
+
+      case 'text':
+        return d.title || d.body ? (
+          <View style={styles.section}>
+            {!!d.title && sectionTitle(d.title)}
+            {!!d.body && bodyText(d.body)}
+          </View>
+        ) : null;
+
+      case 'prices':
+        return rows.length ? (
+          <View style={styles.section}>
+            {title('Precios')}
+            {rows.map((it, i) => (
+              <View key={i} style={[styles.priceRow, i > 0 && { borderTopColor: design.textColor + '1A', borderTopWidth: 1 }]}>
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Text style={[styles.rowName, { color: design.textColor, fontSize: 14.5 * scale }]}>{it.name}</Text>
+                  {!!it.detail && <Text style={[styles.meta, muted(0.65), { fontSize: 13 * scale }]}>{it.detail}</Text>}
+                </View>
+                {!!it.price && <Text style={[styles.price, { color: design.textColor, fontSize: 15 * scale }]}>{it.price}</Text>}
+              </View>
+            ))}
+          </View>
+        ) : null;
+
+      case 'faq':
+        return rows.length ? (
+          <View style={styles.section}>
+            {title('Preguntas frecuentes')}
+            {rows.map((it, i) => (
+              <View key={i} style={{ gap: 2, marginTop: i ? space.s2 : 0 }}>
+                <Text style={[styles.rowName, { color: design.textColor, fontSize: 14.5 * scale }]}>{it.name}</Text>
+                {!!it.detail && bodyText(it.detail, 13.5)}
+              </View>
+            ))}
+          </View>
+        ) : null;
+
+      case 'team':
+        return rows.length ? (
+          <View style={styles.section}>
+            {title('Nuestro equipo')}
+            <View style={styles.teamGrid}>
+              {rows.map((it, i) => (
+                <View key={i} style={styles.teamMember}>
+                  <View style={[styles.teamAvatar, { backgroundColor: design.primaryColor + '1F', width: 44 * scale, height: 44 * scale }]}>
+                    <Text style={{ fontFamily: fonts.bodyBold, color: design.primaryColor, fontSize: 16 * scale }}>
+                      {(it.name.trim()[0] ?? '?').toUpperCase()}
+                    </Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.rowName, { color: design.textColor, fontSize: 14 * scale }]}>{it.name}</Text>
+                    {!!it.detail && <Text style={[styles.meta, muted(0.65), { fontSize: 12.5 * scale }]}>{it.detail}</Text>}
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        ) : null;
+
+      case 'promo': {
+        const expired = !!d.until && d.until < todayIso();
+        if (!d.title && !d.body) return null;
+        // A promotion past its date hides itself on the live page; the
+        // editor still shows it, marked, so it can be updated or removed.
+        if (expired && !editing) return null;
+        return (
+          <View style={[styles.promo, { borderColor: design.primaryColor, backgroundColor: design.primaryColor + '0F' }]}>
+            <View style={styles.infoRow}>
+              <Tag size={16 * scale} strokeWidth={2} color={design.primaryColor} />
+              <Text style={[styles.rowName, { color: design.textColor, fontSize: 16 * scale, flex: 1 }]}>{d.title}</Text>
+            </View>
+            {!!d.body && bodyText(d.body)}
+            {!!d.until && (
+              <Text style={[styles.meta, { color: design.primaryColor, fontSize: 12.5 * scale }]}>
+                {expired ? 'Terminó el ' : 'Válida hasta el '}
+                {formatDay(d.until)}
+              </Text>
+            )}
+          </View>
+        );
+      }
+
+      case 'social': {
+        const links = socialLinks(d);
+        return links.length ? (
+          <View style={[styles.section, styles.socialRow]}>
+            {links.map((l) => (
+              <Pressable
+                key={l.label}
+                accessibilityRole="link"
+                onPress={() => void Linking.openURL(l.url)}
+                style={[styles.socialPill, { borderColor: design.primaryColor }]}
+              >
+                {l.label === 'Sitio web' ? (
+                  <Globe size={14 * scale} strokeWidth={2} color={design.primaryColor} />
+                ) : (
+                  <AtSign size={14 * scale} strokeWidth={2} color={design.primaryColor} />
+                )}
+                <Text style={[styles.outlineButtonText, { color: design.primaryColor, fontSize: 13.5 * scale }]}>{l.label}</Text>
+              </Pressable>
+            ))}
+          </View>
+        ) : null;
+      }
+
+      case 'video':
+        return d.url ? (
+          <Pressable
+            accessibilityRole="link"
+            onPress={() => void Linking.openURL(d.url!)}
+            style={[styles.video, { backgroundColor: design.textColor + '0D', borderColor: design.textColor + '1A' }]}
+          >
+            <CirclePlay size={36 * scale} strokeWidth={1.5} color={design.primaryColor} />
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.rowName, { color: design.textColor, fontSize: 15 * scale }]}>{d.title || 'Mira nuestro video'}</Text>
+              <Text style={[styles.meta, muted(0.6), { fontSize: 12.5 * scale }]}>{videoHost(d.url)}</Text>
+            </View>
+          </Pressable>
+        ) : null;
+
+      default:
+        return null;
+    }
+  };
+
+  const renderEntry = (section: PageDesignSection) => {
+    const content = isAddedBlock(section) ? renderBlock(section) : renderSection(section.type as PageSection);
+    if (editing) return <React.Fragment key={section.id}>{editing.wrap(section, content)}</React.Fragment>;
+    if (!section.enabled || !content) return null;
+    return <React.Fragment key={section.id}>{content}</React.Fragment>;
+  };
 
   const showCover = design.template !== 'minimal' && cover;
 
@@ -260,7 +422,7 @@ export default function MicrositeView({ business, design, compact = false }: Pro
         </Pressable>
       )}
 
-      {sectionOrder.map(renderSection)}
+      {sectionOrder.map(renderEntry)}
 
       <View style={[styles.footer, { borderTopColor: design.textColor + '22' }]}>
         <PawPrint size={14 * scale} strokeWidth={1.5} color={design.primaryColor} />
@@ -270,6 +432,39 @@ export default function MicrositeView({ business, design, compact = false }: Pro
       </View>
     </View>
   );
+}
+
+const todayIso = () => {
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+};
+
+const formatDay = (iso: string) =>
+  new Date(`${iso}T12:00:00`).toLocaleDateString('es-MX', { day: 'numeric', month: 'long' });
+
+/** A handle ("@paseospedro" or "paseospedro") or a full link, as typed. */
+function profileUrl(value: string, base: string, at = false): string {
+  if (/^https:\/\//i.test(value)) return value;
+  const name = value.replace(/^@/, '');
+  return `${base}${at ? '@' : ''}${name}`;
+}
+
+export function socialLinks(d: { instagram?: string; facebook?: string; tiktok?: string; website?: string }) {
+  return [
+    d.instagram && { label: 'Instagram', url: profileUrl(d.instagram, 'https://instagram.com/') },
+    d.facebook && { label: 'Facebook', url: profileUrl(d.facebook, 'https://facebook.com/') },
+    d.tiktok && { label: 'TikTok', url: profileUrl(d.tiktok, 'https://www.tiktok.com/', true) },
+    d.website && { label: 'Sitio web', url: d.website },
+  ].filter(Boolean) as { label: string; url: string }[];
+}
+
+function videoHost(url: string): string {
+  if (/youtu\.?be/i.test(url)) return 'YouTube';
+  if (/tiktok/i.test(url)) return 'TikTok';
+  if (/instagram/i.test(url)) return 'Instagram';
+  if (/facebook|fb\.watch/i.test(url)) return 'Facebook';
+  return 'Video';
 }
 
 /** Same tab on the public page (it's the next step, not a detour); a new
@@ -322,6 +517,23 @@ const styles = StyleSheet.create({
 
   testimonial: { gap: 4, paddingLeft: space.s3, borderLeftWidth: 3 },
   testimonialAuthor: { fontFamily: fonts.bodyMedium },
+
+  hero: { marginHorizontal: space.s4, padding: space.s5, borderRadius: radius.lg, borderWidth: 1, gap: space.s2 },
+  priceRow: { flexDirection: 'row', alignItems: 'center', gap: space.s3, paddingVertical: space.s2 },
+  rowName: { fontFamily: fonts.bodySemiBold },
+  teamGrid: { gap: space.s3 },
+  teamMember: { flexDirection: 'row', alignItems: 'center', gap: space.s3 },
+  teamAvatar: { borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' },
+  promo: { marginHorizontal: space.s4, padding: space.s4, borderRadius: radius.lg, borderWidth: 1.5, gap: space.s2 },
+  socialRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s2 },
+  socialPill: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    paddingHorizontal: space.s3, paddingVertical: space.s2, borderRadius: radius.pill, borderWidth: 1,
+  },
+  video: {
+    marginHorizontal: space.s4, flexDirection: 'row', alignItems: 'center', gap: space.s3,
+    padding: space.s4, borderRadius: radius.lg, borderWidth: 1,
+  },
 
   footer: {
     marginTop: space.s4, paddingTop: space.s4, marginHorizontal: space.s4, borderTopWidth: 1,

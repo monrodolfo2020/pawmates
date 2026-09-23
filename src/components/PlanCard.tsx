@@ -104,7 +104,7 @@ export default function PlanCard({ onActivated }: Props) {
           <Lock size={20} strokeWidth={1.75} color={colors.textMuted} />
         )}
         <CardTitle style={{ flex: 1 }}>
-          {isVip ? 'Tu plan VIP' : 'Diseño personalizado — plan VIP'}
+          {isVip ? 'Tu plan VIP' : 'Plan VIP'}
         </CardTitle>
         {isVip && <Tag variant="success">Activo</Tag>}
       </View>
@@ -124,9 +124,9 @@ export default function PlanCard({ onActivated }: Props) {
       )}
       {!isVip && !lapsed && (
         <CardMeta>
-          Tu página usa el diseño estándar de PawMates, que se ve bien tal cual. Con VIP eliges
-          colores y tipografía, subes tu logo y tu portada, cambias de plantilla y decides qué
-          secciones aparecen y en qué orden.
+          Con VIP tu página es tuya todo el año: colores, logo y portada, y bloques como precios,
+          preguntas frecuentes, promociones, redes y video, en el orden que quieras. Sin VIP se ve
+          con el diseño estándar de PawMates.
         </CardMeta>
       )}
 

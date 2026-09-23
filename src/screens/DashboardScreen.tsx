@@ -28,6 +28,9 @@ import { useAppState } from '../state/AppState';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Dashboard'>;
 
+const trialDaysLeft = (iso: string) =>
+  Math.max(0, Math.ceil((new Date(iso).getTime() - Date.now()) / (24 * 60 * 60 * 1000)));
+
 const requestTimeLabel = (iso: string) =>
   new Date(iso).toLocaleString('es', { weekday: 'short', hour: 'numeric', minute: '2-digit' });
 
@@ -232,6 +235,32 @@ export default function DashboardScreen({ navigation }: Props) {
 
         {profile === undefined && <Text style={type.small}>Cargando…</Text>}
 
+        {profile && (
+          <Card>
+            <View style={styles.rowBetween}>
+              <Text style={[type.cardTitle, { flex: 1 }]}>Diseña tu página</Text>
+              {profile.isVip ? (
+                <Tag variant="success">VIP</Tag>
+              ) : profile.inTrial && profile.trialEndsAt ? (
+                <Tag variant="warning">{`Prueba gratis · ${trialDaysLeft(profile.trialEndsAt)} días`}</Tag>
+              ) : !profile.canCustomize ? (
+                <Tag>Prueba terminada</Tag>
+              ) : null}
+            </View>
+            <CardBody>
+              {profile.canCustomize
+                ? 'Portada, precios, preguntas frecuentes, promociones, redes, colores… Edítala como quieras y publica cuando esté lista.'
+                : 'Tu página se ve con el diseño estándar. Activa VIP y vuelve el tuyo, tal como lo dejaste.'}
+            </CardBody>
+            {profile.canCustomize && !approved && (
+              <CardMeta>Tus 30 días de prueba empiezan cuando aprobemos tu negocio.</CardMeta>
+            )}
+            <Button onPress={() => navigation.navigate('MyPage')}>
+              {profile.canCustomize ? 'Abrir el editor' : 'Ver plan VIP'}
+            </Button>
+          </Card>
+        )}
+
         {profile === null && (
           <Card>
             <CardKicker>Tu página todavía no existe</CardKicker>
@@ -303,11 +332,6 @@ export default function DashboardScreen({ navigation }: Props) {
               Editar información de mi negocio
             </Button>
 
-            {profile.isVip && (
-              <Button variant="ghost" block onPress={() => navigation.navigate('MyPage')}>
-                Personalizar el diseño de mi página
-              </Button>
-            )}
           </>
         )}
 

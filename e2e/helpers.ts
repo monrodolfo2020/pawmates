@@ -54,6 +54,13 @@ function db(): Db {
   return new Database(DB_FILE);
 }
 
+/** Moves a business's free month of the editor into the past. */
+export function endTrial(accountId: string) {
+  db()
+    .prepare(`UPDATE providers_profiles SET trial_ends_at = datetime('now', '-1 day') WHERE account_id = ?`)
+    .run(accountId);
+}
+
 /** Skips the emailed 6-digit code, which a test can't read. */
 export function markEmailVerified(accountId: string) {
   db().prepare(`UPDATE identity_accounts SET email_verified_at = datetime('now') WHERE id = ?`).run(accountId);
