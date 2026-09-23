@@ -8,6 +8,7 @@ import {
   MeResult,
   Pet,
   Role,
+  LegalDocumentType,
   ServiceCategory,
   TripDetail,
 } from '../api/client';
@@ -60,6 +61,7 @@ type State = {
    * lets RootNavigator wait for the real answer instead of picking
    * Onboarding just because `pets` still holds its empty initial value. */
   petsChecked: boolean;
+  pendingLegal: LegalDocumentType[];
   bookingId: string | null;
   bookingStatus: BookingStatus;
   bookingError: string | null;
@@ -93,6 +95,12 @@ type Ctx = State & {
     profilePhoto?: string;
     acceptedLegal: AcceptedLegal[];
   }) => Promise<void>;
+  /** Documents this account owes an acceptance for — accounts created
+   * before the app asked, and version bumps since. Empty while it's
+   * still being checked and whenever the check fails, so a network
+   * problem can't lock anyone out of the app. */
+  pendingLegal: LegalDocumentType[];
+  refreshPendingLegal: () => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   addRole: (params: {
@@ -159,6 +167,7 @@ const initialState: State = {
   editingPetId: null,
   petsLoading: false,
   petsChecked: false,
+  pendingLegal: [],
   bookingId: null,
   bookingStatus: 'idle',
   bookingError: null,
@@ -175,6 +184,18 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   // one giant nested setState updater.
   const stateRef = useRef(state);
   stateRef.current = state;
+
+  const loadPendingLegal = useCallback(async (token: string) => {
+    try {
+      const { pending } = await api.getMyLegalAcceptances(token);
+      setState((s) => ({ ...s, pendingLegal: pending }));
+    } catch {
+      // Treated as "nothing pending". Blocking the whole app because a
+      // status check failed would be a worse outcome than a late
+      // acceptance, and the next load asks again.
+      setState((s) => ({ ...s, pendingLegal: [] }));
+    }
+  }, []);
 
   const loadPets = useCallback(async (token: string) => {
     setState((s) => ({ ...s, petsLoading: true }));
@@ -207,6 +228,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         JSON.stringify({ accountId: session.accountId, token: session.token }),
       );
       if (session.roles.includes('owner')) void loadPets(session.token);
+      void loadPendingLegal(session.token);
     },
     [loadPets],
   );
@@ -229,6 +251,11 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const refreshPendingLegal = useCallback(async () => {
+    const token = stateRef.current.token;
+    if (token) await loadPendingLegal(token);
+  }, [loadPendingLegal]);
 
   const signup = useCallback(
     async (params: {
@@ -494,6 +521,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       setTime: (v) => setState((s) => ({ ...s, time: v })),
       setTip: (v) => setState((s) => ({ ...s, tip: v })),
       setPayment: (v) => setState((s) => ({ ...s, payment: v })),
+      pendingLegal: state.pendingLegal,
+      refreshPendingLegal,
       signup,
       login,
       logout,
@@ -515,6 +544,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     };
   }, [
     state,
+    refreshPendingLegal,
     signup,
     login,
     logout,

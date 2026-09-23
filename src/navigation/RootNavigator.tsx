@@ -20,6 +20,7 @@ import ChatScreen from '../screens/ChatScreen';
 import DashboardScreen from '../screens/DashboardScreen';
 import AdminScreen from '../screens/AdminScreen';
 import LegalDocumentScreen from '../screens/LegalDocumentScreen';
+import PendingLegalScreen from '../screens/PendingLegalScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import BookingsScreen from '../screens/BookingsScreen';
 import ComingSoonScreen from '../screens/ComingSoonScreen';
@@ -47,6 +48,7 @@ export type RootStackParamList = {
   Dashboard: undefined;
   Admin: undefined;
   LegalDocument: { type: LegalDocumentType };
+  PendingLegal: undefined;
   Profile: undefined;
   Bookings: undefined;
   ComingSoon: { title: string };
@@ -190,6 +192,21 @@ export default function RootNavigator() {
         <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
         <Stack.Screen name="Signup" component={SignupScreen} />
         <Stack.Screen name="Business" component={BusinessProfileScreen} />
+      </Stack.Navigator>
+    );
+  }
+
+  // An acceptance that is owed stands in front of the app rather than
+  // beside it: the terms govern the use of the app, so letting someone
+  // carry on while they owe one is the thing the record exists to
+  // prevent. Empty while the check is in flight and whenever it fails
+  // (see AppState.loadPendingLegal), so nobody is locked out by a
+  // network problem.
+  if (s.pendingLegal.length > 0) {
+    return (
+      <Stack.Navigator key="pending-legal-gate" screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="PendingLegal" component={PendingLegalScreen} />
+        <Stack.Screen name="LegalDocument" component={LegalDocumentScreen} />
       </Stack.Navigator>
     );
   }
