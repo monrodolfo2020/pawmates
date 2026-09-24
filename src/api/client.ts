@@ -861,6 +861,17 @@ export const api = {
     return request<AdminVerification[]>('/v1/admin/provider-verifications', { token });
   },
 
+  /** Checks the AWS keys, permission and region with a generated image
+   * (no one's photo). Works before the comparison is switched on. */
+  adminTestFaceMatchConnection(token: string) {
+    return request<{
+      connection: 'ok' | 'missing_keys' | 'bad_keys' | 'no_permission' | 'unreachable';
+      region: string;
+      detail?: string;
+      enabled: boolean;
+    }>('/v1/admin/provider-verifications/face-match-connection-test', { method: 'POST', token });
+  },
+
   adminRunFaceMatch(token: string, id: string) {
     return request<FaceMatch>(`/v1/admin/provider-verifications/${id}/face-match`, { method: 'POST', token });
   },

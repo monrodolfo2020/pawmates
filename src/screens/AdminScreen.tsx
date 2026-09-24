@@ -158,6 +158,7 @@ export default function AdminScreen({ navigation }: Props) {
         {section === 'verificaciones' && (
           <View style={{ gap: space.s2 }}>
             <Text style={styles.h5}>Verificaciones de negocios</Text>
+            <FaceMatchConnectionCard />
             <SecureLegacyPhotosCard />
             {verifications?.length === 0 && <CardMeta>No hay verificaciones registradas.</CardMeta>}
             {/* The ones waiting on a decision first; the rest is history. */}
@@ -179,6 +180,84 @@ export default function AdminScreen({ navigation }: Props) {
  * to hand-craft a request with a token is how a security fix quietly
  * never gets applied.
  */
+type ConnectionResult = Awaited<ReturnType<typeof api.adminTestFaceMatchConnection>>;
+
+/**
+ * Checks that the AWS keys set in Vercel work, with a generated image —
+ * no business's photo — so the setup can be confirmed before the
+ * comparison is switched on.
+ */
+function FaceMatchConnectionCard() {
+  const s = useAppState();
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<ConnectionResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const test = async () => {
+    if (!s.token) return;
+    setBusy(true);
+    setError(null);
+    try {
+      setResult(await api.adminTestFaceMatchConnection(s.token));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo hacer la prueba.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const outcome: Record<ConnectionResult['connection'], { tone: 'success' | 'warning' | 'danger'; title: string; body: string }> = {
+    ok: {
+      tone: 'success',
+      title: 'Conexión correcta',
+      body: 'Las claves, el permiso y la región funcionan.',
+    },
+    missing_keys: {
+      tone: 'warning',
+      title: 'Faltan las claves',
+      body: 'Agrega AWS_ACCESS_KEY_ID y AWS_SECRET_ACCESS_KEY en Vercel (proyecto del backend) y haz Redeploy.',
+    },
+    bad_keys: {
+      tone: 'danger',
+      title: 'Amazon no reconoce las claves',
+      body: 'Revisa que AWS_ACCESS_KEY_ID y AWS_SECRET_ACCESS_KEY estén completas, sin espacios, y que la clave siga activa en IAM. Después haz Redeploy.',
+    },
+    no_permission: {
+      tone: 'danger',
+      title: 'Las claves no tienen permiso',
+      body: 'En IAM, el usuario pawmates-rekognition necesita la política con rekognition:CompareFaces.',
+    },
+    unreachable: {
+      tone: 'danger',
+      title: 'No se pudo conectar con Amazon',
+      body: 'Revisa AWS_REGION (por ejemplo us-east-2) e inténtalo de nuevo en unos minutos.',
+    },
+  };
+
+  const shown = result && outcome[result.connection];
+
+  return (
+    <Card>
+      <CardTitle>Comparación de rostros</CardTitle>
+      <CardMeta>
+        Prueba la conexión con Amazon Rekognition usando una imagen generada, sin ninguna foto de
+        negocios.
+      </CardMeta>
+      {shown && (
+        <Notice tone={shown.tone} title={shown.title}>
+          {`${shown.body} Región: ${result.region}.${result.detail ? ` (${result.detail})` : ''} La comparación está ${
+            result.enabled ? 'encendida' : 'apagada: se enciende con FACE_MATCH_ENABLED=true'
+          }.`}
+        </Notice>
+      )}
+      {error && <Notice tone="danger">{error}</Notice>}
+      <Button disabled={busy} onPress={() => void test()}>
+        {busy ? 'Probando…' : 'Probar conexión con AWS'}
+      </Button>
+    </Card>
+  );
+}
+
 function SecureLegacyPhotosCard() {
   const s = useAppState();
   const [busy, setBusy] = useState(false);
