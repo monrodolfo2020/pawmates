@@ -9,7 +9,7 @@
 > Al final hay una lista de puntos que específicamente debes plantearle
 > a tu abogado.
 
-**Versión:** 1.0-borrador
+**Versión:** 1.1-borrador
 **Última actualización:** [[FECHA DE PUBLICACIÓN]]
 
 ---
@@ -323,11 +323,34 @@ servicios del Prestador ni actúa como retenedor de los mismos.
 
 ## 9. Verificación de identidad: alcance y límites
 
-**9.1.** PawMates ofrece un proceso de verificación de identidad que
-consiste, a la fecha de este Acuerdo, en que el Prestador cargue **una
-fotografía de su rostro y una fotografía de un documento oficial de
-identificación**, y en que una persona del equipo de PawMates **revise
-visualmente ambas imágenes** y apruebe o rechace la solicitud.
+**9.1.** PawMates ofrece un proceso de verificación de identidad en el
+que el Prestador carga **una fotografía de su rostro y una fotografía de
+un documento oficial de identificación**. El Prestador acepta que
+PawMates **verifique esas imágenes por cualquier medio lícito que estime
+adecuado**, manual, automatizado o una combinación de ambos, incluidos, de
+manera enunciativa y no limitativa:
+
+a) la revisión visual de ambas imágenes por personal de PawMates;
+b) la comparación automatizada del rostro que aparece en ambas imágenes,
+   mediante herramientas tecnológicas propias o de proveedores de
+   servicios que actúen por cuenta de PawMates; y
+c) el análisis de la calidad, legibilidad, integridad o posible
+   alteración de las imágenes.
+
+PawMates podrá emplear, agregar, sustituir o dejar de usar cualquiera de
+esos medios sin necesidad de modificar este Acuerdo.
+
+**9.1 bis.** La decisión de aprobar o rechazar cada solicitud la toma
+una persona del equipo de PawMates. Los resultados de los medios
+automatizados sirven únicamente de apoyo a esa decisión; ninguna
+solicitud se aprueba ni se rechaza exclusivamente con base en ellos.
+
+**9.1 ter.** Cuando alguno de esos medios indique que una imagen no
+permite la verificación o que los rostros no parecen coincidir, PawMates
+podrá informárselo al Prestador —en la Plataforma o por correo
+electrónico— e invitarlo a cargar nuevas imágenes. PawMates no está
+obligado a revelar el detalle, los criterios ni los valores de esos
+resultados.
 
 **9.2.** Superar ese proceso únicamente habilita la exhibición de una
 insignia de "Identidad verificada" en el Directorio y en el Micrositio
@@ -351,8 +374,11 @@ comunica a los Usuarios.
 
 **9.5.** El Prestador declara que las imágenes que carga corresponden a su
 propia persona y a un documento auténtico y vigente, y que su remisión es
-voluntaria. El tratamiento de esas imágenes se rige por el Aviso de
-Privacidad de PawMates.
+voluntaria. El tratamiento de esas imágenes —incluido, en su caso, el de
+datos biométricos derivado de la comparación automatizada de rostros— se
+rige por el Aviso de Privacidad de PawMates y se realiza con base en el
+consentimiento expreso que el Prestador otorga, de forma separada, al
+cargarlas.
 
 **9.6.** Esas imágenes **se eliminan en cuanto la verificación queda
 resuelta**; PawMates conserva únicamente el resultado y su fecha. En
@@ -762,19 +788,29 @@ indican.**
    (retención de ISR e IVA). **Si algún día PawMates cobra el servicio y
    le paga al prestador, esto cambia por completo** y hay que rehacer la
    cláusula 14.
-2. **La verificación de identidad es una persona mirando dos
-   fotografías.** No hay antecedentes penales, ni validación del
+2. **La verificación de identidad la decide una persona**, apoyada, cuando
+   se active, en una comparación automatizada de rostros (Amazon
+   Rekognition). No hay antecedentes penales, ni validación del
    documento ante autoridad, ni verificación de cédulas profesionales.
    La cláusula 9 lo dice con ese nivel de detalle a propósito:
    prometer más de lo que el sistema hace es la vía más rápida a una
    responsabilidad cuando algo salga mal.
-3. **La insignia de verificación no condiciona nada más.** Un prestador
+3. **"Cualquier medio lícito" (cláusula 9.1).** Se pidió autorizar la
+   verificación "por cualquier medio". Se redactó como *cualquier medio
+   lícito*, con ejemplos, porque un permiso genérico no sustituye el
+   consentimiento expreso y específico que la ley exige para datos
+   biométricos: ese consentimiento se recaba aparte, al cargar las
+   fotografías (cláusula 9.5). Confirmar que la cláusula es válida en un
+   contrato de adhesión y que no choca con el Aviso de Privacidad, que
+   todavía dice que las imágenes no se usan para reconocimiento facial
+   automatizado (ver `propuesta-comparacion-facial.md`).
+4. **La insignia de verificación no condiciona nada más.** Un prestador
    sin verificar puede recibir reservas igual.
-4. **Los testimonios los escribe el propio negocio.** No provienen de
+5. **Los testimonios los escribe el propio negocio.** No provienen de
    clientes reales verificados por la plataforma. De ahí la cláusula 7.4
    y su prohibición expresa: sin ella, la plataforma estaría alojando
    publicidad potencialmente engañosa sin haber advertido nada.
-5. **Solo los paseadores se reservan dentro de la app;** el resto de las
+6. **Solo los paseadores se reservan dentro de la app;** el resto de las
    categorías se contacta por fuera. Cláusulas 8.1 y 8.2.
 
 ## ⚠️ Operas como persona física, no como sociedad

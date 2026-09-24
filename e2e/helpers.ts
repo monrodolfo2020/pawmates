@@ -44,7 +44,16 @@ export async function api<T = unknown>(
   return json?.data as T;
 }
 
-const legal = (types: string[]) => types.map((type) => ({ type, version: '1.0' }));
+/** The versions the backend asks for right now, so bumping a document's
+ * version (which makes everyone accept it again) doesn't break the tests. */
+let legalVersions: Promise<Record<string, string>> | null = null;
+async function legal(types: string[]) {
+  legalVersions ??= api<{ type: string; version: string }[]>('GET', '/v1/legal/documents').then(
+    (docs) => Object.fromEntries(docs.map((d) => [d.type, d.version])),
+  );
+  const versions = await legalVersions;
+  return types.map((type) => ({ type, version: versions[type] }));
+}
 
 // The backend's own SQLite driver, on the test database.
 const requireFromBackend = createRequire(join(BACKEND_DIR, 'package.json'));
@@ -74,7 +83,7 @@ export function makeAdmin(accountId: string) {
 export async function createOwner(name = 'Ana'): Promise<Session & { petId: string }> {
   const email = uniqueEmail(name.toLowerCase());
   const session = await api<Session>('POST', '/v1/auth/signup', {
-    body: { email, password: PASSWORD, role: 'owner', name, acceptedLegal: legal(['privacy_notice', 'owner_terms']) },
+    body: { email, password: PASSWORD, role: 'owner', name, acceptedLegal: await legal(['privacy_notice', 'owner_terms']) },
   });
   markEmailVerified(session.accountId);
   const pet = await api<{ id: string }>('POST', '/v1/pets', {
@@ -87,7 +96,7 @@ export async function createOwner(name = 'Ana'): Promise<Session & { petId: stri
 export async function createAdmin(): Promise<Session> {
   const email = uniqueEmail('admin');
   const session = await api<Session>('POST', '/v1/auth/signup', {
-    body: { email, password: PASSWORD, role: 'owner', name: 'Admin', acceptedLegal: legal(['privacy_notice', 'owner_terms']) },
+    body: { email, password: PASSWORD, role: 'owner', name: 'Admin', acceptedLegal: await legal(['privacy_notice', 'owner_terms']) },
   });
   markEmailVerified(session.accountId);
   makeAdmin(session.accountId);
@@ -107,7 +116,7 @@ export async function createWalker(options: { businessName: string; approved?: b
       businessName: options.businessName,
       facePhoto: PNG,
       idDocumentPhoto: PNG,
-      acceptedLegal: legal(['privacy_notice', 'provider_agreement', 'identity_verification_consent']),
+      acceptedLegal: await legal(['privacy_notice', 'provider_agreement', 'identity_verification_consent']),
     },
   });
   markEmailVerified(session.accountId);

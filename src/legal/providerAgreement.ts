@@ -4,7 +4,7 @@
 
 export const providerAgreement = `# Acuerdo de Prestadores de Servicios — PawMates
 
-**Versión:** 1.0-borrador
+**Versión:** 1.1-borrador
 **Última actualización:** [[FECHA DE PUBLICACIÓN]]
 
 ---
@@ -318,11 +318,34 @@ servicios del Prestador ni actúa como retenedor de los mismos.
 
 ## 9. Verificación de identidad: alcance y límites
 
-**9.1.** PawMates ofrece un proceso de verificación de identidad que
-consiste, a la fecha de este Acuerdo, en que el Prestador cargue **una
-fotografía de su rostro y una fotografía de un documento oficial de
-identificación**, y en que una persona del equipo de PawMates **revise
-visualmente ambas imágenes** y apruebe o rechace la solicitud.
+**9.1.** PawMates ofrece un proceso de verificación de identidad en el
+que el Prestador carga **una fotografía de su rostro y una fotografía de
+un documento oficial de identificación**. El Prestador acepta que
+PawMates **verifique esas imágenes por cualquier medio lícito que estime
+adecuado**, manual, automatizado o una combinación de ambos, incluidos, de
+manera enunciativa y no limitativa:
+
+a) la revisión visual de ambas imágenes por personal de PawMates;
+b) la comparación automatizada del rostro que aparece en ambas imágenes,
+   mediante herramientas tecnológicas propias o de proveedores de
+   servicios que actúen por cuenta de PawMates; y
+c) el análisis de la calidad, legibilidad, integridad o posible
+   alteración de las imágenes.
+
+PawMates podrá emplear, agregar, sustituir o dejar de usar cualquiera de
+esos medios sin necesidad de modificar este Acuerdo.
+
+**9.1 bis.** La decisión de aprobar o rechazar cada solicitud la toma
+una persona del equipo de PawMates. Los resultados de los medios
+automatizados sirven únicamente de apoyo a esa decisión; ninguna
+solicitud se aprueba ni se rechaza exclusivamente con base en ellos.
+
+**9.1 ter.** Cuando alguno de esos medios indique que una imagen no
+permite la verificación o que los rostros no parecen coincidir, PawMates
+podrá informárselo al Prestador —en la Plataforma o por correo
+electrónico— e invitarlo a cargar nuevas imágenes. PawMates no está
+obligado a revelar el detalle, los criterios ni los valores de esos
+resultados.
 
 **9.2.** Superar ese proceso únicamente habilita la exhibición de una
 insignia de "Identidad verificada" en el Directorio y en el Micrositio
@@ -346,8 +369,11 @@ comunica a los Usuarios.
 
 **9.5.** El Prestador declara que las imágenes que carga corresponden a su
 propia persona y a un documento auténtico y vigente, y que su remisión es
-voluntaria. El tratamiento de esas imágenes se rige por el Aviso de
-Privacidad de PawMates.
+voluntaria. El tratamiento de esas imágenes —incluido, en su caso, el de
+datos biométricos derivado de la comparación automatizada de rostros— se
+rige por el Aviso de Privacidad de PawMates y se realiza con base en el
+consentimiento expreso que el Prestador otorga, de forma separada, al
+cargarlas.
 
 **9.6.** Esas imágenes **se eliminan en cuanto la verificación queda
 resuelta**; PawMates conserva únicamente el resultado y su fecha. En
