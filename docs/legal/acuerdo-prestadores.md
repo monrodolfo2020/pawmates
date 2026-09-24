@@ -801,9 +801,9 @@ indican.**
    consentimiento expreso y específico que la ley exige para datos
    biométricos: ese consentimiento se recaba aparte, al cargar las
    fotografías (cláusula 9.5). Confirmar que la cláusula es válida en un
-   contrato de adhesión y que no choca con el Aviso de Privacidad, que
-   todavía dice que las imágenes no se usan para reconocimiento facial
-   automatizado (ver `propuesta-comparacion-facial.md`).
+   contrato de adhesión. El Aviso de Privacidad 1.1 y el consentimiento
+   1.1 ya describen la comparación automatizada, así que los tres
+   documentos dicen lo mismo.
 4. **La insignia de verificación no condiciona nada más.** Un prestador
    sin verificar puede recibir reservas igual.
 5. **Los testimonios los escribe el propio negocio.** No provienen de

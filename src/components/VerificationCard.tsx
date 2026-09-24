@@ -132,8 +132,8 @@ export default function VerificationCard({ onOpenConsent }: Props) {
       </View>
 
       <LegalAcceptRow checked={consented} onToggle={() => setConsented((v) => !v)}>
-        Consiento expresamente que se traten mi fotografía y la de mi documento de identificación
-        para verificar mi identidad, conforme al{' '}
+        Consiento expresamente que se traten mi fotografía y la de mi documento de identificación,
+        incluida su comparación automatizada, para verificar mi identidad, conforme al{' '}
         <LegalLink onPress={onOpenConsent}>consentimiento de verificación</LegalLink>.
       </LegalAcceptRow>
 

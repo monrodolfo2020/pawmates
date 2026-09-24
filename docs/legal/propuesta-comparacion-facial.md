@@ -1,10 +1,9 @@
 # Propuesta: comparación automática de rostros en la verificación de identidad
 
-**Estado:** borrador para revisión del abogado. **No está publicado.** La función está
-programada pero apagada (`FACE_MATCH_ENABLED` sin configurar) porque el Aviso de
-Privacidad y el consentimiento vigentes dicen expresamente que las fotografías **no** se
-usan "para reconocimiento facial automatizado". Encenderla sin cambiar esos textos los
-contradiría.
+**Estado:** los cambios de abajo ya se aplicaron en el Aviso de Privacidad 1.1, el
+consentimiento de verificación 1.1 y el Acuerdo de Prestadores 1.1 (cláusula 9). Siguen
+siendo borradores que debe revisar el abogado. La función sigue apagada
+(`FACE_MATCH_ENABLED` sin configurar) hasta completar los pasos del final.
 
 ## Qué hace la función
 
@@ -76,9 +75,9 @@ Reemplazar el texto por:
 
 ## Cómo se publica cuando esté aprobado
 
-1. Actualizar `docs/legal/aviso-de-privacidad.md` con el texto aprobado y correr
-   `node scripts/sync-legal-text.mjs`.
-2. Subir la versión del Aviso y la del consentimiento en el backend (`legal-document.ts`),
-   para que cada negocio vuelva a aceptarlos antes de continuar.
-3. En Vercel, en el backend: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`
+1. ~~Actualizar el Aviso y el consentimiento~~ (hecho, versión 1.1).
+2. ~~Subir sus versiones~~ (hecho: todos vuelven a aceptarlos al entrar).
+3. Revisión del abogado; si pide cambios, se aplican y se sube otra vez la versión.
+4. En la cuenta de AWS, activar la política de exclusión de servicios de IA.
+5. En Vercel, en el backend: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`
    (por ejemplo `us-east-1`) y, al final, `FACE_MATCH_ENABLED=true`. Luego, Redeploy.

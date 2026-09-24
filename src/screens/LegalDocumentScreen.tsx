@@ -23,13 +23,19 @@ const identityConsent = `# Consentimiento para la verificación de identidad
 La verificación de identidad es **opcional**.
 
 Si decides continuar, nos entregas una fotografía de tu rostro y una de
-tu documento oficial de identificación. Una persona de nuestro equipo las
-revisará visualmente para confirmar que corresponden a la misma persona.
+tu documento oficial de identificación.
 
-**No las publicamos, no las usamos para reconocimiento facial
-automatizado y no las compartimos con otros usuarios.** Se guardan en
-almacenamiento privado y solo pueden consultarse mediante enlaces
-firmados de corta duración.
+Un sistema automatizado de nuestro proveedor Amazon Web Services compara
+los dos rostros, y una persona de nuestro equipo revisa las fotografías
+para confirmar que corresponden a la misma persona. **La decisión la toma
+esa persona, no el sistema.** Si el sistema indica que una foto no sirve
+o que los rostros no parecen coincidir, te avisaremos para que puedas
+cargar otras.
+
+**No las publicamos, no las usamos para identificarte en otro contexto y
+no las compartimos con otros usuarios.** Se guardan en almacenamiento
+privado, solo pueden consultarse mediante enlaces firmados de corta
+duración y se borran en cuanto se resuelve la verificación.
 
 Lo único que obtienes al superar la verificación es que se muestre una
 insignia de "Identidad verificada" en tu página y en el directorio. Tu

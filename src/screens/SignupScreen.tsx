@@ -148,8 +148,8 @@ export default function SignupScreen({ navigation, route }: Props) {
 
       {needsVerificationConsent && (
         <LegalAcceptRow checked={acceptedVerification} onToggle={() => setAcceptedVerification((v) => !v)}>
-          Consiento expresamente que se traten mi fotografía y la de mi documento de identificación
-          para verificar mi identidad, conforme al{' '}
+          Consiento expresamente que se traten mi fotografía y la de mi documento de identificación,
+          incluida su comparación automatizada, para verificar mi identidad, conforme al{' '}
           <LegalLink onPress={() => openDocument('identity_verification_consent')}>
             consentimiento de verificación
           </LegalLink>

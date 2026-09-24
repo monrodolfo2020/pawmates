@@ -4,7 +4,7 @@
 
 export const privacyNotice = `# Aviso de Privacidad — PawMates
 
-**Versión:** 1.0-borrador
+**Versión:** 1.1-borrador
 **Última actualización:** [[FECHA DE PUBLICACIÓN]]
 
 ---
@@ -121,15 +121,25 @@ b) lo único que obtienes al superarla es que se muestre una insignia de
 c) **te pediremos tu consentimiento expreso** antes de recabarlas,
    mediante una manifestación específica y separada de la aceptación
    general de este Aviso; y
-d) las usamos **exclusivamente** para que una persona de nuestro equipo
-   compruebe visualmente que la persona de la fotografía corresponde a
-   la del documento. **No las publicamos, no las usamos para
-   reconocimiento facial automatizado, no las comercializamos y no las
-   compartimos con otros usuarios.**; y
+d) las usamos **exclusivamente** para verificar que la persona de la
+   fotografía corresponde a la del documento. Para ello, además de la
+   revisión de una persona de nuestro equipo, podemos usar un sistema
+   automatizado de nuestro proveedor Amazon Web Services que compara los
+   dos rostros y calcula su grado de parecido. Ese resultado **solo
+   apoya** a la persona que revisa, quien toma la decisión: **ninguna
+   verificación se aprueba ni se rechaza de forma automática.** Si el
+   sistema indica que una imagen no permite la verificación o que los
+   rostros no parecen coincidir, podemos avisarte para que cargues otras.
+   No publicamos las imágenes, no creamos con ellas plantillas ni bases
+   de datos de rostros, no las usamos para identificarte en ningún otro
+   contexto, no las comercializamos y no las compartimos con otros
+   usuarios; y
 e) **las eliminamos en cuanto la verificación queda resuelta.** De ese
    momento en adelante solo conservamos el resultado —aprobada o
-   rechazada— y su fecha. No guardamos tu rostro ni tu documento después
-   de haberlos revisado.
+   rechazada— y su fecha, junto con el grado de parecido que calculó el
+   sistema automatizado, como constancia de cómo se tomó la decisión; ese
+   dato es un número, no una imagen, y no permite reconstruir tu rostro.
+   No guardamos tu rostro ni tu documento después de haberlos revisado.
 
 **4.3.** Puedes revocar ese consentimiento en cualquier momento
 conforme a la sección 8. Al hacerlo, eliminaremos las imágenes —si
@@ -202,6 +212,7 @@ de datos y **no requiere tu consentimiento**, pero te lo informamos:
 | Vercel | Alojamiento de la aplicación y almacenamiento de las imágenes que se cargan | Estados Unidos |
 | Turso | Base de datos donde viven las cuentas, las páginas y las reservas | Estados Unidos |
 | Resend | Envío de los correos del servicio (verificación de cuenta, restablecimiento de contraseña) | Estados Unidos |
+| Amazon Web Services (Amazon Rekognition) | Comparación automatizada de la fotografía de tu rostro con la de tu documento, solo durante la verificación de identidad | Estados Unidos |
 
 Estos proveedores están fuera de México, de modo que tus datos se
 almacenan y procesan en el extranjero. Elegimos proveedores que ofrecen

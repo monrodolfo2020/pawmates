@@ -232,8 +232,12 @@ export interface AdminVerification {
   /** The automatic comparison of the two photos — an aid for deciding,
    * not the decision. null when it never ran. */
   faceMatch: FaceMatch | null;
-  /** Whether "Comparar rostros" can run now (switched on, photos on file). */
+  /** Whether "Comparar rostros" can run now (switched on, photos on file,
+   * sent under the consent that covers the automated comparison). */
   faceMatchAvailable: boolean;
+  /** Photos sent under an older consent that didn't cover the automated
+   * comparison: they can't be compared until the business resends them. */
+  faceMatchNeedsNewConsent: boolean;
   createdAt: string;
 }
 

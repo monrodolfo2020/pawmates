@@ -461,6 +461,14 @@ function FaceMatchResult({ verification: v, onChange }: { verification: AdminVer
   );
 
   const m = v.faceMatch;
+  if (!m && v.faceMatchNeedsNewConsent) {
+    return (
+      <CardMeta>
+        Estas fotos se enviaron antes de que el consentimiento incluyera la comparación automática, así
+        que no se comparan. Revísalas tú, o pídele al negocio que las envíe de nuevo.
+      </CardMeta>
+    );
+  }
   if (!m) {
     return retry ? (
       <View style={{ gap: space.s2 }}>

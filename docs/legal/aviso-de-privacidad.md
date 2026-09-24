@@ -10,7 +10,7 @@
 >
 > Las secciones marcadas `[[ASÍ]]` son datos que solo tú puedes llenar.
 
-**Versión:** 1.0-borrador
+**Versión:** 1.1-borrador
 **Última actualización:** [[FECHA DE PUBLICACIÓN]]
 
 ---
@@ -127,15 +127,25 @@ b) lo único que obtienes al superarla es que se muestre una insignia de
 c) **te pediremos tu consentimiento expreso** antes de recabarlas,
    mediante una manifestación específica y separada de la aceptación
    general de este Aviso; y
-d) las usamos **exclusivamente** para que una persona de nuestro equipo
-   compruebe visualmente que la persona de la fotografía corresponde a
-   la del documento. **No las publicamos, no las usamos para
-   reconocimiento facial automatizado, no las comercializamos y no las
-   compartimos con otros usuarios.**; y
+d) las usamos **exclusivamente** para verificar que la persona de la
+   fotografía corresponde a la del documento. Para ello, además de la
+   revisión de una persona de nuestro equipo, podemos usar un sistema
+   automatizado de nuestro proveedor Amazon Web Services que compara los
+   dos rostros y calcula su grado de parecido. Ese resultado **solo
+   apoya** a la persona que revisa, quien toma la decisión: **ninguna
+   verificación se aprueba ni se rechaza de forma automática.** Si el
+   sistema indica que una imagen no permite la verificación o que los
+   rostros no parecen coincidir, podemos avisarte para que cargues otras.
+   No publicamos las imágenes, no creamos con ellas plantillas ni bases
+   de datos de rostros, no las usamos para identificarte en ningún otro
+   contexto, no las comercializamos y no las compartimos con otros
+   usuarios; y
 e) **las eliminamos en cuanto la verificación queda resuelta.** De ese
    momento en adelante solo conservamos el resultado —aprobada o
-   rechazada— y su fecha. No guardamos tu rostro ni tu documento después
-   de haberlos revisado.
+   rechazada— y su fecha, junto con el grado de parecido que calculó el
+   sistema automatizado, como constancia de cómo se tomó la decisión; ese
+   dato es un número, no una imagen, y no permite reconstruir tu rostro.
+   No guardamos tu rostro ni tu documento después de haberlos revisado.
 
 **4.3.** Puedes revocar ese consentimiento en cualquier momento
 conforme a la sección 8. Al hacerlo, eliminaremos las imágenes —si
@@ -208,6 +218,7 @@ de datos y **no requiere tu consentimiento**, pero te lo informamos:
 | Vercel | Alojamiento de la aplicación y almacenamiento de las imágenes que se cargan | Estados Unidos |
 | Turso | Base de datos donde viven las cuentas, las páginas y las reservas | Estados Unidos |
 | Resend | Envío de los correos del servicio (verificación de cuenta, restablecimiento de contraseña) | Estados Unidos |
+| Amazon Web Services (Amazon Rekognition) | Comparación automatizada de la fotografía de tu rostro con la de tu documento, solo durante la verificación de identidad | Estados Unidos |
 
 Estos proveedores están fuera de México, de modo que tus datos se
 almacenan y procesan en el extranjero. Elegimos proveedores que ofrecen
@@ -458,15 +469,18 @@ casilla propia, distinta de la del registro.*
 
 > La verificación de identidad es **opcional**. Si decides continuar,
 > nos entregas una fotografía de tu rostro y una de tu documento oficial
-> de identificación. Una persona de nuestro equipo las revisará
-> visualmente para confirmar que corresponden a la misma persona. **No
-> las publicamos, no las usamos para reconocimiento facial automatizado
-> y no las compartimos con otros usuarios.** Puedes retirarlas cuando
-> quieras escribiendo a **rmonterrozag@gmail.com**.
+> de identificación. Un sistema automatizado de nuestro proveedor
+> Amazon Web Services comparará los dos rostros, y una persona de
+> nuestro equipo revisará las fotografías para confirmar que
+> corresponden a la misma persona; **la decisión la toma esa persona, no
+> el sistema.** No las publicamos, no las usamos para identificarte en
+> otro contexto y no las compartimos con otros usuarios. Las borramos en
+> cuanto se resuelve la verificación. Puedes retirarlas cuando quieras
+> escribiendo a **rmonterrozag@gmail.com**.
 >
-> `[ ]` **Consiento expresamente** el tratamiento de estas dos imágenes
-> para la finalidad descrita, en los términos de la sección 4 del Aviso
-> de Privacidad.
+> `[ ]` **Consiento expresamente** el tratamiento de estas dos imágenes,
+> incluida su comparación automatizada, para la finalidad descrita, en
+> los términos de la sección 4 del Aviso de Privacidad.
 
 ---
 ---
@@ -559,12 +573,17 @@ documentos. Dímelo y lo cambio en un minuto.
 
 1. **¿La fotografía del rostro es dato sensible?** Un retrato usado para
    identificar a alguien se acerca al dato biométrico, que sí es
-   sensible. PawMates no hace reconocimiento facial automatizado —es una
-   persona comparando dos imágenes—, así que hay argumento para decir
-   que no lo es. Redacté el Aviso **asumiendo el escenario más
-   exigente**: consentimiento expreso, por separado, y finalidad
-   acotada. Es la postura conservadora y te recomiendo conservarla
-   aunque tu abogado opine que no es estrictamente necesaria.
+   sensible. Desde la versión 1.1, PawMates **sí compara los rostros de
+   forma automatizada** (Amazon Rekognition), aunque la decisión la toma
+   una persona, así que conviene tratarlo como dato biométrico sensible.
+   El Aviso está redactado para ese escenario: consentimiento expreso,
+   por separado, finalidad acotada y decisión humana. Confirmar si ese
+   consentimiento debe ser además por escrito (firma electrónica o
+   autógrafa), y que la remisión a Amazon en Estados Unidos está bien
+   informada (sección 6.1). Antes de encender la comparación hay que
+   desactivar en la cuenta de AWS el uso de contenido para mejorar sus
+   servicios (política de exclusión de servicios de IA de AWS
+   Organizations); si no, la promesa del inciso 4.2 d) no sería cierta.
 2. **Plazos de conservación: ya están decididos y programados.** Las
    imágenes de verificación **se eliminan al resolverse** (aprobar o
    rechazar borra las dos imágenes y guarda solo el resultado y su
