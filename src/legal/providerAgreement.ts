@@ -5,7 +5,7 @@
 export const providerAgreement = `# Acuerdo de Prestadores de Servicios — PawMates
 
 **Versión:** 1.1-borrador
-**Última actualización:** [[FECHA DE PUBLICACIÓN]]
+**Última actualización:** 1 de octubre de 2026
 
 ---
 

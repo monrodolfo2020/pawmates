@@ -11,7 +11,7 @@
 > Las secciones marcadas `[[ASÍ]]` son datos que solo tú puedes llenar.
 
 **Versión:** 1.1-borrador
-**Última actualización:** [[FECHA DE PUBLICACIÓN]]
+**Última actualización:** 1 de octubre de 2026
 
 ---
 
