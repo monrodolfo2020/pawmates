@@ -430,6 +430,72 @@ function BusinessRow({ business: b, onChange }: { business: AdminBusiness; onCha
  * the photos, so a resolved check shows the outcome and its date instead
  * of two empty frames; a verified one can still be withdrawn.
  */
+/**
+ * What the automatic face comparison said, in words an admin can act on.
+ * The thresholds are deliberately cautious: it's a hint for where to
+ * look harder, and the admin still decides by looking at both photos.
+ */
+function FaceMatchResult({ verification: v, onChange }: { verification: AdminVerification; onChange: () => void }) {
+  const s = useAppState();
+  const [running, setRunning] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const run = async () => {
+    if (!s.token) return;
+    setRunning(true);
+    setError(null);
+    try {
+      await api.adminRunFaceMatch(s.token, v.id);
+      onChange();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo comparar.');
+    } finally {
+      setRunning(false);
+    }
+  };
+
+  const retry = v.faceMatchAvailable && (
+    <Button size="sm" disabled={running} onPress={() => void run()}>
+      {running ? 'Comparando…' : v.faceMatch ? 'Comparar otra vez' : 'Comparar rostros'}
+    </Button>
+  );
+
+  const m = v.faceMatch;
+  if (!m) {
+    return retry ? (
+      <View style={{ gap: space.s2 }}>
+        <CardMeta>Estas fotos no se han comparado automáticamente.</CardMeta>
+        {retry}
+        {error && <Notice tone="danger">{error}</Notice>}
+      </View>
+    ) : null;
+  }
+
+  const shown =
+    m.status === 'compared' && m.similarity !== null
+      ? m.similarity >= 90
+        ? { tone: 'success' as const, title: `Los rostros coinciden (${m.similarity}%)` }
+        : m.similarity >= 70
+          ? { tone: 'warning' as const, title: `Parecido de ${m.similarity}%: revisa con cuidado` }
+          : { tone: 'danger' as const, title: `Parecido de ${m.similarity}%: no parecen la misma persona` }
+      : m.status === 'no_face_selfie'
+        ? { tone: 'warning' as const, title: 'No se encontró un rostro en la foto de la cara' }
+        : m.status === 'no_face_id'
+          ? { tone: 'warning' as const, title: 'No se encontró un rostro en la identificación' }
+          : { tone: 'info' as const, title: 'No se pudo hacer la comparación automática' };
+
+  return (
+    <View style={{ gap: space.s2 }}>
+      <Notice tone={shown.tone} title={shown.title}>
+        Es una ayuda, no la decisión: una identificación borrosa o con reflejo puede dar un parecido bajo
+        aunque sea la misma persona, y una foto impresa de otra persona puede dar uno alto.
+      </Notice>
+      {(m.status !== 'compared' || (m.similarity ?? 0) < 90) && retry}
+      {error && <Notice tone="danger">{error}</Notice>}
+    </View>
+  );
+}
+
 function VerificationRow({ verification: v, onChange }: { verification: AdminVerification; onChange: () => void }) {
   const s = useAppState();
   const [busy, setBusy] = useState(false);
@@ -481,6 +547,7 @@ function VerificationRow({ verification: v, onChange }: { verification: AdminVer
               <VerificationPhoto uri={v.idDocumentPhoto} />
             </View>
           </View>
+          <FaceMatchResult verification={v} onChange={onChange} />
           <CardMeta>Al decidir, las dos fotos se borran definitivamente.</CardMeta>
           {error && <Notice tone="danger">{error}</Notice>}
           <View style={{ flexDirection: 'row', gap: space.s2 }}>
@@ -494,6 +561,9 @@ function VerificationRow({ verification: v, onChange }: { verification: AdminVer
         </>
       ) : (
         <>
+          {v.faceMatch?.status === 'compared' && (
+            <CardMeta>Comparación automática al revisarla: {v.faceMatch.similarity}% de parecido.</CardMeta>
+          )}
           <CardMeta>
             {v.status === 'verified'
               ? 'Su página muestra "Identidad verificada". Las fotos ya se borraron.'

@@ -200,6 +200,13 @@ export interface AdminAccount {
   createdAt: string;
 }
 
+export interface FaceMatch {
+  status: 'compared' | 'no_face_selfie' | 'no_face_id' | 'error';
+  /** 0–100, only when status is 'compared'. */
+  similarity: number | null;
+  checkedAt: string;
+}
+
 export interface AdminVerification {
   id: string;
   accountId: string;
@@ -222,6 +229,11 @@ export interface AdminVerification {
   /** Set when the admin decided: the photos are destroyed right then, so
    * it doubles as "resolved on". */
   photosDeletedAt: string | null;
+  /** The automatic comparison of the two photos — an aid for deciding,
+   * not the decision. null when it never ran. */
+  faceMatch: FaceMatch | null;
+  /** Whether "Comparar rostros" can run now (switched on, photos on file). */
+  faceMatchAvailable: boolean;
   createdAt: string;
 }
 
@@ -840,6 +852,10 @@ export const api = {
 
   adminListVerifications(token: string) {
     return request<AdminVerification[]>('/v1/admin/provider-verifications', { token });
+  },
+
+  adminRunFaceMatch(token: string, id: string) {
+    return request<FaceMatch>(`/v1/admin/provider-verifications/${id}/face-match`, { method: 'POST', token });
   },
 
   /** Response omits the face/ID photos (unlike adminListVerifications) —
