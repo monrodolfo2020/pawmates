@@ -525,6 +525,9 @@ export interface MyVerification {
   status: VerificationStatus;
   submittedAt: string | null;
   photosDeletedAt: string | null;
+  /** From the automatic face comparison, while pending: which photo to
+   * retake, or that the two faces don't look alike. Never a percentage. */
+  photoFeedback: 'retake_selfie' | 'retake_id' | 'mismatch' | null;
   /** The version of the consent the app must show and echo back. */
   consentVersion: string;
 }

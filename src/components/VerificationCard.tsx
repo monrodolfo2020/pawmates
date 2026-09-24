@@ -83,7 +83,7 @@ export default function VerificationCard({ onOpenConsent }: Props) {
     );
   }
 
-  if (state.status === 'pending') {
+  if (state.status === 'pending' && !state.photoFeedback) {
     return (
       <Card>
         <View style={styles.row}>
@@ -104,26 +104,10 @@ export default function VerificationCard({ onOpenConsent }: Props) {
   }
 
   const ready = Boolean(facePhoto?.base64 && idPhoto?.base64 && consented);
+  const feedback = state.status === 'pending' ? state.photoFeedback : null;
 
-  return (
-    <Card>
-      <View style={styles.row}>
-        <ShieldAlert
-          size={20}
-          strokeWidth={1.75}
-          color={state.status === 'rejected' ? colors.danger : colors.textMuted}
-        />
-        <CardTitle style={{ flex: 1 }}>
-          {state.status === 'rejected' ? 'Verificación rechazada' : 'Verifica tu identidad'}
-        </CardTitle>
-        <Tag variant={state.status === 'rejected' ? 'danger' : 'neutral'}>Opcional</Tag>
-      </View>
-      <CardMeta>
-        {state.status === 'rejected'
-          ? 'No pudimos confirmar tu identidad con las fotos anteriores. Puedes intentarlo de nuevo con fotos más claras.'
-          : 'Es opcional, y le da confianza a quien vea tu página: muestra una insignia de identidad verificada. Tu página se publica igual sin ella.'}
-      </CardMeta>
-
+  const form = (submitLabel: string) => (
+    <>
       <View style={styles.photos}>
         <View style={styles.slot}>
           <Text style={styles.slotLabel}>Tu rostro</Text>
@@ -156,11 +140,60 @@ export default function VerificationCard({ onOpenConsent }: Props) {
       {error && <Notice tone="danger">{error}</Notice>}
 
       <Button variant="secondary" disabled={busy || !ready} onPress={() => void submit()}>
-        {busy ? 'Enviando…' : 'Enviar para revisión'}
+        {busy ? 'Enviando…' : submitLabel}
       </Button>
+    </>
+  );
+
+  // Pending, but the automatic comparison found a problem the business
+  // can fix: say which, and offer the same form to send new photos. The
+  // review still happens either way — a person looks at them.
+  if (feedback) {
+    return (
+      <Card>
+        <View style={styles.row}>
+          <ShieldAlert size={20} strokeWidth={1.75} color={colors.warning} />
+          <CardTitle style={{ flex: 1 }}>Revisa tus fotos</CardTitle>
+          <Tag variant="warning">Revisando</Tag>
+        </View>
+        <Notice tone="warning">{FEEDBACK[feedback]}</Notice>
+        {form('Enviar fotos nuevas')}
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <View style={styles.row}>
+        <ShieldAlert
+          size={20}
+          strokeWidth={1.75}
+          color={state.status === 'rejected' ? colors.danger : colors.textMuted}
+        />
+        <CardTitle style={{ flex: 1 }}>
+          {state.status === 'rejected' ? 'Verificación rechazada' : 'Verifica tu identidad'}
+        </CardTitle>
+        <Tag variant={state.status === 'rejected' ? 'danger' : 'neutral'}>Opcional</Tag>
+      </View>
+      <CardMeta>
+        {state.status === 'rejected'
+          ? 'No pudimos confirmar tu identidad con las fotos anteriores. Puedes intentarlo de nuevo con fotos más claras.'
+          : 'Es opcional, y le da confianza a quien vea tu página: muestra una insignia de identidad verificada. Tu página se publica igual sin ella.'}
+      </CardMeta>
+
+      {form(state.status === 'rejected' ? 'Enviar fotos nuevas' : 'Enviar para revisión')}
     </Card>
   );
 }
+
+const FEEDBACK: Record<NonNullable<MyVerification['photoFeedback']>, string> = {
+  retake_selfie:
+    'No logramos ver bien tu cara en la foto. Tómala de frente, con buena luz, sin lentes oscuros ni gorra, y envíala de nuevo.',
+  retake_id:
+    'No logramos ver la foto de tu identificación. Tómala completa, enfocada y sin reflejos, y envíala de nuevo.',
+  mismatch:
+    'Tu cara no parece coincidir con la foto de tu identificación. Si subiste una foto equivocada, envía otras. Si son correctas (por ejemplo, la credencial es de hace años), no hagas nada: una persona las va a revisar.',
+};
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: space.s2 },
