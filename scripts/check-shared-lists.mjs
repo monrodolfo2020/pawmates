@@ -43,6 +43,7 @@ const PAIRS = [
   ['Periodos de cobro', FRONTEND.client, 'BILLING_PERIODS', BACKEND.billing, 'BILLING_PERIODS'],
   ['Plantillas de página', FRONTEND.client, 'PAGE_TEMPLATES', BACKEND.pageDesign, 'PAGE_TEMPLATES'],
   ['Tipografías de página', FRONTEND.client, 'PAGE_FONTS', BACKEND.pageDesign, 'PAGE_FONTS'],
+  ['Tamaños de texto de página', FRONTEND.client, 'PAGE_TEXT_SIZES', BACKEND.pageDesign, 'PAGE_TEXT_SIZES'],
   ['Secciones de página', FRONTEND.client, 'PAGE_SECTIONS', BACKEND.pageDesign, 'PAGE_SECTIONS'],
   ['Bloques de página', FRONTEND.client, 'PAGE_BLOCK_TYPES', BACKEND.pageDesign, 'PAGE_BLOCK_TYPES'],
   ['Documentos legales', FRONTEND.client, 'LEGAL_DOCUMENTS', BACKEND.legal, 'LEGAL_DOCUMENTS'],

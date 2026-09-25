@@ -86,6 +86,7 @@ test.describe('Registro de un negocio', () => {
     await page.getByRole('checkbox').nth(1).click();
     await create.click();
 
-    await expect(page.getByText('Verifica tu correo')).toBeVisible();
+    await expect(page.getByText('Verifica tu correo', { exact: true })).toBeVisible();
+    await expect(page.getByText('¡Listo! Registramos Veterinaria Pasos')).toBeVisible();
   });
 });

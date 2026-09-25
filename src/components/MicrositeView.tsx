@@ -10,7 +10,7 @@ import {
   isAddedBlock,
   isBookable,
 } from '../api/client';
-import { fonts, radius, space } from '../theme/tokens';
+import { fonts, pageFonts, radius, space } from '../theme/tokens';
 import { micrositeUrl, whatsappUrl } from '../utils/contactLinks';
 import { reservationPath } from '../navigation/reservationIntent';
 
@@ -40,7 +40,12 @@ export default function MicrositeView({ business, design, compact = false, editi
   // editor's frame is scaled down to match.
   const scale = compact ? 0.82 : 1;
 
-  const heading = design.font === 'display' ? fonts.display : fonts.bodyBold;
+  const face = pageFonts[design.font] ?? pageFonts.display;
+  const heading = face.family;
+  // "Grande" enlarges every text on the page, titles a little less.
+  const big = design.textSize === 'large';
+  const ts = scale * (big ? 1.15 : 1);
+  const hs = scale * (big ? 1.08 : 1);
   const cover = design.cover ?? business.photos[0] ?? business.photo;
   // Whichever photo became the cover shouldn't repeat inside the gallery.
   const gallery = business.photos.filter((uri) => uri !== cover);
@@ -59,7 +64,7 @@ export default function MicrositeView({ business, design, compact = false, editi
   const muted = (opacity: number) => ({ color: design.textColor, opacity });
 
   const sectionTitle = (text: string) => (
-    <Text style={[styles.sectionTitle, { fontFamily: heading, color: design.textColor, fontSize: (design.font === 'display' ? 23 : 18) * scale }]}>
+    <Text style={[styles.sectionTitle, { fontFamily: heading, color: design.textColor, fontSize: face.section * hs }]}>
       {text}
     </Text>
   );
@@ -68,14 +73,14 @@ export default function MicrositeView({ business, design, compact = false, editi
     switch (id) {
       case 'about':
         return business.bio ? (
-          <Text key={id} style={[styles.body, muted(0.85), { fontSize: 14 * scale }]}>{business.bio}</Text>
+          <Text key={id} style={[styles.body, muted(0.85), { fontSize: 14 * ts }]}>{business.bio}</Text>
         ) : null;
 
       case 'services':
         return business.plansOffered ? (
           <View key={id} style={styles.section}>
             {sectionTitle('Servicios')}
-            <Text style={[styles.body, muted(0.85), { paddingHorizontal: 0, fontSize: 14 * scale }]}>
+            <Text style={[styles.body, muted(0.85), { paddingHorizontal: 0, fontSize: 14 * ts }]}>
               {business.plansOffered}
             </Text>
           </View>
@@ -104,7 +109,7 @@ export default function MicrositeView({ business, design, compact = false, editi
             {(business.publicAddress || business.serviceArea) && (
               <View style={styles.infoRow}>
                 <MapPin size={16 * scale} strokeWidth={1.5} color={design.primaryColor} />
-                <Text style={[styles.infoText, muted(0.85), { fontSize: 13.5 * scale }]}>
+                <Text style={[styles.infoText, muted(0.85), { fontSize: 13.5 * ts }]}>
                   {business.publicAddress ?? `Zona de servicio: ${business.serviceArea}`}
                 </Text>
               </View>
@@ -112,7 +117,7 @@ export default function MicrositeView({ business, design, compact = false, editi
             {business.hours && (
               <View style={styles.infoRow}>
                 <Clock size={16 * scale} strokeWidth={1.5} color={design.primaryColor} />
-                <Text style={[styles.infoText, muted(0.85), { fontSize: 13.5 * scale }]}>{business.hours}</Text>
+                <Text style={[styles.infoText, muted(0.85), { fontSize: 13.5 * ts }]}>{business.hours}</Text>
               </View>
             )}
           </View>
@@ -125,11 +130,11 @@ export default function MicrositeView({ business, design, compact = false, editi
             {design.testimonials.map((t, i) => (
               <View key={i} style={[styles.testimonial, { borderLeftColor: design.primaryColor }]}>
                 <Quote size={14 * scale} strokeWidth={2} color={design.primaryColor} />
-                <Text style={[styles.body, muted(0.85), { paddingHorizontal: 0, fontSize: 13.5 * scale }]}>
+                <Text style={[styles.body, muted(0.85), { paddingHorizontal: 0, fontSize: 13.5 * ts }]}>
                   {t.text}
                 </Text>
                 {!!t.author && (
-                  <Text style={[styles.testimonialAuthor, muted(0.55), { fontSize: 12 * scale }]}>
+                  <Text style={[styles.testimonialAuthor, muted(0.55), { fontSize: 12 * ts }]}>
                     — {t.author}
                   </Text>
                 )}
@@ -148,7 +153,7 @@ export default function MicrositeView({ business, design, compact = false, editi
             onPress={() => void Linking.openURL(mapUrl)}
           >
             <Navigation size={16 * scale} strokeWidth={2} color={design.primaryColor} />
-            <Text style={[styles.outlineButtonText, { color: design.primaryColor, fontSize: 14 * scale }]}>
+            <Text style={[styles.outlineButtonText, { color: design.primaryColor, fontSize: 14 * ts }]}>
               Cómo llegar
             </Text>
           </Pressable>
@@ -171,8 +176,8 @@ export default function MicrositeView({ business, design, compact = false, editi
             <Text
               style={
                 canReserve
-                  ? [styles.outlineButtonText, { color: design.primaryColor, fontSize: 14 * scale }]
-                  : [styles.ctaText, { fontSize: 15 * scale }]
+                  ? [styles.outlineButtonText, { color: design.primaryColor, fontSize: 14 * ts }]
+                  : [styles.ctaText, { fontSize: 15 * ts }]
               }
             >
               Escríbenos por WhatsApp
@@ -207,7 +212,7 @@ export default function MicrositeView({ business, design, compact = false, editi
         return d.title || d.subtitle ? (
           <View style={[styles.hero, { backgroundColor: design.primaryColor + '14', borderColor: design.primaryColor + '33' }]}>
             {!!d.title && (
-              <Text style={{ fontFamily: heading, color: design.textColor, fontSize: (design.font === 'display' ? 30 : 24) * scale, lineHeight: 34 * scale }}>
+              <Text style={{ fontFamily: heading, color: design.textColor, fontSize: face.hero * hs, lineHeight: face.hero * 1.15 * hs }}>
                 {d.title}
               </Text>
             )}
@@ -230,10 +235,10 @@ export default function MicrositeView({ business, design, compact = false, editi
             {rows.map((it, i) => (
               <View key={i} style={[styles.priceRow, i > 0 && { borderTopColor: design.textColor + '1A', borderTopWidth: 1 }]}>
                 <View style={{ flex: 1, gap: 2 }}>
-                  <Text style={[styles.rowName, { color: design.textColor, fontSize: 14.5 * scale }]}>{it.name}</Text>
-                  {!!it.detail && <Text style={[styles.meta, muted(0.65), { fontSize: 13 * scale }]}>{it.detail}</Text>}
+                  <Text style={[styles.rowName, { color: design.textColor, fontSize: 14.5 * ts }]}>{it.name}</Text>
+                  {!!it.detail && <Text style={[styles.meta, muted(0.65), { fontSize: 13 * ts }]}>{it.detail}</Text>}
                 </View>
-                {!!it.price && <Text style={[styles.price, { color: design.textColor, fontSize: 15 * scale }]}>{it.price}</Text>}
+                {!!it.price && <Text style={[styles.price, { color: design.textColor, fontSize: 15 * ts }]}>{it.price}</Text>}
               </View>
             ))}
           </View>
@@ -245,7 +250,7 @@ export default function MicrositeView({ business, design, compact = false, editi
             {title('Preguntas frecuentes')}
             {rows.map((it, i) => (
               <View key={i} style={{ gap: 2, marginTop: i ? space.s2 : 0 }}>
-                <Text style={[styles.rowName, { color: design.textColor, fontSize: 14.5 * scale }]}>{it.name}</Text>
+                <Text style={[styles.rowName, { color: design.textColor, fontSize: 14.5 * ts }]}>{it.name}</Text>
                 {!!it.detail && bodyText(it.detail, 13.5)}
               </View>
             ))}
@@ -260,13 +265,13 @@ export default function MicrositeView({ business, design, compact = false, editi
               {rows.map((it, i) => (
                 <View key={i} style={styles.teamMember}>
                   <View style={[styles.teamAvatar, { backgroundColor: design.primaryColor + '1F', width: 44 * scale, height: 44 * scale }]}>
-                    <Text style={{ fontFamily: fonts.bodyBold, color: design.primaryColor, fontSize: 16 * scale }}>
+                    <Text style={{ fontFamily: fonts.bodyBold, color: design.primaryColor, fontSize: 16 * ts }}>
                       {(it.name.trim()[0] ?? '?').toUpperCase()}
                     </Text>
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={[styles.rowName, { color: design.textColor, fontSize: 14 * scale }]}>{it.name}</Text>
-                    {!!it.detail && <Text style={[styles.meta, muted(0.65), { fontSize: 12.5 * scale }]}>{it.detail}</Text>}
+                    <Text style={[styles.rowName, { color: design.textColor, fontSize: 14 * ts }]}>{it.name}</Text>
+                    {!!it.detail && <Text style={[styles.meta, muted(0.65), { fontSize: 12.5 * ts }]}>{it.detail}</Text>}
                   </View>
                 </View>
               ))}
@@ -284,11 +289,11 @@ export default function MicrositeView({ business, design, compact = false, editi
           <View style={[styles.promo, { borderColor: design.primaryColor, backgroundColor: design.primaryColor + '0F' }]}>
             <View style={styles.infoRow}>
               <Tag size={16 * scale} strokeWidth={2} color={design.primaryColor} />
-              <Text style={[styles.rowName, { color: design.textColor, fontSize: 16 * scale, flex: 1 }]}>{d.title}</Text>
+              <Text style={[styles.rowName, { color: design.textColor, fontSize: 16 * ts, flex: 1 }]}>{d.title}</Text>
             </View>
             {!!d.body && bodyText(d.body)}
             {!!d.until && (
-              <Text style={[styles.meta, { color: design.primaryColor, fontSize: 12.5 * scale }]}>
+              <Text style={[styles.meta, { color: design.primaryColor, fontSize: 12.5 * ts }]}>
                 {expired ? 'Terminó el ' : 'Válida hasta el '}
                 {formatDay(d.until)}
               </Text>
@@ -313,7 +318,7 @@ export default function MicrositeView({ business, design, compact = false, editi
                 ) : (
                   <AtSign size={14 * scale} strokeWidth={2} color={design.primaryColor} />
                 )}
-                <Text style={[styles.outlineButtonText, { color: design.primaryColor, fontSize: 13.5 * scale }]}>{l.label}</Text>
+                <Text style={[styles.outlineButtonText, { color: design.primaryColor, fontSize: 13.5 * ts }]}>{l.label}</Text>
               </Pressable>
             ))}
           </View>
@@ -329,8 +334,8 @@ export default function MicrositeView({ business, design, compact = false, editi
           >
             <CirclePlay size={36 * scale} strokeWidth={1.5} color={design.primaryColor} />
             <View style={{ flex: 1 }}>
-              <Text style={[styles.rowName, { color: design.textColor, fontSize: 15 * scale }]}>{d.title || 'Mira nuestro video'}</Text>
-              <Text style={[styles.meta, muted(0.6), { fontSize: 12.5 * scale }]}>{videoHost(d.url)}</Text>
+              <Text style={[styles.rowName, { color: design.textColor, fontSize: 15 * ts }]}>{d.title || 'Mira nuestro video'}</Text>
+              <Text style={[styles.meta, muted(0.6), { fontSize: 12.5 * ts }]}>{videoHost(d.url)}</Text>
             </View>
           </Pressable>
         ) : null;
@@ -382,16 +387,16 @@ export default function MicrositeView({ business, design, compact = false, editi
             resizeMode="cover"
           />
         )}
-        <Text style={[styles.name, { fontFamily: heading, color: design.textColor, fontSize: (design.font === 'display' ? 38 : 30) * scale }]}>
+        <Text style={[styles.name, { fontFamily: heading, color: design.textColor, fontSize: face.name * hs }]}>
           {business.name}
         </Text>
-        <Text style={[styles.meta, muted(0.7), { fontSize: 14.5 * scale }]}>
+        <Text style={[styles.meta, muted(0.7), { fontSize: 14.5 * ts }]}>
           {[CATEGORY_LABELS_SINGULAR[business.category], business.specialty].filter(Boolean).join(' · ')}
         </Text>
         {(business.price || business.identityVerified) && (
           <View style={styles.badges}>
             {business.price && (
-              <Text style={[styles.price, { color: design.textColor, fontSize: 15 * scale }]}>
+              <Text style={[styles.price, { color: design.textColor, fontSize: 15 * ts }]}>
                 {money(business.price.amount, business.price.currency)}
                 <Text style={[styles.meta, muted(0.7)]}> por paseo</Text>
               </Text>
@@ -399,7 +404,7 @@ export default function MicrositeView({ business, design, compact = false, editi
             {business.identityVerified && (
               <View style={styles.verified}>
                 <ShieldCheck size={15 * scale} strokeWidth={2} color={design.primaryColor} />
-                <Text style={[styles.verifiedText, { color: design.primaryColor, fontSize: 13 * scale }]}>
+                <Text style={[styles.verifiedText, { color: design.primaryColor, fontSize: 13 * ts }]}>
                   Identidad verificada
                 </Text>
               </View>
@@ -418,7 +423,7 @@ export default function MicrositeView({ business, design, compact = false, editi
           onPress={() => openReservation(business.slug!, compact)}
         >
           <CalendarCheck size={18 * scale} strokeWidth={2} color="#fff" />
-          <Text style={[styles.ctaText, { fontSize: 15 * scale }]}>Reservar en PawMates</Text>
+          <Text style={[styles.ctaText, { fontSize: 15 * ts }]}>Reservar en PawMates</Text>
         </Pressable>
       )}
 
@@ -426,7 +431,7 @@ export default function MicrositeView({ business, design, compact = false, editi
 
       <View style={[styles.footer, { borderTopColor: design.textColor + '22' }]}>
         <PawPrint size={14 * scale} strokeWidth={1.5} color={design.primaryColor} />
-        <Text style={[styles.footerText, muted(0.5), { fontSize: 12 * scale }]}>
+        <Text style={[styles.footerText, muted(0.5), { fontSize: 12 * ts }]}>
           Página creada con PawMates
         </Text>
       </View>

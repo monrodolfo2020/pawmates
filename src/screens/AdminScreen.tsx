@@ -91,6 +91,7 @@ export default function AdminScreen({ navigation }: Props) {
 
         {section === 'cuentas' && (
           <View style={{ gap: space.s2 }}>
+            <EmailTestCard />
             <Text style={styles.h5}>Cuentas ({accounts?.length ?? '…'})</Text>
             {accounts?.map((a) => (
               <AdminAccountCard key={a.id} account={a} selfId={s.accountId} onChanged={load} />
@@ -180,6 +181,59 @@ export default function AdminScreen({ navigation }: Props) {
  * to hand-craft a request with a token is how a security fix quietly
  * never gets applied.
  */
+type EmailTestResult = Awaited<ReturnType<typeof api.adminEmailTest>>;
+
+/**
+ * "The reset link never arrived": the app keeps quiet when an email fails
+ * (so it never reveals which addresses have an account), which makes this
+ * the place to find out whether mail goes out at all.
+ */
+function EmailTestCard() {
+  const s = useAppState();
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<EmailTestResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const test = async () => {
+    if (!s.token) return;
+    setBusy(true);
+    setError(null);
+    try {
+      setResult(await api.adminEmailTest(s.token));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo hacer la prueba.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardTitle>Correos de la app</CardTitle>
+      <CardMeta>
+        Códigos de verificación, restablecer contraseña, avisos. Manda un correo de prueba a tu propia
+        dirección para confirmar que están saliendo.
+      </CardMeta>
+      {result?.sent && (
+        <Notice tone={result.usingTestSender ? 'warning' : 'success'} title={`Enviado a ${result.to}`}>
+          {result.usingTestSender
+            ? `Salió con el remitente de pruebas de Resend (${result.from}), que solo entrega a tu propio correo: a los demás usuarios no les llega nada. Configura EMAIL_FROM en Vercel con tu dominio verificado, por ejemplo "PawMates <notificaciones@bosquedelsaber.com>", y haz Redeploy.`
+            : `Remitente: ${result.from}. Si no lo ves en unos minutos, revisa spam.`}
+        </Notice>
+      )}
+      {result && !result.sent && (
+        <Notice tone="danger" title="No se pudo enviar">
+          {`${result.reason ?? 'Error desconocido.'} Remitente configurado: ${result.from}.`}
+        </Notice>
+      )}
+      {error && <Notice tone="danger">{error}</Notice>}
+      <Button disabled={busy} onPress={() => void test()}>
+        {busy ? 'Enviando…' : 'Enviar correo de prueba'}
+      </Button>
+    </Card>
+  );
+}
+
 type ConnectionResult = Awaited<ReturnType<typeof api.adminTestFaceMatchConnection>>;
 
 /**

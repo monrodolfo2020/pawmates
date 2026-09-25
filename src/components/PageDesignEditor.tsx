@@ -8,12 +8,14 @@ import {
   PAGE_FONTS,
   PAGE_TEMPLATES,
   PageDesign,
-  PageFont,
+  PAGE_TEXT_SIZES,
+  PageTextSize,
+  TEXT_SIZE_LABELS,
   PageTemplate,
   PageTestimonial,
   TEMPLATE_LABELS,
 } from '../api/client';
-import { colors, fonts, radius, space } from '../theme/tokens';
+import { colors, fonts, pageFonts, radius, space } from '../theme/tokens';
 
 type Props = {
   design: PageDesign;
@@ -176,8 +178,31 @@ export default function PageDesignEditor({ design, onChange }: Props) {
 
       <View style={styles.group}>
         <CardTitle>Tipografía de los títulos</CardTitle>
-        <Chips options={PAGE_FONTS} labels={FONT_LABELS} value={design.font}
-          onChange={(font: PageFont) => set({ font })} />
+        <View style={styles.chipRow}>
+          {PAGE_FONTS.map((font) => {
+            const selected = font === design.font;
+            return (
+              <Pressable
+                key={font}
+                accessibilityRole="button"
+                accessibilityState={{ selected }}
+                onPress={() => set({ font })}
+                style={[styles.fontChip, selected && styles.fontChipSelected]}
+              >
+                <Text style={{ fontFamily: pageFonts[font].family, fontSize: pageFonts[font].section, color: colors.text }}>
+                  {FONT_LABELS[font]}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+
+      <View style={styles.group}>
+        <CardTitle>Tamaño del texto</CardTitle>
+        <Chips options={PAGE_TEXT_SIZES} labels={TEXT_SIZE_LABELS} value={design.textSize ?? 'normal'}
+          onChange={(textSize: PageTextSize) => set({ textSize })} />
+        <CardMeta>Grande ayuda a quien lee desde un teléfono pequeño o sin lentes.</CardMeta>
       </View>
 
       <View style={styles.group}>
@@ -295,6 +320,11 @@ const styles = StyleSheet.create({
   },
   chipSelected: { backgroundColor: colors.accent, borderColor: colors.accent },
   chipText: { fontFamily: fonts.bodyMedium, fontSize: 13.5, color: colors.text },
+  fontChip: {
+    paddingHorizontal: space.s4, paddingVertical: space.s2, minHeight: 48, justifyContent: 'center',
+    borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface,
+  },
+  fontChipSelected: { borderColor: colors.text, borderWidth: 2, paddingHorizontal: space.s4 - 1 },
   chipTextSelected: { color: colors.onAccent, fontFamily: fonts.bodySemiBold },
 
   colorBlock: { gap: space.s2 },

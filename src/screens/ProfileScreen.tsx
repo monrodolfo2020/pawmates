@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
-import { Plus } from 'lucide-react-native';
+import { ChevronRight, Plus } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
@@ -8,6 +8,10 @@ import ScreenHeader from '../components/ScreenHeader';
 import Card from '../components/Card';
 import Button from '../components/Button';
 import Avatar from '../components/Avatar';
+import Notice from '../components/Notice';
+import Sheet from '../components/Sheet';
+import TextField from '../components/TextField';
+import { api } from '../api/client';
 import { colors, fonts, radius, space, type } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
 
@@ -21,6 +25,40 @@ const ROLE_LABEL: Record<string, string> = {
 
 export default function ProfileScreen({ navigation }: Props) {
   const s = useAppState();
+  const [sheet, setSheet] = useState<'name' | 'password' | null>(null);
+  const [name, setName] = useState('');
+  const [current, setCurrent] = useState('');
+  const [next, setNext] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState<string | null>(null);
+
+  const open = (which: 'name' | 'password') => {
+    setError(null);
+    setName(s.name ?? '');
+    setCurrent('');
+    setNext('');
+    setConfirm('');
+    setSheet(which);
+  };
+
+  const run = async (work: () => Promise<void>, message: string) => {
+    setBusy(true);
+    setError(null);
+    try {
+      await work();
+      setSheet(null);
+      setDone(message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo guardar.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const mismatch = confirm.length > 0 && next !== confirm;
+  const passwordReady = current.length > 0 && next.length >= 8 && next === confirm;
 
   return (
     <ScreenContainer>
@@ -33,7 +71,10 @@ export default function ProfileScreen({ navigation }: Props) {
             <Text style={type.small}>{s.email}</Text>
             <Text style={type.meta}>{s.roles.map((role) => ROLE_LABEL[role] ?? role).join(' · ')}</Text>
           </View>
+          <Button size="sm" onPress={() => open('name')}>Editar</Button>
         </Card>
+
+        {done && <Notice tone="success">{done}</Notice>}
 
         {s.roles.includes('owner') && (
           <View style={styles.section}>
@@ -105,10 +146,67 @@ export default function ProfileScreen({ navigation }: Props) {
           </Text>
         </View>
 
+        <View style={styles.section}>
+          <Text style={type.section}>Seguridad</Text>
+          <Card row onPress={() => open('password')}>
+            <View style={{ flex: 1, gap: 2 }}>
+              <Text style={type.cardTitle}>Cambiar contraseña</Text>
+              <Text style={type.meta}>Necesitas tu contraseña actual.</Text>
+            </View>
+            <ChevronRight size={18} strokeWidth={1.75} color={colors.textFaint} />
+          </Card>
+          <Text style={type.meta}>
+            Para cambiar tu correo escríbenos a rmonterrozag@gmail.com desde el correo actual.
+          </Text>
+        </View>
+
         <Button variant="danger" block onPress={() => void s.logout()}>
           Cerrar sesión
         </Button>
       </ScrollView>
+
+      <Sheet
+        visible={sheet === 'name'}
+        title="Tu nombre"
+        onClose={() => setSheet(null)}
+        footer={
+          <Button variant="primary" block disabled={busy || !name.trim()}
+            onPress={() => void run(() => s.updateName(name.trim()), 'Guardamos tu nombre.')}>
+            {busy ? 'Guardando…' : 'Guardar'}
+          </Button>
+        }
+      >
+        <TextField label="Nombre" value={name} onChangeText={setName} placeholder="Tu nombre"
+          autoCapitalize="words" maxLength={80} />
+        {error && <Notice tone="danger">{error}</Notice>}
+      </Sheet>
+
+      <Sheet
+        visible={sheet === 'password'}
+        title="Cambiar contraseña"
+        onClose={() => setSheet(null)}
+        footer={
+          <Button variant="primary" block disabled={busy || !passwordReady}
+            onPress={() =>
+              void run(async () => {
+                if (!s.token) return;
+                await api.changePassword(s.token, current, next);
+              }, 'Cambiamos tu contraseña.')
+            }>
+            {busy ? 'Guardando…' : 'Cambiar contraseña'}
+          </Button>
+        }
+      >
+        <TextField label="Contraseña actual" value={current} onChangeText={setCurrent} secureTextEntry placeholder="••••••••" />
+        <TextField label="Contraseña nueva" value={next} onChangeText={setNext} secureTextEntry placeholder="Mínimo 8 caracteres" />
+        <TextField label="Confirma la contraseña nueva" value={confirm} onChangeText={setConfirm} secureTextEntry
+          placeholder="Escríbela otra vez" />
+        {mismatch && <Notice tone="danger">Las contraseñas no coinciden.</Notice>}
+        {error && <Notice tone="danger">{error}</Notice>}
+        <Text style={type.meta}>
+          ¿No recuerdas la actual? Cierra sesión y usa "¿Olvidaste tu contraseña?" al iniciar sesión.
+        </Text>
+      </Sheet>
     </ScreenContainer>
   );
 }

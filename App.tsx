@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import { View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -12,6 +12,10 @@ import {
   Figtree_700Bold,
 } from '@expo-google-fonts/figtree';
 import { InstrumentSerif_400Regular } from '@expo-google-fonts/instrument-serif';
+// Headline faces a business can choose for its own page (see pageFonts).
+import { Nunito_800ExtraBold } from '@expo-google-fonts/nunito';
+import { PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
+import { Caveat_700Bold } from '@expo-google-fonts/caveat';
 import RootNavigator from './src/navigation/RootNavigator';
 import { AppStateProvider, useAppState } from './src/state/AppState';
 import { colors } from './src/theme/tokens';
@@ -45,6 +49,9 @@ export default function App() {
     Figtree_600SemiBold,
     Figtree_700Bold,
     InstrumentSerif_400Regular,
+    Nunito_800ExtraBold,
+    PlayfairDisplay_700Bold,
+    Caveat_700Bold,
   });
 
   return (

@@ -65,6 +65,18 @@ export default function VerifyEmailScreen({ navigation }: Props) {
   return (
     <ScreenContainer>
       <View style={styles.body}>
+        {/* Right after a business signs up, this is its first screen: say
+            plainly that the registration went through, and what's next. */}
+        {s.justRegisteredBusiness && !verified && (
+          <Notice tone="success" title={`¡Listo! Registramos ${s.justRegisteredBusiness}`} style={styles.welcome}>
+            <Text style={styles.welcomeText}>
+              Te mandamos un correo con los siguientes pasos:{'\n'}
+              1. Verifica tu correo con el código de abajo.{'\n'}
+              2. Completa tu página desde tu panel.{'\n'}
+              3. Revisamos tu negocio y te avisamos por correo, con tu enlace y tu QR, cuando esté en línea.
+            </Text>
+          </Notice>
+        )}
         <MailCheck size={40} strokeWidth={1.25} color={colors.text} />
         <Text style={styles.title}>Verifica tu correo</Text>
         {verified ? (
@@ -116,4 +128,6 @@ export default function VerifyEmailScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   body: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.s3, paddingHorizontal: space.s6 },
   title: { ...type.title },
+  welcome: { alignSelf: 'stretch' },
+  welcomeText: { ...type.small, color: colors.text, lineHeight: 21 },
 });

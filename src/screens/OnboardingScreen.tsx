@@ -13,7 +13,7 @@ import RadioRow from '../components/RadioRow';
 import Button from '../components/Button';
 import { colors, radius, space } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
-import { sizeOptions, temperamentOptions, vaccineOptions } from '../state/mockData';
+import { careOptions, sizeOptions, temperamentOptions, vaccineOptions } from '../state/mockData';
 import Notice from '../components/Notice';
 import BottomBar from '../components/BottomBar';
 import ScreenHeader from '../components/ScreenHeader';
@@ -62,6 +62,9 @@ export default function OnboardingScreen({ navigation, route }: Props) {
       setSaving(false);
     }
   };
+
+  // Every vaccine on the list: shown as its own box, and ticking it ticks all.
+  const fullScheme = vaccineOptions.every((v) => s.vaccines.includes(v));
 
   const title = isEditingExisting ? 'Tu mascota' : isForcedFirstTime ? 'Cuéntanos de tu mascota' : 'Agregar mascota';
   const saveLabel = isEditingExisting ? 'Guardar cambios' : isForcedFirstTime ? 'Guardar y continuar' : 'Agregar mascota';
@@ -117,7 +120,34 @@ export default function OnboardingScreen({ navigation, route }: Props) {
 
         <Field label="Vacunas al día">
           <View>
+            <RadioRow
+              label="Esquema completo"
+              square
+              selected={fullScheme}
+              onPress={() =>
+                s.setVaccines(
+                  fullScheme
+                    ? s.vaccines.filter((v) => !vaccineOptions.includes(v))
+                    : [...new Set([...s.vaccines, ...vaccineOptions])],
+                )
+              }
+            />
+            <View style={styles.divider} />
             {vaccineOptions.map((opt) => (
+              <RadioRow
+                key={opt}
+                label={opt}
+                square
+                selected={s.vaccines.includes(opt)}
+                onPress={() => s.toggleVaccine(opt)}
+              />
+            ))}
+          </View>
+        </Field>
+
+        <Field label="Cuidados">
+          <View>
+            {careOptions.map((opt) => (
               <RadioRow
                 key={opt}
                 label={opt}
@@ -151,4 +181,5 @@ const styles = StyleSheet.create({
   petRow: { flexDirection: 'row', gap: space.s4, alignItems: 'center' },
   petPhoto: { width: 96, height: 96, borderRadius: radius.pill },
   wrapRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s2 },
+  divider: { height: 1, backgroundColor: colors.divider, marginVertical: space.s1 },
 });

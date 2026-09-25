@@ -57,6 +57,17 @@ export const fonts = {
   bodyBold: 'Figtree_700Bold',
 };
 
+/** The headline faces a business can pick for its own page (PageFont),
+ * with the sizes each needs to look the same size as the others — a
+ * script face reads small, a serif reads large. */
+export const pageFonts: Record<string, { family: string; name: number; section: number; hero: number }> = {
+  display: { family: 'InstrumentSerif_400Regular', name: 38, section: 23, hero: 30 },
+  soft: { family: 'Figtree_700Bold', name: 30, section: 18, hero: 24 },
+  rounded: { family: 'Nunito_800ExtraBold', name: 31, section: 19, hero: 25 },
+  elegant: { family: 'PlayfairDisplay_700Bold', name: 32, section: 20, hero: 26 },
+  handwritten: { family: 'Caveat_700Bold', name: 42, section: 26, hero: 34 },
+};
+
 // Ready-made text styles, so screens don't invent sizes.
 export const type = {
   display: { fontFamily: fonts.display, fontSize: 34, lineHeight: 38, color: colors.text },

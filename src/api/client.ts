@@ -391,12 +391,23 @@ export const TEMPLATE_LABELS: Record<PageTemplate, string> = {
   minimal: 'Minimalista',
 };
 
-export const PAGE_FONTS = ['display', 'soft'] as const;
+export const PAGE_FONTS = ['display', 'soft', 'rounded', 'elegant', 'handwritten'] as const;
 export type PageFont = (typeof PAGE_FONTS)[number];
 
 export const FONT_LABELS: Record<PageFont, string> = {
-  display: 'Titulares con carácter',
-  soft: 'Titulares suaves',
+  display: 'Editorial',
+  soft: 'Moderna',
+  rounded: 'Redondeada',
+  elegant: 'Elegante',
+  handwritten: 'Manuscrita',
+};
+
+export const PAGE_TEXT_SIZES = ['normal', 'large'] as const;
+export type PageTextSize = (typeof PAGE_TEXT_SIZES)[number];
+
+export const TEXT_SIZE_LABELS: Record<PageTextSize, string> = {
+  normal: 'Normal',
+  large: 'Grande',
 };
 
 export const PAGE_SECTIONS = [
@@ -496,6 +507,7 @@ export interface PageTestimonial {
 export interface PageDesign {
   template: PageTemplate;
   font: PageFont;
+  textSize: PageTextSize;
   primaryColor: string;
   backgroundColor: string;
   textColor: string;
@@ -686,6 +698,18 @@ export const api = {
 
   /** No auth token — this is how a locked-out person starts the flow.
    * Always resolves (backend never reveals whether the email exists). */
+  updateMe(token: string, body: { name: string }) {
+    return request<{ id: string; name: string }>('/v1/me', { method: 'PATCH', token, body });
+  },
+
+  changePassword(token: string, currentPassword: string, newPassword: string) {
+    return request<{ changed: boolean }>('/v1/me/password', {
+      method: 'POST',
+      token,
+      body: { currentPassword, newPassword },
+    });
+  },
+
   forgotPassword(email: string) {
     return request<{ sent: boolean }>('/v1/auth/forgot-password', {
       method: 'POST',
@@ -855,6 +879,14 @@ export const api = {
 
   adminListAccounts(token: string) {
     return request<AdminAccount[]>('/v1/admin/accounts', { token });
+  },
+
+  /** Sends a test email to the admin asking, through the app's sender. */
+  adminEmailTest(token: string) {
+    return request<{ sent: boolean; reason?: string; to: string; from: string; usingTestSender: boolean }>(
+      '/v1/admin/accounts/email-test',
+      { method: 'POST', token },
+    );
   },
 
   adminListVerifications(token: string) {

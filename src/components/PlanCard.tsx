@@ -161,8 +161,8 @@ export default function PlanCard({ onActivated }: Props) {
         </Button>
       ) : (
         <CardMeta>
-          Los pagos en línea todavía no están disponibles. Escríbenos para {isVip ? 'renovar' : 'contratar'}{' '}
-          tu plan y te damos un código de activación.
+          Por ahora VIP se paga por transferencia: escríbenos a rmonterrozag@gmail.com para{' '}
+          {isVip ? 'renovar' : 'contratar'} tu plan, y al confirmar tu pago te mandamos un código de activación.
         </CardMeta>
       )}
 
@@ -172,9 +172,11 @@ export default function PlanCard({ onActivated }: Props) {
         <Ticket size={18} strokeWidth={1.75} color={colors.textMuted} />
         <CardTitle style={{ flex: 1, fontSize: 15 }}>¿Tienes un código de activación?</CardTitle>
       </View>
-      {isVip && (
-        <CardMeta>Se suma al tiempo que te queda, no lo reemplaza.</CardMeta>
-      )}
+      <CardMeta>
+        Es una clave de 8 letras y números, como AB3D9K2M, que te damos cuando pagas VIP. Escríbela aquí
+        y tu plan se activa al instante por el tiempo que pagaste.
+        {isVip ? ' Si ya tienes VIP, se suma al tiempo que te queda.' : ''}
+      </CardMeta>
       <View style={styles.codeRow}>
         <TextInput
           value={code}

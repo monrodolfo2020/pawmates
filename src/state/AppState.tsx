@@ -49,6 +49,9 @@ type State = {
    * lets RootNavigator wait for the real answer instead of picking
    * Onboarding just because `pets` still holds its empty initial value. */
   petsChecked: boolean;
+  /** The business name right after a business signs up — the first screen
+   * says it's registered and what comes next. Cleared on logout. */
+  justRegisteredBusiness: string | null;
   pendingLegal: LegalDocumentType[];
   bookingId: string | null;
   bookingStatus: BookingStatus;
@@ -63,6 +66,7 @@ type Ctx = State & {
   setSize: (v: string) => void;
   toggleTemperament: (v: string) => void;
   toggleVaccine: (v: string) => void;
+  setVaccines: (vaccines: string[]) => void;
   signup: (params: {
     email: string;
     password: string;
@@ -83,6 +87,8 @@ type Ctx = State & {
   refreshPendingLegal: () => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  /** Saves the account's name and shows it everywhere right away. */
+  updateName: (name: string) => Promise<void>;
   addRole: (params: {
     role: 'owner' | 'provider';
     category?: ServiceCategory;
@@ -141,6 +147,7 @@ const initialState: State = {
   editingPetId: null,
   petsLoading: false,
   petsChecked: false,
+  justRegisteredBusiness: null,
   pendingLegal: [],
   bookingId: null,
   bookingStatus: 'idle',
@@ -256,6 +263,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           email: params.email.toLowerCase(),
           name: params.name ?? s.name,
           emailVerified: false,
+          justRegisteredBusiness:
+            params.role === 'provider' ? params.businessName?.trim() || params.name?.trim() || 'Tu negocio' : null,
         }));
       } catch (err) {
         setState((s) => ({
@@ -284,6 +293,15 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       }
     },
     [applyAuth],
+  );
+
+  const updateName = useCallback(
+    async (name: string) => {
+      if (!state.token) return;
+      const saved = await api.updateMe(state.token, { name });
+      setState((s) => ({ ...s, name: saved.name }));
+    },
+    [state.token],
   );
 
   const logout = useCallback(async () => {
@@ -429,11 +447,13 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       setSize: (v) => setState((s) => ({ ...s, size: v })),
       toggleTemperament: (v) => setState((s) => ({ ...s, temperament: toggleIn(s.temperament, v) })),
       toggleVaccine: (v) => setState((s) => ({ ...s, vaccines: toggleIn(s.vaccines, v) })),
+      setVaccines: (vaccines) => setState((s) => ({ ...s, vaccines })),
       pendingLegal: state.pendingLegal,
       refreshPendingLegal,
       signup,
       login,
       logout,
+      updateName,
       addRole,
       sendVerificationEmail,
       verifyEmail,
@@ -449,6 +469,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     signup,
     login,
     logout,
+    updateName,
     addRole,
     sendVerificationEmail,
     verifyEmail,

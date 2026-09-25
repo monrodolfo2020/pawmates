@@ -168,6 +168,22 @@ export default function BusinessProfileScreen({ navigation, route }: Props) {
               </Card>
             )}
 
+            {/* Before booking, people want to ask something: the WhatsApp
+                the business published, for walkers too (vets and the rest
+                have it as their main button below). */}
+            {bookable && waUrl && (
+              <Card row onPress={() => void Linking.openURL(waUrl)}>
+                <View style={styles.waIcon}>
+                  <Phone size={18} strokeWidth={1.75} color={colors.success} />
+                </View>
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Text style={type.cardTitle}>Escríbele por WhatsApp</Text>
+                  <Text style={type.meta}>Pregunta lo que quieras antes de reservar.</Text>
+                </View>
+                <ChevronRight size={18} strokeWidth={1.75} color={colors.textFaint} />
+              </Card>
+            )}
+
             {(provider.publicAddress || provider.hours) && (
               <View style={styles.section}>
                 {provider.publicAddress && (
@@ -267,5 +283,9 @@ const styles = StyleSheet.create({
   chatText: { flex: 1, fontFamily: fonts.bodyMedium, fontSize: 14.5, color: colors.text },
   chatTextUnread: { fontFamily: fonts.bodyBold },
   chatCardUnread: { backgroundColor: colors.accentTint, borderColor: colors.accentTintLine },
+  waIcon: {
+    width: 36, height: 36, borderRadius: radius.pill, backgroundColor: colors.successTint,
+    alignItems: 'center', justifyContent: 'center',
+  },
   chatDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.accent },
 });
