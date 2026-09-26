@@ -12,6 +12,7 @@ import Button from '../components/Button';
 import Card from '../components/Card';
 import { CardBody, CardKicker, CardMeta } from '../components/CardText';
 import Notice from '../components/Notice';
+import { formatDuration } from '../utils/services';
 import Tag from '../components/Tag';
 import { colors, fonts, radius, space, type } from '../theme/tokens';
 import {
@@ -43,7 +44,7 @@ const money = (cents: number, currency: string) => '$' + (cents / 100).toFixed(2
 const PAGE_CHECKLIST: { label: string; done: (p: MyProviderProfile) => boolean }[] = [
   { label: 'Descripción de tu negocio', done: (p) => Boolean(p.bio) },
   { label: 'Fotos del negocio', done: (p) => p.photos.length > 0 },
-  { label: 'Servicios que ofreces', done: (p) => Boolean(p.plansOffered) },
+  { label: 'Servicios que ofreces', done: (p) => Boolean(p.plansOffered) || (p.services?.length ?? 0) > 0 },
   { label: 'Dirección y horarios', done: (p) => Boolean(p.publicAddress || p.hours) },
   { label: 'WhatsApp de contacto', done: (p) => Boolean(p.whatsapp) },
 ];
@@ -171,9 +172,11 @@ export default function DashboardScreen({ navigation }: Props) {
     return (
       (isMeetGreet
         ? 'Meet & Greet — sesión de conocernos (sin costo)'
-        : firstLine
-          ? `Paseo de ${firstLine.durationValue} min`
-          : 'Paseo') + (b.ownerName ? ` · Dueño: ${b.ownerName}` : '')
+        : firstLine?.serviceName
+          ? `${firstLine.serviceName} · ${formatDuration(firstLine.durationValue)}`
+          : firstLine
+            ? `Paseo de ${formatDuration(firstLine.durationValue)}`
+            : 'Paseo') + (b.ownerName ? ` · Dueño: ${b.ownerName}` : '')
     );
   };
 

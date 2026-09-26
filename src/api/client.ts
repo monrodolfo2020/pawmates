@@ -114,6 +114,8 @@ export interface BookingSummary {
     durationValue: number;
     durationUnit: string;
     serviceTypeCode: string;
+    /** The business's service asked for, as it was named when booked. */
+    serviceName?: string | null;
   }[];
   priceBreakdown: { rateAmount: number; totalAmount: number; currency: string } | null;
 }
@@ -281,6 +283,23 @@ export function isBookable(category: ServiceCategory): boolean {
   return category === 'walker';
 }
 
+/** One entry in a business's list of services (the backend's
+ * BusinessService). Price in cents, MXN; either may be left out. */
+export interface BusinessService {
+  id: string;
+  name: string;
+  detail: string;
+  price: number | null;
+  durationMinutes: number | null;
+}
+
+/** Matches MAX_SERVICES in the backend's service-catalog.ts. */
+export const MAX_SERVICES = 20;
+
+/** A unique id for a new service, in the shape the backend accepts. */
+export const newServiceId = () =>
+  `s${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+
 export interface ProviderListing {
   accountId: string;
   name: string;
@@ -293,6 +312,7 @@ export interface ProviderListing {
   specialty: string | null;
   price: { amount: number; currency: string } | null;
   plansOffered: string | null;
+  services: BusinessService[];
   walkingSpots: string | null;
   emailVerified: boolean;
   identityVerified: boolean;
@@ -571,6 +591,7 @@ export interface MyProviderProfile {
   specialty: string | null;
   price: { amount: number; currency: string } | null;
   plansOffered: string | null;
+  services: BusinessService[];
   walkingSpots: string | null;
   address: string | null;
   idNumber: string | null;
@@ -926,6 +947,7 @@ export const api = {
     providerServiceId: string,
     durationValue: number,
     scheduledAt: string,
+    serviceId?: string,
   ) {
     return request<BookingResult>('/v1/bookings', {
       method: 'POST',
@@ -941,6 +963,7 @@ export const api = {
             durationValue,
             durationUnit: 'min',
             addressId: DEMO_ADDRESS_ID,
+            ...(serviceId ? { serviceId } : {}),
           },
         ],
       },
@@ -1125,6 +1148,7 @@ export const api = {
       priceAmount: number;
       priceCurrency: string;
       plansOffered: string;
+      services: BusinessService[];
       walkingSpots: string;
       address: string;
       idNumber: string;

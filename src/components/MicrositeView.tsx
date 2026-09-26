@@ -13,6 +13,7 @@ import {
 import { fonts, pageFonts, radius, space } from '../theme/tokens';
 import { micrositeUrl, whatsappUrl } from '../utils/contactLinks';
 import { reservationPath } from '../navigation/reservationIntent';
+import { formatDuration, pesos } from '../utils/services';
 
 type Props = {
   business: ProviderDetail;
@@ -76,15 +77,38 @@ export default function MicrositeView({ business, design, compact = false, editi
           <Text key={id} style={[styles.body, muted(0.85), { fontSize: 14 * ts }]}>{business.bio}</Text>
         ) : null;
 
-      case 'services':
-        return business.plansOffered ? (
+      case 'services': {
+        const services = business.services ?? [];
+        return services.length > 0 || business.plansOffered ? (
           <View key={id} style={styles.section}>
             {sectionTitle('Servicios')}
-            <Text style={[styles.body, muted(0.85), { paddingHorizontal: 0, fontSize: 14 * ts }]}>
-              {business.plansOffered}
-            </Text>
+            {services.map((it, i) => {
+              const cents = it.price ?? (isBookable(business.category) ? (business.price?.amount ?? null) : null);
+              return (
+                <View key={it.id} style={[styles.priceRow, i > 0 && { borderTopColor: design.textColor + '1A', borderTopWidth: 1 }]}>
+                  <View style={{ flex: 1, gap: 2 }}>
+                    <Text style={[styles.rowName, { color: design.textColor, fontSize: 14.5 * ts }]}>{it.name}</Text>
+                    {!!it.detail && <Text style={[styles.meta, muted(0.65), { fontSize: 13 * ts }]}>{it.detail}</Text>}
+                  </View>
+                  <View style={{ alignItems: 'flex-end', gap: 2 }}>
+                    <Text style={[styles.price, { color: design.textColor, fontSize: 15 * ts }]}>
+                      {cents !== null ? pesos(cents) : 'Por acordar'}
+                    </Text>
+                    {it.durationMinutes !== null && (
+                      <Text style={[styles.meta, muted(0.65), { fontSize: 12.5 * ts }]}>{formatDuration(it.durationMinutes)}</Text>
+                    )}
+                  </View>
+                </View>
+              );
+            })}
+            {!!business.plansOffered && (
+              <Text style={[styles.body, muted(0.85), { paddingHorizontal: 0, fontSize: 14 * ts }]}>
+                {business.plansOffered}
+              </Text>
+            )}
           </View>
         ) : null;
+      }
 
       case 'gallery':
         return gallery.length > 0 ? (

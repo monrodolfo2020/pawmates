@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
@@ -15,11 +15,16 @@ import WhenPicker, { chosenSlot, initialWhen } from '../components/WhenPicker';
 import ScreenHeader from '../components/ScreenHeader';
 import Notice from '../components/Notice';
 import BottomBar from '../components/BottomBar';
+import ServiceList from '../components/ServiceList';
+import { api, BusinessService } from '../api/client';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Booking'>;
 
 /**
- * Picking what to ask for: which pet, which day, what time, how long.
+ * Picking what to ask for: which pet, which walk, which day, what time.
+ * A business with a list of services is booked by picking one (its
+ * duration and price come with it); one without a list gets the plain
+ * 30/60 minute choice.
  * Nothing is sent from here — "Revisar solicitud" only moves on to the
  * summary, and the request goes out from there once the owner has seen
  * exactly what they're asking for and at what price.
@@ -28,12 +33,31 @@ export default function BookingScreen({ navigation, route }: Props) {
   const s = useAppState();
   const { walkerId } = route.params;
   const [duration, setDuration] = useState('60');
+  const [services, setServices] = useState<BusinessService[]>([]);
+  const [basePrice, setBasePrice] = useState<number | null>(null);
+  const [serviceId, setServiceId] = useState<string | null>(route.params.serviceId ?? null);
+
+  useEffect(() => {
+    api
+      .getProvider(s.token, walkerId)
+      .then((business) => {
+        setServices(business.services ?? []);
+        setBasePrice(business.price?.amount ?? null);
+      })
+      .catch(() => setServices([]));
+  }, [s.token, walkerId]);
+
+  // A service picked on the profile that has since disappeared doesn't
+  // count as picked.
+  const service = services.find((x) => x.id === serviceId) ?? null;
+  const needsService = services.length > 0;
+  const minutes = service?.durationMinutes ?? Number(duration);
   const [petId, setPetId] = useState(s.pets[0]?.id ?? '');
 
   const [when, setWhen] = useState(initialWhen);
   const slot = chosenSlot(when);
 
-  const canContinue = Boolean(petId) && slot !== null;
+  const canContinue = Boolean(petId) && slot !== null && (!needsService || service !== null);
 
   const handleContinue = () => {
     if (!canContinue || slot === null) return;
@@ -41,7 +65,8 @@ export default function BookingScreen({ navigation, route }: Props) {
       walkerId,
       petId,
       scheduledAt: atSlot(when.day, slot).toISOString(),
-      durationMinutes: Number(duration),
+      durationMinutes: minutes,
+      serviceId: service?.id,
     });
   };
 
@@ -70,15 +95,28 @@ export default function BookingScreen({ navigation, route }: Props) {
           </Field>
         )}
 
+        {needsService && (
+          <Field label="¿Qué paseo?">
+            <ServiceList
+              services={services}
+              fallbackPrice={basePrice}
+              selectedId={serviceId}
+              onPick={(picked) => setServiceId(picked.id)}
+            />
+          </Field>
+        )}
+
         <WhenPicker value={when} onChange={setWhen} />
 
-        <Field label="Duración">
-          <Segmented
-            options={[{ label: '30 min', value: '30' }, { label: '60 min', value: '60' }]}
-            value={duration}
-            onChange={setDuration}
-          />
-        </Field>
+        {(!needsService || (service && service.durationMinutes === null)) && (
+          <Field label="Duración">
+            <Segmented
+              options={[{ label: '30 min', value: '30' }, { label: '60 min', value: '60' }]}
+              value={duration}
+              onChange={setDuration}
+            />
+          </Field>
+        )}
 
         <CardMeta>
           Es una solicitud para un solo paseo. El negocio la acepta o la rechaza, y te avisamos

@@ -91,7 +91,7 @@ export default function BookingsScreen({ navigation }: Props) {
               {other ?? 'Negocio'}
             </Text>
             <Text style={styles.date}>
-              {isMeetGreet ? 'Meet & Greet' : 'Paseo'}
+              {isMeetGreet ? 'Meet & Greet' : (b.lines[0]?.serviceName ?? 'Paseo')}
               {pets ? ` de ${pets}` : ''} · {formatWhen(b.scheduledAt)}
             </Text>
           </View>

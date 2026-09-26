@@ -22,6 +22,8 @@ import {
 import { useAppState } from '../state/AppState';
 import { whatsappUrl } from '../utils/contactLinks';
 import Notice from '../components/Notice';
+import ServiceList from '../components/ServiceList';
+import { lowestPrice } from '../utils/services';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Business'>;
 
@@ -73,13 +75,13 @@ export default function BusinessProfileScreen({ navigation, route }: Props) {
     }, [s.token, providerId]),
   );
 
-  const handleReservar = () => {
+  const handleReservar = (serviceId?: string) => {
     if (!providerId) return;
     if (s.authStatus !== 'authed') {
       navigation.navigate('Login');
       return;
     }
-    navigation.navigate('Booking', { walkerId: providerId });
+    navigation.navigate('Booking', { walkerId: providerId, serviceId });
   };
 
   const bookable = provider ? isBookable(provider.category) : false;
@@ -93,7 +95,15 @@ export default function BusinessProfileScreen({ navigation, route }: Props) {
         : null
     : null;
 
-  const priceText = provider?.price ? money(provider.price.amount, provider.price.currency) : null;
+  // A base rate is "por paseo"; without one, the cheapest service is a
+  // "desde" price.
+  const services = provider?.services ?? [];
+  const fromPrice = provider?.price ? null : lowestPrice(services);
+  const priceText = provider?.price
+    ? money(provider.price.amount, provider.price.currency)
+    : fromPrice !== null
+      ? `Desde ${money(fromPrice, 'MXN')}`
+      : null;
 
   return (
     <ScreenContainer>
@@ -184,6 +194,21 @@ export default function BusinessProfileScreen({ navigation, route }: Props) {
               </Card>
             )}
 
+            {(services.length > 0 || provider.plansOffered) && (
+              <View style={styles.section}>
+                <Text style={type.section}>{bookable ? 'Paseos y precios' : 'Servicios y precios'}</Text>
+                {services.length > 0 && (
+                  <ServiceList
+                    services={services}
+                    fallbackPrice={provider.price?.amount ?? null}
+                    onPick={bookable ? (service) => handleReservar(service.id) : undefined}
+                  />
+                )}
+                {bookable && services.length > 0 && <CardMeta>Toca un paseo para solicitarlo.</CardMeta>}
+                {provider.plansOffered && <Text style={styles.bio}>{provider.plansOffered}</Text>}
+              </View>
+            )}
+
             {(provider.publicAddress || provider.hours) && (
               <View style={styles.section}>
                 {provider.publicAddress && (
@@ -217,12 +242,6 @@ export default function BusinessProfileScreen({ navigation, route }: Props) {
               </View>
             )}
 
-            {provider.plansOffered && (
-              <View style={styles.section}>
-                <Text style={type.section}>Planes y servicios</Text>
-                <Text style={styles.bio}>{provider.plansOffered}</Text>
-              </View>
-            )}
             {provider.walkingSpots && (
               <View style={styles.section}>
                 <Text style={type.section}>Parques y sitios donde pasea</Text>
@@ -238,11 +257,13 @@ export default function BusinessProfileScreen({ navigation, route }: Props) {
             summary={
               <>
                 <Text style={styles.barPrice}>{priceText ?? 'Por acordar'}</Text>
-                <Text style={type.meta}>{priceText ? 'por paseo · pagas directo' : 'precio con el negocio'}</Text>
+                <Text style={type.meta}>
+                  {!priceText ? 'precio con el negocio' : fromPrice !== null ? 'pagas directo' : 'por paseo · pagas directo'}
+                </Text>
               </>
             }
           >
-            <Button variant="primary" onPress={handleReservar} style={{ minWidth: 140 }}>
+            <Button variant="primary" onPress={() => handleReservar()} style={{ minWidth: 140 }}>
               Reservar
             </Button>
           </BottomBar>

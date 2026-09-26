@@ -22,10 +22,13 @@ import {
   SERVICE_CATEGORIES,
   ServiceCategory,
   isBookable,
+  newServiceId,
 } from '../api/client';
 import { useAppState } from '../state/AppState';
 import ScreenHeader from '../components/ScreenHeader';
 import Notice from '../components/Notice';
+import ServicesEditor from '../components/ServicesEditor';
+import { ServiceDraft, draftsToServices, toDraft } from '../utils/services';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ProviderProfileEdit'>;
 
@@ -49,6 +52,11 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
   const [specialty, setSpecialty] = useState('');
   const [priceMxn, setPriceMxn] = useState('');
   const [plansOffered, setPlansOffered] = useState('');
+  // Starts with one empty row so the list is visibly there to fill in;
+  // an untouched empty row is dropped on save.
+  const [serviceDrafts, setServiceDrafts] = useState<ServiceDraft[]>(() => [
+    { id: newServiceId(), name: '', detail: '', price: '', minutes: '' },
+  ]);
   const [walkingSpots, setWalkingSpots] = useState('');
   const [address, setAddress] = useState('');
   const [idNumber, setIdNumber] = useState('');
@@ -83,6 +91,7 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
           setSpecialty(profile.specialty ?? '');
           setPriceMxn(profile.price ? String(profile.price.amount / 100) : '');
           setPlansOffered(profile.plansOffered ?? '');
+          if (profile.services?.length) setServiceDrafts(profile.services.map(toDraft));
           setWalkingSpots(profile.walkingSpots ?? '');
           setAddress(profile.address ?? '');
           setIdNumber(profile.idNumber ?? '');
@@ -100,6 +109,11 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
   const handleSave = async () => {
     if (!s.token) return;
     setError(null);
+    const parsed = draftsToServices(serviceDrafts);
+    if ('error' in parsed) {
+      setError(parsed.error);
+      return;
+    }
     setSaving(true);
     try {
       const priceAmount = priceMxn.trim() ? Math.round(Number(priceMxn) * 100) : undefined;
@@ -124,6 +138,7 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
         priceAmount,
         priceCurrency: priceAmount !== undefined ? 'MXN' : undefined,
         plansOffered: forCategory('plansOffered', plansOffered),
+        services: parsed.services,
         walkingSpots: forCategory('walkingSpots', walkingSpots),
         latitude: point?.latitude ?? null,
         longitude: point?.longitude ?? null,
@@ -165,7 +180,7 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
         {!complete && loaded && (
           <CardBody>
             Completa el nombre de tu negocio y su descripción
-            {isBookable(category) ? ', más tu precio por paseo,' : ''} para que tu página quede lista.
+            {isBookable(category) ? ', más tu precio por paseo (o un paseo con precio),' : ''} para que tu página quede lista.
             Se publica en cuanto la aprobemos.
           </CardBody>
         )}
@@ -232,7 +247,7 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
         )}
         {isBookable(category) && (
           <TextField
-            label="Precio por paseo (MXN)"
+            label="Precio base por paseo (MXN)"
             value={priceMxn}
             onChangeText={setPriceMxn}
             placeholder="Ej. 250"
@@ -240,13 +255,19 @@ export default function ProviderProfileEditScreen({ navigation }: Props) {
           />
         )}
         {field('plansOffered') && (
+          <View style={{ gap: space.s2 }}>
+            <Text style={styles.fieldLabel}>{field('plansOffered')!.label}</Text>
+            <ServicesEditor category={category} drafts={serviceDrafts} onChange={setServiceDrafts} />
+          </View>
+        )}
+        {field('plansOffered') && (
           <TextField
-            label={field('plansOffered')!.label}
+            label="Notas sobre tus servicios (opcional)"
             value={plansOffered}
             onChangeText={setPlansOffered}
-            placeholder={field('plansOffered')!.placeholder}
-            multiline={field('plansOffered')!.multiline}
-            numberOfLines={field('plansOffered')!.multiline ? 2 : 1}
+            placeholder="Ej. Los precios pueden variar según el tamaño de tu mascota."
+            multiline
+            numberOfLines={2}
           />
         )}
         {field('walkingSpots') && (

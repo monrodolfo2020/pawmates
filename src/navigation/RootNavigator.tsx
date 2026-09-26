@@ -42,9 +42,9 @@ export type RootStackParamList = {
   Microsite: { slug: string };
   MyPage: undefined;
   MeetGreet: { walkerId: string };
-  Booking: { walkerId: string };
+  Booking: { walkerId: string; serviceId?: string };
   /** Everything the owner chose on Booking; nothing has been sent yet. */
-  Checkout: { walkerId: string; petId: string; scheduledAt: string; durationMinutes: number };
+  Checkout: { walkerId: string; petId: string; scheduledAt: string; durationMinutes: number; serviceId?: string };
   /** One booking's walk: the business runs it, the owner watches it. */
   Live: { bookingId: string };
   Chat: { bookingId: string };

@@ -113,6 +113,8 @@ type Ctx = State & {
     durationMinutes: number;
     scheduledAt: string;
     petId?: string;
+    /** One of the business's services, when it has a list. */
+    serviceId?: string;
   }) => Promise<void>;
   sendChatMessage: (bookingId: string, text: string) => Promise<void>;
   refreshMessages: (bookingId: string) => Promise<void>;
@@ -396,7 +398,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
-  const createBooking = useCallback<Ctx['createBooking']>(async ({ providerServiceId, durationMinutes, scheduledAt, petId }) => {
+  const createBooking = useCallback<Ctx['createBooking']>(async ({ providerServiceId, durationMinutes, scheduledAt, petId, serviceId }) => {
     setState((s) => ({ ...s, bookingStatus: 'creating', bookingError: null }));
     try {
       const { token, pets } = stateRef.current;
@@ -404,7 +406,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       if (!token || !resolvedPetId) {
         throw new Error('Agrega primero los datos de tu mascota.');
       }
-      const booking = await api.createBooking(token, resolvedPetId, providerServiceId, durationMinutes, scheduledAt);
+      const booking = await api.createBooking(token, resolvedPetId, providerServiceId, durationMinutes, scheduledAt, serviceId);
       setState((s) => ({ ...s, bookingId: booking.id, bookingStatus: 'created' }));
     } catch (err) {
       setState((s) => ({

@@ -81,6 +81,7 @@ function asBusiness(profile: MyProviderProfile): ProviderDetail {
     specialty: profile.specialty,
     price: profile.price,
     plansOffered: profile.plansOffered,
+    services: profile.services ?? [],
     walkingSpots: profile.walkingSpots,
     emailVerified: true,
     identityVerified: false,

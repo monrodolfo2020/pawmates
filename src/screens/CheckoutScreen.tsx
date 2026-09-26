@@ -14,6 +14,7 @@ import { formatWhen } from '../utils/bookingSlots';
 import ScreenHeader from '../components/ScreenHeader';
 import Notice from '../components/Notice';
 import BottomBar from '../components/BottomBar';
+import { formatDuration } from '../utils/services';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Checkout'>;
 
@@ -37,7 +38,7 @@ type Phase = 'review' | 'waiting' | 'confirmed' | 'rejected' | 'cancelled';
  */
 export default function CheckoutScreen({ navigation, route }: Props) {
   const s = useAppState();
-  const { walkerId, petId, scheduledAt, durationMinutes } = route.params;
+  const { walkerId, petId, scheduledAt, durationMinutes, serviceId } = route.params;
   const [business, setBusiness] = useState<ProviderDetail | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [phase, setPhase] = useState<Phase>('review');
@@ -45,6 +46,10 @@ export default function CheckoutScreen({ navigation, route }: Props) {
   const [cancelError, setCancelError] = useState<string | null>(null);
 
   const pet = s.pets.find((p) => p.id === petId);
+  const service = business?.services?.find((x) => x.id === serviceId) ?? null;
+  // What the backend will price it at: the service's own price, else the
+  // business's base rate (see ProviderMarketplaceAdapter).
+  const priceCents = service?.price ?? business?.price?.amount ?? null;
   const name = business?.name ?? 'el negocio';
   const sending = s.bookingStatus === 'creating';
 
@@ -76,7 +81,7 @@ export default function CheckoutScreen({ navigation, route }: Props) {
 
   const send = async () => {
     try {
-      await s.createBooking({ providerServiceId: walkerId, durationMinutes, scheduledAt, petId });
+      await s.createBooking({ providerServiceId: walkerId, durationMinutes, scheduledAt, petId, serviceId });
       setPhase('waiting');
     } catch {
       // s.bookingError is shown below; stay on the summary.
@@ -165,12 +170,13 @@ export default function CheckoutScreen({ navigation, route }: Props) {
         <Card>
           <Row label="Negocio" value={business?.name ?? '…'} />
           <Row label="Mascota" value={pet ? `${pet.name} · ${pet.breed}` : '—'} />
+          {service && <Row label="Paseo" value={service.name} />}
           <Row label="Cuándo" value={formatWhen(scheduledAt)} />
-          <Row label="Duración" value={`${durationMinutes} min`} />
+          <Row label="Duración" value={formatDuration(durationMinutes)} />
           <View style={styles.hr} />
           <Row
             label="Tarifa publicada"
-            value={business?.price ? `${money(business.price.amount, business.price.currency)} por paseo` : 'Por acordar'}
+            value={priceCents !== null ? `${money(priceCents, 'MXN')}${service ? '' : ' por paseo'}` : 'Por acordar'}
             strong
           />
         </Card>
