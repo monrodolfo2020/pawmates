@@ -75,13 +75,21 @@ export function markEmailVerified(accountId: string) {
   db().prepare(`UPDATE identity_accounts SET email_verified_at = datetime('now') WHERE id = ?`).run(accountId);
 }
 
+/** Moves a booking's time into the past — the API only books ahead. */
+export function moveBookingToPast(bookingId: string) {
+  db()
+    .prepare(`UPDATE booking_bookings SET scheduled_at = datetime('now', '-1 day') WHERE id = ?`)
+    .run(bookingId);
+}
+
 /** No API grants admin, by design (see the backend README). */
 export function makeAdmin(accountId: string) {
   db().prepare(`UPDATE identity_accounts SET roles = '["owner","admin"]' WHERE id = ?`).run(accountId);
 }
 
 export async function createOwner(name = 'Ana'): Promise<Session & { petId: string }> {
-  const email = uniqueEmail(name.toLowerCase());
+  // "Lucía Pérez" → lucaperez-…@prueba.app: only what an address allows.
+  const email = uniqueEmail(name.toLowerCase().replace(/[^a-z0-9]/g, '') || 'owner');
   const session = await api<Session>('POST', '/v1/auth/signup', {
     body: { email, password: PASSWORD, role: 'owner', name, acceptedLegal: await legal(['privacy_notice', 'owner_terms']) },
   });
@@ -105,6 +113,16 @@ export async function createAdmin(): Promise<Session> {
 
 /** A walker with a complete page, approved unless told otherwise. */
 export async function createWalker(options: { businessName: string; approved?: boolean }): Promise<Session> {
+  return createBusiness({ ...options, category: 'walker' });
+}
+
+/** A business of any category with a complete page, approved unless told
+ * otherwise. Only a walker carries a per-walk rate. */
+export async function createBusiness(options: {
+  businessName: string;
+  category: string;
+  approved?: boolean;
+}): Promise<Session> {
   const email = uniqueEmail('negocio');
   const session = await api<Session>('POST', '/v1/auth/signup', {
     body: {
@@ -112,7 +130,7 @@ export async function createWalker(options: { businessName: string; approved?: b
       password: PASSWORD,
       role: 'provider',
       name: 'Pedro',
-      category: 'walker',
+      category: options.category,
       businessName: options.businessName,
       facePhoto: PNG,
       idDocumentPhoto: PNG,
@@ -122,7 +140,10 @@ export async function createWalker(options: { businessName: string; approved?: b
   markEmailVerified(session.accountId);
   await api('PATCH', '/v1/providers/me', {
     token: session.token,
-    body: { bio: 'Paseos con cariño', serviceArea: 'Metepec', priceAmount: 15000, priceCurrency: 'MXN' },
+    body:
+      options.category === 'walker'
+        ? { bio: 'Paseos con cariño', serviceArea: 'Metepec', priceAmount: 15000, priceCurrency: 'MXN' }
+        : { bio: 'Atención con cariño', serviceArea: 'Metepec', whatsapp: '7221234567' },
   });
   if (options.approved !== false) {
     const admin = await createAdmin();

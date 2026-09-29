@@ -85,6 +85,7 @@ function asBusiness(profile: MyProviderProfile): ProviderDetail {
     walkingSpots: profile.walkingSpots,
     emailVerified: true,
     identityVerified: false,
+    rating: null,
     bio: profile.bio,
     photos: profile.photos,
     publicAddress: profile.publicAddress,

@@ -316,7 +316,40 @@ export interface ProviderListing {
   walkingSpots: string | null;
   emailVerified: boolean;
   identityVerified: boolean;
+  /** Bones, 1 to 5, averaged to one decimal — null until the first
+   * review. The directory already comes best rated first. */
+  rating: RatingSummary | null;
 }
+
+export interface RatingSummary {
+  average: number;
+  count: number;
+}
+
+/** A review as the public sees it on a business's page. */
+export interface PublicReview {
+  id: string;
+  rating: number;
+  comment: string | null;
+  /** "Ana G." — never a customer's full name. */
+  authorName: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** A review as its author sees it (GET /v1/me/reviews). */
+export interface OwnReview {
+  id: string;
+  providerId: string;
+  /** Set for a business booked in the app (a walker): one per booking. */
+  bookingId: string | null;
+  rating: number;
+  comment: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const MAX_REVIEW_LENGTH = 1000;
 
 // --- Plan and micro-page design (see the backend's business-plan.ts and
 // page-design.ts — these lists must stay in sync with those). ---
@@ -1095,6 +1128,30 @@ export const api = {
   /** Public — works for a signed-out guest too (token is optional). */
   getProvider(token: string | null | undefined, accountId: string) {
     return request<ProviderDetail>(`/v1/providers/${accountId}`, { token: token ?? undefined });
+  },
+
+  /** Public: a business's reviews, newest first. */
+  listReviews(providerId: string) {
+    return request<PublicReview[]>(`/v1/providers/${providerId}/reviews`);
+  },
+
+  /** The reviews the signed-in owner has written. */
+  myReviews(token: string) {
+    return request<OwnReview[]>('/v1/me/reviews', { token });
+  },
+
+  /** Writes a review, or edits the one already there. A walker needs the
+   * booking being reviewed; the other businesses are reviewed once each. */
+  writeReview(
+    token: string,
+    providerId: string,
+    body: { rating: number; comment?: string; bookingId?: string },
+  ) {
+    return request<OwnReview>(`/v1/providers/${providerId}/reviews`, {
+      method: 'POST',
+      token,
+      body,
+    });
   },
 
   /** Backs the shareable micro-page at /s/<slug> — public by design:
