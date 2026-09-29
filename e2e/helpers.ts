@@ -57,7 +57,7 @@ async function legal(types: string[]) {
 
 // The backend's own SQLite driver, on the test database.
 const requireFromBackend = createRequire(join(BACKEND_DIR, 'package.json'));
-type Db = { prepare(sql: string): { run(...args: unknown[]): unknown } };
+type Db = { prepare(sql: string): { run(...args: unknown[]): unknown; get(...args: unknown[]): unknown } };
 function db(): Db {
   const Database = requireFromBackend('better-sqlite3') as new (file: string) => Db;
   return new Database(DB_FILE);
@@ -80,6 +80,16 @@ export function moveBookingToPast(bookingId: string) {
   db()
     .prepare(`UPDATE booking_bookings SET scheduled_at = datetime('now', '-1 day') WHERE id = ?`)
     .run(bookingId);
+}
+
+/** The latest emailed code for an account, which a test can't read
+ * from an inbox. */
+export function emailCodeFor(accountId: string): string {
+  const row = db()
+    .prepare(`SELECT code FROM identity_email_verification_codes WHERE account_id = ?`)
+    .get(accountId) as { code: string } | undefined;
+  if (!row) throw new Error(`No hay código para ${accountId}`);
+  return row.code;
 }
 
 /** No API grants admin, by design (see the backend README). */

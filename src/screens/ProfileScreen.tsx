@@ -25,22 +25,46 @@ const ROLE_LABEL: Record<string, string> = {
 
 export default function ProfileScreen({ navigation }: Props) {
   const s = useAppState();
-  const [sheet, setSheet] = useState<'name' | 'password' | null>(null);
+  const [sheet, setSheet] = useState<'name' | 'password' | 'email' | null>(null);
   const [name, setName] = useState('');
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');
   const [confirm, setConfirm] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+  const [emailPassword, setEmailPassword] = useState('');
+  const [code, setCode] = useState('');
+  // Changing the email is two steps: the code goes to the new address.
+  const [codeSentTo, setCodeSentTo] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
 
-  const open = (which: 'name' | 'password') => {
+  const open = (which: 'name' | 'password' | 'email') => {
     setError(null);
     setName(s.name ?? '');
     setCurrent('');
     setNext('');
     setConfirm('');
+    setNewEmail('');
+    setEmailPassword('');
+    setCode('');
+    setCodeSentTo(null);
     setSheet(which);
+  };
+
+  const sendEmailCode = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      const address = newEmail.trim().toLowerCase();
+      await s.requestEmailChange(emailPassword, address);
+      setCodeSentTo(address);
+      setCode('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo enviar el código.');
+    } finally {
+      setBusy(false);
+    }
   };
 
   const run = async (work: () => Promise<void>, message: string) => {
@@ -155,9 +179,13 @@ export default function ProfileScreen({ navigation }: Props) {
             </View>
             <ChevronRight size={18} strokeWidth={1.75} color={colors.textFaint} />
           </Card>
-          <Text style={type.meta}>
-            Para cambiar tu correo escríbenos a rmonterrozag@gmail.com desde el correo actual.
-          </Text>
+          <Card row onPress={() => open('email')}>
+            <View style={{ flex: 1, gap: 2 }}>
+              <Text style={type.cardTitle}>Cambiar correo</Text>
+              <Text style={type.meta}>Te enviamos un código al correo nuevo.</Text>
+            </View>
+            <ChevronRight size={18} strokeWidth={1.75} color={colors.textFaint} />
+          </Card>
         </View>
 
         <Button variant="danger" block onPress={() => void s.logout()}>
@@ -178,6 +206,56 @@ export default function ProfileScreen({ navigation }: Props) {
       >
         <TextField label="Nombre" value={name} onChangeText={setName} placeholder="Tu nombre"
           autoCapitalize="words" maxLength={80} />
+        {error && <Notice tone="danger">{error}</Notice>}
+      </Sheet>
+
+      <Sheet
+        visible={sheet === 'email'}
+        title="Cambiar correo"
+        onClose={() => setSheet(null)}
+        footer={
+          codeSentTo ? (
+            <Button variant="primary" block disabled={busy || code.length !== 6}
+              onPress={() => void run(() => s.confirmEmailChange(code), `Tu correo ahora es ${codeSentTo}.`)}>
+              {busy ? 'Confirmando…' : 'Confirmar'}
+            </Button>
+          ) : (
+            <Button variant="primary" block disabled={busy || !newEmail.includes('@') || !emailPassword}
+              onPress={() => void sendEmailCode()}>
+              {busy ? 'Enviando…' : 'Enviar código'}
+            </Button>
+          )
+        }
+      >
+        {codeSentTo ? (
+          <>
+            <Text style={type.body}>
+              Escribe el código de 6 dígitos que enviamos a {codeSentTo}. Vence en 15 minutos.
+            </Text>
+            <TextField label="Código" value={code} onChangeText={(v) => setCode(v.replace(/\D/g, '').slice(0, 6))}
+              keyboardType="number-pad" placeholder="123456" maxLength={6} />
+            <Text style={styles.linkText} onPress={() => void sendEmailCode()}>
+              Enviar otro código
+            </Text>
+            <Text style={type.meta}>
+              ¿No llega? Revisa tu carpeta de spam, o vuelve atrás y corrige el correo.
+            </Text>
+            <Text style={styles.linkText} onPress={() => setCodeSentTo(null)}>
+              Usar otro correo
+            </Text>
+          </>
+        ) : (
+          <>
+            <Text style={type.small}>Tu correo actual es {s.email}.</Text>
+            <TextField label="Correo nuevo" value={newEmail} onChangeText={setNewEmail} keyboardType="email-address"
+              autoComplete="email" placeholder="tu@correo.com" />
+            <TextField label="Tu contraseña" value={emailPassword} onChangeText={setEmailPassword} secureTextEntry
+              placeholder="••••••••" />
+            <Text style={type.meta}>
+              Tu correo no cambia hasta que confirmes el código. Te avisaremos al correo actual cuando cambie.
+            </Text>
+          </>
+        )}
         {error && <Notice tone="danger">{error}</Notice>}
       </Sheet>
 

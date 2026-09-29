@@ -756,6 +756,24 @@ export const api = {
     return request<{ id: string; name: string }>('/v1/me', { method: 'PATCH', token, body });
   },
 
+  /** Sends a code to the new address; the email doesn't change yet. */
+  requestEmailChange(token: string, password: string, newEmail: string) {
+    return request<{ sent: boolean }>('/v1/me/email', {
+      method: 'POST',
+      token,
+      body: { password, newEmail },
+    });
+  },
+
+  /** The code from the new address makes it the account's email. */
+  confirmEmailChange(token: string, code: string) {
+    return request<{ email: string; emailVerified: boolean }>('/v1/me/email/confirm', {
+      method: 'POST',
+      token,
+      body: { code },
+    });
+  },
+
   changePassword(token: string, currentPassword: string, newPassword: string) {
     return request<{ changed: boolean }>('/v1/me/password', {
       method: 'POST',
