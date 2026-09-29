@@ -9,12 +9,15 @@ import Button from '../components/Button';
 import Avatar from '../components/Avatar';
 import Notice from '../components/Notice';
 import Tag, { bookingStatusVariant } from '../components/Tag';
+import ReviewSheet from '../components/ReviewSheet';
+import { BoneRow } from '../components/Bones';
 import {
   api,
   BOOKING_STATUS_LABELS,
   BookingStatusCode,
   BookingSummary,
   MEET_GREET_SERVICE_TYPE_CODE,
+  OwnReview,
 } from '../api/client';
 import { colors, fonts, space, type } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
@@ -38,11 +41,19 @@ const ACTIVE = new Set(['requested', 'accepted', 'confirmed', 'in_progress']);
 /** Still on the calendar — either side can call it off until it starts. */
 const CANCELLABLE = new Set(['requested', 'confirmed']);
 
+/** Accepted by the business: once its time has come, the owner can rate
+ * it (the backend checks the same). */
+const SERVED = new Set(['confirmed', 'in_progress', 'completed']);
+const canReview = (b: BookingSummary) => SERVED.has(b.status) && new Date(b.scheduledAt).getTime() <= Date.now();
+
 export default function BookingsScreen({ navigation }: Props) {
   const s = useAppState();
   const [bookings, setBookings] = useState<BookingSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  // The owner's reviews, by booking, so a rated service shows its bones.
+  const [reviews, setReviews] = useState<Map<string, OwnReview>>(new Map());
+  const [reviewing, setReviewing] = useState<BookingSummary | null>(null);
 
   const load = useCallback(() => {
     if (!s.token) return;
@@ -50,6 +61,10 @@ export default function BookingsScreen({ navigation }: Props) {
       .listBookings(s.token)
       .then(setBookings)
       .catch((err) => setError(err instanceof Error ? err.message : 'No se pudieron cargar tus reservas.'));
+    api
+      .myReviews(s.token)
+      .then((rows) => setReviews(new Map(rows.filter((r) => r.bookingId).map((r) => [r.bookingId!, r]))))
+      .catch(() => undefined);
   }, [s.token]);
 
   useEffect(load, [load]);
@@ -82,6 +97,8 @@ export default function BookingsScreen({ navigation }: Props) {
     // Whoever is on the other side of this booking.
     const other = b.ownerId === s.accountId ? b.providerName : b.ownerName;
     const pets = b.lines.map((l) => l.petName?.split(' · ')[0]).filter(Boolean).join(', ');
+    const review = reviews.get(b.id);
+    const reviewable = b.ownerId === s.accountId && !isMeetGreet && canReview(b);
     return (
       <Card key={b.id}>
         <View style={styles.rowBetween}>
@@ -108,7 +125,13 @@ export default function BookingsScreen({ navigation }: Props) {
             </Text>
           )
         )}
-        {((!isMeetGreet && WALK_LINK[b.status]) || CANCELLABLE.has(b.status)) && (
+        {review && (
+          <View style={styles.reviewRow}>
+            <Text style={type.meta}>Tu calificación</Text>
+            <BoneRow value={review.rating} size={14} />
+          </View>
+        )}
+        {((!isMeetGreet && WALK_LINK[b.status]) || CANCELLABLE.has(b.status) || reviewable) && (
           <View style={styles.actions}>
             {!isMeetGreet && WALK_LINK[b.status] && (
               <Button
@@ -127,6 +150,11 @@ export default function BookingsScreen({ navigation }: Props) {
                 onPress={() => void cancel(b.id)}
               >
                 {cancellingId === b.id ? 'Cancelando…' : 'Cancelar'}
+              </Button>
+            )}
+            {reviewable && (
+              <Button size="sm" variant={review ? 'ghost' : 'primary'} onPress={() => setReviewing(b)}>
+                {review ? 'Editar reseña' : 'Calificar'}
               </Button>
             )}
           </View>
@@ -148,6 +176,18 @@ export default function BookingsScreen({ navigation }: Props) {
         {past.length > 0 && <Text style={[type.section, styles.later]}>Anteriores</Text>}
         {past.map(renderCard)}
       </ScrollView>
+      {reviewing && s.token && (
+        <ReviewSheet
+          visible
+          onClose={() => setReviewing(null)}
+          token={s.token}
+          providerId={reviewing.providerId}
+          businessName={reviewing.providerName ?? 'el negocio'}
+          bookingId={reviewing.id}
+          existing={reviews.get(reviewing.id) ?? null}
+          onSaved={(saved) => setReviews((m) => new Map(m).set(reviewing.id, saved))}
+        />
+      )}
     </ScreenContainer>
   );
 }
@@ -157,5 +197,6 @@ const styles = StyleSheet.create({
   later: { marginTop: space.s4 },
   rowBetween: { flexDirection: 'row', alignItems: 'center', gap: space.s3 },
   date: { fontFamily: fonts.body, fontSize: 13.5, lineHeight: 18, color: colors.textMuted },
-  actions: { flexDirection: 'row', gap: space.s2, marginTop: space.s1 },
+  actions: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s2, marginTop: space.s1 },
+  reviewRow: { flexDirection: 'row', alignItems: 'center', gap: space.s2 },
 });

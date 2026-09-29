@@ -21,6 +21,13 @@ Tap the avatar on Home to switch into walker mode (Dashboard); tap "Modo
 dueño" on Dashboard to switch back — mirrors the owner/walker mode switch
 described in the design doc.
 
+## Videos para negocios
+
+"Cómo funciona" (from the welcome screen, and from a business's panel)
+plays five short explainer videos: what PawMates is, signing up, the
+page, bookings and reviews. The files are in `assets/videos` (see its
+`CREDITS.md` for the stock material) and play with `expo-video`.
+
 ## Design system
 
 All colors, fonts, spacing, radii and shadows come from one file,

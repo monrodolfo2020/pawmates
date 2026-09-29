@@ -20,6 +20,7 @@ import { colors, fonts, radius, space, type } from '../theme/tokens';
 import { useAppState } from '../state/AppState';
 import Notice from '../components/Notice';
 import { clearReservation, reservationSlug } from '../navigation/reservationIntent';
+import { RatingLine } from '../components/Bones';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
@@ -154,6 +155,7 @@ export default function HomeScreen({ navigation }: Props) {
                 {p.specialty && (
                   <Text style={type.meta} numberOfLines={1}>{p.specialty}</Text>
                 )}
+                {p.rating && <RatingLine rating={p.rating} size={13} />}
                 <View style={styles.cardFoot}>
                   {p.price && (
                     <Text style={styles.price}>

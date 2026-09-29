@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable, Linking } from 'react-native';
-import { Check } from 'lucide-react-native';
+import { Check, ChevronRight, CirclePlay } from 'lucide-react-native';
 import VerificationCard from '../components/VerificationCard';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -201,6 +201,7 @@ export default function DashboardScreen({ navigation }: Props) {
             : []),
           { label: 'Mi página', onPress: () => navigation.navigate('MyPage') },
           { label: 'Perfil', onPress: () => navigation.navigate('Profile') },
+          { label: 'Cómo funciona', onPress: () => navigation.navigate('HowTo') },
           ...(s.roles.includes('owner')
             ? [{
                 label: 'Modo dueño',
@@ -235,6 +236,15 @@ export default function DashboardScreen({ navigation }: Props) {
             navigation.navigate('LegalDocument', { type: 'identity_verification_consent' })
           }
         />
+
+        <Card row onPress={() => navigation.navigate('HowTo')}>
+          <CirclePlay size={26} strokeWidth={1.75} color={colors.accent} />
+          <View style={{ flex: 1, gap: 2 }}>
+            <Text style={type.cardTitle}>Aprende a usar PawMates</Text>
+            <Text style={type.meta}>5 videos cortos: tu página, reservas, reseñas y más.</Text>
+          </View>
+          <ChevronRight size={18} strokeWidth={1.75} color={colors.textFaint} />
+        </Card>
 
         {profile === undefined && <Text style={type.small}>Cargando…</Text>}
 

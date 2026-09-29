@@ -79,12 +79,16 @@ export default function WelcomeScreen({ navigation }: Props) {
         <Button variant="ghost" block onPress={() => navigation.navigate('Login')}>
           Ya tengo cuenta · Iniciar sesión
         </Button>
+        <Text style={styles.howTo} onPress={() => navigation.navigate('HowTo')}>
+          ¿Tienes un negocio? Mira cómo funciona
+        </Text>
       </View>
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
+  howTo: { fontFamily: fonts.bodyMedium, fontSize: 13.5, color: colors.textMuted, textAlign: 'center', textDecorationLine: 'underline' },
   top: { paddingHorizontal: space.s5, paddingTop: space.s4 },
   body: { flex: 1, justifyContent: 'flex-end', gap: space.s4, paddingHorizontal: space.s5, paddingBottom: space.s8 },
   icons: { flexDirection: 'row', gap: space.s2, marginBottom: space.s2 },

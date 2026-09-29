@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { PASSWORD, createOwner, openAs } from './helpers';
+import { PASSWORD, createOwner, emailCodeFor, openAs, uniqueEmail } from './helpers';
 
 test('la dueña cambia su nombre y su contraseña, y entra con la nueva', async ({ page, browser }) => {
   const owner = await createOwner('Ana');
@@ -32,6 +32,50 @@ test('la dueña cambia su nombre y su contraseña, y entra con la nueva', async 
   await fresh.getByPlaceholder('tu@correo.com').fill(owner.email);
   await fresh.getByPlaceholder('••••••••').fill('NuevaClave9');
   await fresh.getByText('Entrar', { exact: true }).click();
+  await expect(fresh.getByText('Servicios para tu mascota')).toBeVisible();
+  await context.close();
+});
+
+test('el dueño cambia su correo con un código enviado al nuevo, y entra con él', async ({ page, browser }) => {
+  const owner = await createOwner('Beto');
+  const other = await createOwner('Carla');
+  const newEmail = uniqueEmail('beto-nuevo');
+  await openAs(page, owner);
+  await page.getByText('Menú', { exact: true }).click();
+  await page.getByText('Perfil', { exact: true }).filter({ visible: true }).click();
+  await page.getByText('Cambiar correo', { exact: true }).first().click();
+  const sheet = (placeholder: string) => page.getByPlaceholder(placeholder).filter({ visible: true });
+
+  // Someone else's address, and a wrong password, are refused.
+  await sheet('tu@correo.com').fill(other.email);
+  await sheet('••••••••').fill(PASSWORD);
+  await page.getByText('Enviar código').click();
+  await expect(page.getByText('Ya existe una cuenta con ese correo.')).toBeVisible();
+  await sheet('tu@correo.com').fill(newEmail);
+  await sheet('••••••••').fill('equivocada');
+  await page.getByText('Enviar código').click();
+  await expect(page.getByText('La contraseña no es correcta.')).toBeVisible();
+
+  await sheet('••••••••').fill(PASSWORD);
+  await page.getByText('Enviar código').click();
+  await expect(page.getByText(`enviamos a ${newEmail}`, { exact: false })).toBeVisible();
+  await sheet('123456').fill(emailCodeFor(owner.accountId));
+  await page.getByText('Confirmar', { exact: true }).click();
+  await expect(page.getByText(`Tu correo ahora es ${newEmail}.`)).toBeVisible();
+
+  // The new address signs in; the old one no longer does.
+  const context = await browser.newContext();
+  const fresh = await context.newPage();
+  const signIn = async (email: string) => {
+    await fresh.goto('/');
+    await fresh.getByText('Ya tengo cuenta · Iniciar sesión').click();
+    await fresh.getByPlaceholder('tu@correo.com').fill(email);
+    await fresh.getByPlaceholder('••••••••').fill(PASSWORD);
+    await fresh.getByText('Entrar', { exact: true }).click();
+  };
+  await signIn(owner.email);
+  await expect(fresh.getByText('Correo o contraseña incorrectos.').filter({ visible: true })).toBeVisible();
+  await signIn(newEmail);
   await expect(fresh.getByText('Servicios para tu mascota')).toBeVisible();
   await context.close();
 });

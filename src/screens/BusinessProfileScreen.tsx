@@ -16,7 +16,9 @@ import {
   api,
   BookingSummary,
   CATEGORY_LABELS_SINGULAR,
+  OwnReview,
   ProviderDetail,
+  PublicReview,
   isBookable,
 } from '../api/client';
 import { useAppState } from '../state/AppState';
@@ -24,6 +26,8 @@ import { whatsappUrl } from '../utils/contactLinks';
 import Notice from '../components/Notice';
 import ServiceList from '../components/ServiceList';
 import { lowestPrice } from '../utils/services';
+import { BoneRow, RatingLine } from '../components/Bones';
+import ReviewSheet from '../components/ReviewSheet';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Business'>;
 
@@ -32,6 +36,12 @@ const money = (cents: number, currency: string) => '$' + (cents / 100).toFixed(0
 // A booking still worth chatting about — not one the owner cancelled or
 // the paseador turned down.
 const CHATTABLE_STATUSES = new Set(['requested', 'confirmed', 'in_progress', 'completed']);
+
+/** Reviews shown before "Ver todas". */
+const REVIEWS_SHOWN = 5;
+
+const reviewDate = (iso: string) =>
+  new Date(iso).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' });
 
 export default function BusinessProfileScreen({ navigation, route }: Props) {
   const s = useAppState();
@@ -46,12 +56,30 @@ export default function BusinessProfileScreen({ navigation, route }: Props) {
   // (most commonly a Meet & Greet) jump straight into that chat from here,
   // instead of having to dig through "Tus reservas" to find it.
   const [chatBooking, setChatBooking] = useState<BookingSummary | null>(null);
+  const [reviews, setReviews] = useState<PublicReview[]>([]);
+  const [showAllReviews, setShowAllReviews] = useState(false);
+  // For a business not booked in the app: the signed-in owner's own
+  // review of it, to edit instead of writing a second one.
+  const [myReview, setMyReview] = useState<OwnReview | null>(null);
+  const [reviewOpen, setReviewOpen] = useState(false);
 
-  useEffect(() => {
+  const loadProvider = useCallback(() => {
     (slug ? api.getProviderBySlug(slug) : api.getProvider(s.token, (params as { providerId: string }).providerId))
       .then(setProvider)
       .catch((err) => setError(err instanceof Error ? err.message : 'No se pudo cargar este negocio.'));
-  }, [s.token, params]);
+  }, [s.token, params, slug]);
+
+  useEffect(loadProvider, [loadProvider]);
+
+  useEffect(() => {
+    if (!providerId) return;
+    api.listReviews(providerId).then(setReviews).catch(() => setReviews([]));
+    if (!s.token || !s.roles.includes('owner')) return;
+    api
+      .myReviews(s.token)
+      .then((rows) => setMyReview(rows.find((r) => r.providerId === providerId && r.bookingId === null) ?? null))
+      .catch(() => setMyReview(null));
+  }, [providerId, s.token, s.roles]);
 
   // Refetches on focus (not just mount) so coming back from the chat
   // clears "Mensaje nuevo" right away — hasUnreadMessages is server-side
@@ -85,6 +113,9 @@ export default function BusinessProfileScreen({ navigation, route }: Props) {
   };
 
   const bookable = provider ? isBookable(provider.category) : false;
+  // A walker is rated from "Tus reservas", per booking; the rest from here.
+  const canWriteReview =
+    !bookable && s.authStatus === 'authed' && s.roles.includes('owner') && providerId !== s.accountId;
   const waUrl = provider?.whatsapp ? whatsappUrl(provider.whatsapp, provider.name) : null;
   // The same "take me there" link the public page has.
   const mapUrl = provider
@@ -123,6 +154,7 @@ export default function BusinessProfileScreen({ navigation, route }: Props) {
                 <Text style={type.small}>
                   {[CATEGORY_LABELS_SINGULAR[provider.category], provider.serviceArea].filter(Boolean).join(' · ')}
                 </Text>
+                <RatingLine rating={provider.rating} />
               </View>
             </View>
             {(provider.identityVerified || provider.specialty) && (
@@ -248,6 +280,42 @@ export default function BusinessProfileScreen({ navigation, route }: Props) {
                 <Text style={styles.bio}>{provider.walkingSpots}</Text>
               </View>
             )}
+
+            <View style={styles.section}>
+              <Text style={type.section}>Reseñas</Text>
+              <RatingLine rating={provider.rating} size={18} />
+              {canWriteReview && (
+                <Button size="sm" variant={myReview ? 'secondary' : 'primary'} onPress={() => setReviewOpen(true)}>
+                  {myReview ? 'Editar tu reseña' : 'Escribir una reseña'}
+                </Button>
+              )}
+              {!bookable && s.authStatus !== 'authed' && (
+                <Text style={styles.link} onPress={() => navigation.navigate('Login')}>
+                  Inicia sesión para dejar una reseña
+                </Text>
+              )}
+              {bookable && (
+                <CardMeta>
+                  Califican los dueños que reservaron con este negocio, desde "Tus reservas".
+                </CardMeta>
+              )}
+              {(showAllReviews ? reviews : reviews.slice(0, REVIEWS_SHOWN)).map((r) => (
+                <View key={r.id} style={styles.review}>
+                  <View style={styles.reviewHead}>
+                    <BoneRow value={r.rating} size={14} />
+                    <Text style={type.meta}>
+                      {r.authorName} · {reviewDate(r.createdAt)}
+                    </Text>
+                  </View>
+                  {r.comment && <Text style={styles.reviewText}>{r.comment}</Text>}
+                </View>
+              ))}
+              {!showAllReviews && reviews.length > REVIEWS_SHOWN && (
+                <Text style={styles.link} onPress={() => setShowAllReviews(true)}>
+                  Ver las {reviews.length} reseñas
+                </Text>
+              )}
+            </View>
           </>
         )}
       </ScrollView>
@@ -282,6 +350,21 @@ export default function BusinessProfileScreen({ navigation, route }: Props) {
             </Button>
           </BottomBar>
         ))}
+      {provider && canWriteReview && s.token && (
+        <ReviewSheet
+          visible={reviewOpen}
+          onClose={() => setReviewOpen(false)}
+          token={s.token}
+          providerId={provider.accountId}
+          businessName={provider.name}
+          existing={myReview}
+          onSaved={(saved) => {
+            setMyReview(saved);
+            loadProvider();
+            api.listReviews(provider.accountId).then(setReviews).catch(() => undefined);
+          }}
+        />
+      )}
     </ScreenContainer>
   );
 }
@@ -309,4 +392,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   chatDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.accent },
+  review: { gap: space.s1, paddingTop: space.s3, borderTopWidth: 1, borderTopColor: colors.divider },
+  reviewHead: { flexDirection: 'row', alignItems: 'center', gap: space.s2, flexWrap: 'wrap' },
+  reviewText: { ...type.body, fontSize: 14.5 },
 });

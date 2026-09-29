@@ -9,7 +9,7 @@
 > Al final hay una lista de puntos que específicamente debes plantearle
 > a tu abogado.
 
-**Versión:** 1.1-borrador
+**Versión:** 1.2-borrador
 **Última actualización:** 1 de octubre de 2026
 
 ---
@@ -179,7 +179,9 @@ c) proporcionar información veraz, completa, actual y verificable sobre
    el negocio y sobre la persona titular de la cuenta; y
 d) contar con todas las autorizaciones, licencias, registros, permisos y
    títulos profesionales que la legislación federal, estatal y municipal
-   exija para la actividad que pretende anunciar.
+   exija para la actividad que pretende anunciar; y
+e) que el negocio sea completamente lícito y no se dedique, en todo ni
+   en parte, a actividades ilícitas, en los términos de la cláusula 15.6.
 
 **5.2.** El Prestador es responsable de mantener actualizada la
 información de su cuenta y de su Micrositio. La información falsa,
@@ -571,6 +573,33 @@ través de la Plataforma, y mantener actualizados sus medios de contacto.
 Cliente o con un animal que haya derivado o pueda derivar en una
 reclamación en la que se mencione a la Plataforma.
 
+**15.6. Declaración de licitud.** El Prestador declara, bajo protesta de
+decir verdad, y se obliga a mantener durante toda la vigencia de este
+Acuerdo, que:
+
+a) su negocio y todas las actividades que realiza, dentro o fuera de la
+   Plataforma, son lícitas y se desarrollan conforme a la legislación
+   federal, estatal y municipal aplicable;
+b) no se dedica ni participa, directa o indirectamente, en actividades
+   ilícitas, incluidas, de manera enunciativa y no limitativa, el
+   maltrato o la crueldad animal, la cría, venta, tráfico o comercio de
+   animales o especies en contravención de la ley, las peleas de
+   animales, el ejercicio de una profesión sin el título o la cédula que
+   la ley exige, y las operaciones con recursos de procedencia ilícita;
+c) los recursos con que opera su negocio y los que recibe por sus
+   servicios son de procedencia lícita;
+d) ni el Prestador ni, en su caso, sus socios, representantes o
+   empleados que presten los servicios, están impedidos por resolución
+   de autoridad para realizar la actividad que anuncian; y
+e) informará a PawMates de inmediato si cualquiera de estas
+   declaraciones deja de ser cierta.
+
+La falsedad de cualquiera de estas declaraciones, o su incumplimiento
+posterior, es causa de suspensión o terminación inmediata conforme a la
+cláusula 16.3, sin perjuicio de las acciones legales que correspondan y
+de que PawMates dé aviso a las autoridades competentes cuando la ley lo
+exija o lo permita.
+
 ---
 
 ## 16. Suspensión y terminación
@@ -602,8 +631,10 @@ d) carezca de las licencias, permisos o títulos profesionales exigibles
 e) incumpla la legislación en materia de datos personales respecto de los
    Usuarios;
 f) use la Plataforma para suplantar identidades, extraer datos de forma
-   masiva o afectar su funcionamiento; o
-g) incumpla cualquier otra obligación de este Acuerdo y no la subsane
+   masiva o afectar su funcionamiento;
+g) resulte falsa cualquiera de las declaraciones de licitud de la
+   cláusula 15.6, o el Prestador deje de cumplirlas; o
+h) incumpla cualquier otra obligación de este Acuerdo y no la subsane
    dentro de los **diez días naturales** siguientes al requerimiento de
    PawMates, cuando la naturaleza del incumplimiento admita subsanación.
 

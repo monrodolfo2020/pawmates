@@ -89,6 +89,9 @@ type Ctx = State & {
   logout: () => Promise<void>;
   /** Saves the account's name and shows it everywhere right away. */
   updateName: (name: string) => Promise<void>;
+  /** Changing the email: send a code to the new address, then confirm it. */
+  requestEmailChange: (password: string, newEmail: string) => Promise<void>;
+  confirmEmailChange: (code: string) => Promise<void>;
   addRole: (params: {
     role: 'owner' | 'provider';
     category?: ServiceCategory;
@@ -306,6 +309,23 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     [state.token],
   );
 
+  const requestEmailChange = useCallback(
+    async (password: string, newEmail: string) => {
+      if (!state.token) return;
+      await api.requestEmailChange(state.token, password, newEmail);
+    },
+    [state.token],
+  );
+
+  const confirmEmailChange = useCallback(
+    async (code: string) => {
+      if (!state.token) return;
+      const saved = await api.confirmEmailChange(state.token, code);
+      setState((s) => ({ ...s, email: saved.email, emailVerified: true }));
+    },
+    [state.token],
+  );
+
   const logout = useCallback(async () => {
     await AsyncStorage.removeItem(SESSION_KEY);
     setState({ ...initialState, authStatus: 'guest' });
@@ -456,6 +476,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       login,
       logout,
       updateName,
+      requestEmailChange,
+      confirmEmailChange,
       addRole,
       sendVerificationEmail,
       verifyEmail,
@@ -472,6 +494,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     login,
     logout,
     updateName,
+    requestEmailChange,
+    confirmEmailChange,
     addRole,
     sendVerificationEmail,
     verifyEmail,
