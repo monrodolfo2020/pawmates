@@ -118,7 +118,7 @@ export default function PlanCard({ onActivated }: Props) {
       {lapsed && (
         <CardMeta>
           Tu plan VIP venció{mine?.expiresAt ? ` el ${formatDate(mine.expiresAt)}` : ''}. Tu página
-          sigue publicada con el diseño de PawMates, y tu diseño personalizado te espera tal como lo
+          sigue publicada con el diseño de PET Conect@, y tu diseño personalizado te espera tal como lo
           dejaste: vuelve a activar VIP y reaparece.
         </CardMeta>
       )}
@@ -126,7 +126,7 @@ export default function PlanCard({ onActivated }: Props) {
         <CardMeta>
           Con VIP tu página es tuya todo el año: colores, logo y portada, y bloques como precios,
           preguntas frecuentes, promociones, redes y video, en el orden que quieras. Sin VIP se ve
-          con el diseño estándar de PawMates.
+          con el diseño estándar de PET Conect@.
         </CardMeta>
       )}
 

@@ -184,7 +184,7 @@ export default function CheckoutScreen({ navigation, route }: Props) {
         <Card tone="panel">
           <CardKicker>Cómo se paga</CardKicker>
           <CardBody>
-            PawMates no cobra este paseo ni ninguna comisión. El precio final, la forma de pago y
+            PET Conect@ no cobra este paseo ni ninguna comisión. El precio final, la forma de pago y
             cualquier propina los acuerdas directamente con {name}.
           </CardBody>
         </Card>

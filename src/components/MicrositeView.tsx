@@ -438,7 +438,7 @@ export default function MicrositeView({ business, design, compact = false, editi
       </View>
 
       {/* The one thing a page can do that a WhatsApp link can't: send the
-          visitor into PawMates to request a walk, with the business
+          visitor into PET Conect@ to request a walk, with the business
           already open. Only businesses that can be booked get it. */}
       {canReserve && (
         <Pressable
@@ -447,7 +447,7 @@ export default function MicrositeView({ business, design, compact = false, editi
           onPress={() => openReservation(business.slug!, compact)}
         >
           <CalendarCheck size={18 * scale} strokeWidth={2} color="#fff" />
-          <Text style={[styles.ctaText, { fontSize: 15 * ts }]}>Reservar en PawMates</Text>
+          <Text style={[styles.ctaText, { fontSize: 15 * ts }]}>Reservar en PET Conect@</Text>
         </Pressable>
       )}
 
@@ -456,7 +456,7 @@ export default function MicrositeView({ business, design, compact = false, editi
       <View style={[styles.footer, { borderTopColor: design.textColor + '22' }]}>
         <PawPrint size={14 * scale} strokeWidth={1.5} color={design.primaryColor} />
         <Text style={[styles.footerText, muted(0.5), { fontSize: 12 * ts }]}>
-          Página creada con PawMates
+          Página creada con PET Conect@
         </Text>
       </View>
     </View>

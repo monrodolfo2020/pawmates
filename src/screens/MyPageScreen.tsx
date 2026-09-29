@@ -309,7 +309,7 @@ export default function MyPageScreen({ navigation }: Props) {
     profile.isVip ? null : profile.inTrial && profile.trialEndsAt ? (
       <Notice tone="warning" title={`Prueba gratis: te quedan ${daysLeft(profile.trialEndsAt)} días`}>
         Hasta entonces puedes personalizar tu página sin costo. Después se verá con el diseño estándar de
-        PawMates hasta que actives VIP; tu diseño queda guardado.
+        PET Conect@ hasta que actives VIP; tu diseño queda guardado.
       </Notice>
     ) : !approved && canEdit ? (
       <Notice title="Ya puedes diseñar tu página">
@@ -317,7 +317,7 @@ export default function MyPageScreen({ navigation }: Props) {
       </Notice>
     ) : !canEdit ? (
       <Notice tone="warning" title="Tu prueba gratis terminó">
-        Tu página se ve con el diseño estándar de PawMates. Activa VIP y vuelve tu diseño, tal como lo dejaste.
+        Tu página se ve con el diseño estándar de PET Conect@. Activa VIP y vuelve tu diseño, tal como lo dejaste.
       </Notice>
     ) : null
   );
