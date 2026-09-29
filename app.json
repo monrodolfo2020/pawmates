@@ -34,7 +34,8 @@
         {
           "locationWhenInUsePermission": "PawMates usa tu ubicación para mostrar la ruta del paseo en vivo."
         }
-      ]
+      ],
+      "expo-video"
     ]
   }
 }

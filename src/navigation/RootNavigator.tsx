@@ -26,6 +26,7 @@ import BookingsScreen from '../screens/BookingsScreen';
 import ComingSoonScreen from '../screens/ComingSoonScreen';
 import ProviderProfileEditScreen from '../screens/ProviderProfileEditScreen';
 import VerifyEmailScreen from '../screens/VerifyEmailScreen';
+import HowToVideosScreen from '../screens/HowToVideosScreen';
 import { LegalDocumentType } from '../api/client';
 import { useAppState } from '../state/AppState';
 
@@ -58,6 +59,8 @@ export type RootStackParamList = {
   AdminLogin: undefined;
   ProviderProfileEdit: undefined;
   VerifyEmail: undefined;
+  /** The explainer videos for businesses. */
+  HowTo: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -195,6 +198,7 @@ export default function RootNavigator() {
         <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
         <Stack.Screen name="Signup" component={SignupScreen} />
         <Stack.Screen name="Business" component={BusinessProfileScreen} />
+        <Stack.Screen name="HowTo" component={HowToVideosScreen} />
       </Stack.Navigator>
     );
   }
@@ -263,6 +267,7 @@ export default function RootNavigator() {
       <Stack.Screen name="Profile" component={ProfileScreen} />
       <Stack.Screen name="Bookings" component={BookingsScreen} />
       <Stack.Screen name="ComingSoon" component={ComingSoonScreen} />
+      <Stack.Screen name="HowTo" component={HowToVideosScreen} />
     </Stack.Navigator>
   );
 }
