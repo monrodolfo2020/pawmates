@@ -17,6 +17,7 @@ import { Nunito_800ExtraBold } from '@expo-google-fonts/nunito';
 import { PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
 import { Caveat_700Bold } from '@expo-google-fonts/caveat';
 import RootNavigator from './src/navigation/RootNavigator';
+import { navigationRef } from './src/navigation/navigationRef';
 import { AppStateProvider, useAppState } from './src/state/AppState';
 import { colors } from './src/theme/tokens';
 
@@ -35,7 +36,7 @@ function AppShell({ fontsLoaded }: { fontsLoaded: boolean }) {
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }} onLayout={onLayout}>
       <StatusBar style="dark" />
-      <NavigationContainer>
+      <NavigationContainer ref={navigationRef}>
         <RootNavigator />
       </NavigationContainer>
     </View>
