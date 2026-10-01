@@ -62,8 +62,9 @@ export type RootStackParamList = {
   AdminLogin: undefined;
   ProviderProfileEdit: undefined;
   VerifyEmail: undefined;
-  /** The explainer videos for businesses. */
-  HowTo: undefined;
+  /** The explainer videos for businesses. videoId: opened from a shared
+   * link (see sharedVideo.ts) — start with that one playing. */
+  HowTo: { videoId?: string } | undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
