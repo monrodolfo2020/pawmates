@@ -65,7 +65,7 @@ export default function WelcomeScreen({ navigation }: Props) {
       </View>
 
       <View style={styles.footer}>
-        <Button variant="primary" block onPress={() => navigation.navigate('Home')}>
+        <Button variant="primary" block onPress={() => navigation.navigate('Home', { nearMe: true })}>
           Ver servicios cerca de ti
         </Button>
         <View style={styles.pair}>

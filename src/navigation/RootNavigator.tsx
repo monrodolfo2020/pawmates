@@ -37,7 +37,9 @@ export type RootStackParamList = {
   ResetPassword: { token: string };
   Signup: { role?: 'owner' | 'provider' } | undefined;
   Onboarding: { petId?: string } | undefined;
-  Home: undefined;
+  /** nearMe: arrived from "Ver servicios cerca de ti" — ask for the
+   * location straight away instead of waiting for a tap. */
+  Home: { nearMe?: boolean } | undefined;
   /** By id from inside the app; by slug from a public page's "Reservar" link. */
   Business: { providerId: string } | { slug: string };
   Microsite: { slug: string };
