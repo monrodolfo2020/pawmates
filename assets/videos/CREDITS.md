@@ -45,5 +45,6 @@ video's length, lowered to about -19 LUFS and faded out at the end.
 
 - `registro.mp4` — "Vibe Check", Blue Deer Studio.
 - `tu-pagina.mp4` — "Toys Are Us", Blue Deer Studio.
+- `reservas.mp4` — "With You", Everet Almond.
 
 The other videos are still silent.
