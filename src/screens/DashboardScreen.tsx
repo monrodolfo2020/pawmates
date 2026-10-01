@@ -240,7 +240,7 @@ export default function DashboardScreen({ navigation }: Props) {
         <Card row onPress={() => navigation.navigate('HowTo')}>
           <CirclePlay size={26} strokeWidth={1.75} color={colors.accent} />
           <View style={{ flex: 1, gap: 2 }}>
-            <Text style={type.cardTitle}>Aprende a usar PawMates</Text>
+            <Text style={type.cardTitle}>Aprende a usar PET Conect@</Text>
             <Text style={type.meta}>5 videos cortos: tu página, reservas, reseñas y más.</Text>
           </View>
           <ChevronRight size={18} strokeWidth={1.75} color={colors.textFaint} />

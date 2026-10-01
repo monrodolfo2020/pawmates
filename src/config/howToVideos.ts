@@ -13,8 +13,8 @@ export type HowToVideo = {
 export const HOW_TO_VIDEOS: HowToVideo[] = [
   {
     id: 'bienvenida',
-    title: 'PawMates para tu negocio',
-    summary: 'Qué es PawMates y cómo te ayuda a conseguir clientes.',
+    title: 'PET Conect@ para tu negocio',
+    summary: 'Qué es PET Conect@ y cómo te ayuda a conseguir clientes.',
     length: '0:38',
     source: require('../../assets/videos/bienvenida.mp4'),
     poster: require('../../assets/videos/bienvenida.jpg'),

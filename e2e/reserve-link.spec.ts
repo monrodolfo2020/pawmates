@@ -15,7 +15,7 @@ test('alguien sin cuenta llega desde la página pública, se registra y vuelve a
   const slug = await publicSlug(walker.accountId);
 
   await page.goto(`/s/${slug}`);
-  await page.getByText('Reservar en PawMates').click();
+  await page.getByText('Reservar en PET Conect@').click();
 
   // The business opens right away, before any sign-in.
   await expect(page.getByText(businessName).filter({ visible: true })).toBeVisible();

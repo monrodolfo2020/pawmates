@@ -5,7 +5,7 @@ test('quien tiene un negocio ve los videos de cómo funciona, desde la bienvenid
   await page.goto('/');
   await page.getByText('¿Tienes un negocio? Mira cómo funciona').click();
   await expect(page.getByText('Cómo funciona', { exact: true }).filter({ visible: true })).toBeVisible();
-  for (const title of ['PawMates para tu negocio', 'Registra tu negocio', 'Arma tu página', 'Recibe reservas', 'Reseñas y huesitos']) {
+  for (const title of ['PET Conect@ para tu negocio', 'Registra tu negocio', 'Arma tu página', 'Recibe reservas', 'Reseñas y huesitos']) {
     await expect(page.getByText(title, { exact: true }).filter({ visible: true })).toBeVisible();
   }
   await page.getByText('Registra tu negocio', { exact: true }).filter({ visible: true }).click();
@@ -19,6 +19,6 @@ test('quien tiene un negocio ve los videos de cómo funciona, desde la bienvenid
 
   const walker = await createWalker({ businessName: uniqueName('Paseos Videos') });
   await openAs(page, walker);
-  await page.getByText('Aprende a usar PawMates').click();
+  await page.getByText('Aprende a usar PET Conect@').click();
   await expect(page.getByText('Reseñas y huesitos', { exact: true }).filter({ visible: true })).toBeVisible();
 });

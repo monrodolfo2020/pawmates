@@ -23,7 +23,7 @@ export default function HowToVideosScreen({ navigation }: Props) {
         onBack={() => (navigation.canGoBack() ? navigation.goBack() : navigation.navigate('Welcome'))}
         kicker="Para negocios"
         title="Cómo funciona"
-        subtitle="Videos cortos para sacarle todo el provecho a PawMates."
+        subtitle="Videos cortos para sacarle todo el provecho a PET Conect@."
       />
       <ScrollView contentContainerStyle={styles.body}>
         {HOW_TO_VIDEOS.map((video, i) => (

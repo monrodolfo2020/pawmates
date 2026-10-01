@@ -17,7 +17,7 @@ describe('whatsappUrl', () => {
   it('prefills a greeting that names the business', () => {
     expect(whatsappUrl('5512345678', 'Paseos Pedro')).toBe(
       'https://wa.me/525512345678?text=' +
-        encodeURIComponent('Hola Paseos Pedro, los encontré en PawMates.'),
+        encodeURIComponent('Hola Paseos Pedro, los encontré en PET Conect@.'),
     );
   });
 });

@@ -162,7 +162,7 @@ export default function BusinessProfileScreen({ navigation, route }: Props) {
                 {provider.identityVerified && (
                   <View style={styles.fact}>
                     <ShieldCheck size={16} strokeWidth={2} color={colors.success} />
-                    <Text style={[styles.factText, { color: colors.success }]}>Identidad verificada por PawMates</Text>
+                    <Text style={[styles.factText, { color: colors.success }]}>Identidad verificada por PET Conect@</Text>
                   </View>
                 )}
                 {provider.specialty && (

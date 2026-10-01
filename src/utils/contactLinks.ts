@@ -12,7 +12,7 @@ export function whatsappUrl(rawNumber: string, businessName?: string): string | 
   if (digits.length < 10) return null;
   const number = digits.length === 10 ? `${MX_COUNTRY_CODE}${digits}` : digits;
   const text = businessName
-    ? `?text=${encodeURIComponent(`Hola ${businessName}, los encontré en PawMates.`)}`
+    ? `?text=${encodeURIComponent(`Hola ${businessName}, los encontré en PET Conect@.`)}`
     : '';
   return `https://wa.me/${number}${text}`;
 }

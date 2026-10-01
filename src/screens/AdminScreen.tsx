@@ -217,7 +217,7 @@ function EmailTestCard() {
       {result?.sent && (
         <Notice tone={result.usingTestSender ? 'warning' : 'success'} title={`Enviado a ${result.to}`}>
           {result.usingTestSender
-            ? `Salió con el remitente de pruebas de Resend (${result.from}), que solo entrega a tu propio correo: a los demás usuarios no les llega nada. Configura EMAIL_FROM en Vercel con tu dominio verificado, por ejemplo "PawMates <notificaciones@bosquedelsaber.com>", y haz Redeploy.`
+            ? `Salió con el remitente de pruebas de Resend (${result.from}), que solo entrega a tu propio correo: a los demás usuarios no les llega nada. Configura EMAIL_FROM en Vercel con tu dominio verificado, por ejemplo \"PET Conect@\" <notificaciones@bosquedelsaber.com> (con el nombre entre comillas, por la @), y haz Redeploy.`
             : `Remitente: ${result.from}. Si no lo ves en unos minutos, revisa spam.`}
         </Notice>
       )}
