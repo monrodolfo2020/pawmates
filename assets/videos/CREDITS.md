@@ -44,5 +44,6 @@ From the YouTube Audio Library (free to use). Each track is cut to its
 video's length, lowered to about -19 LUFS and faded out at the end.
 
 - `registro.mp4` — "Vibe Check", Blue Deer Studio.
+- `tu-pagina.mp4` — "Toys Are Us", Blue Deer Studio.
 
 The other videos are still silent.
