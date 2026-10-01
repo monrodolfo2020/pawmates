@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, Image, ScrollView, StyleSheet, Modal, Pressable } from 'react-native';
+import { View, Text, Image, ScrollView, StyleSheet, Modal, Pressable, useWindowDimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Play, X } from 'lucide-react-native';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -49,18 +50,34 @@ export default function HowToVideosScreen({ navigation }: Props) {
   );
 }
 
-/** Its own component so each video gets a fresh player. */
+/** The videos are vertical (9:16). */
+const VIDEO_ASPECT = 9 / 16;
+const PLAYER_HEADER = 56;
+
+/** Its own component so each video gets a fresh player. The video sits in
+ * a 9:16 frame sized to fit the window, so on a wide PC screen it doesn't
+ * stretch edge to edge and get cropped. */
 function Player({ video, onClose }: { video: HowToVideo; onClose: () => void }) {
   const player = useVideoPlayer(video.source, (p) => {
     p.play();
   });
+  const window = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const availW = window.width - space.s4 * 2;
+  const availH = window.height - insets.top - insets.bottom - PLAYER_HEADER - space.s4 * 2;
+  const frameH = Math.max(0, Math.min(availH, availW / VIDEO_ASPECT));
+  const frameW = frameH * VIDEO_ASPECT;
   return (
-    <View style={styles.playerWrap}>
-      <VideoView player={player} style={styles.video} contentFit="contain" nativeControls fullscreenOptions={{ enable: true }} />
-      <Pressable style={styles.close} onPress={onClose} hitSlop={10} accessibilityRole="button" accessibilityLabel="Cerrar video">
-        <X size={22} strokeWidth={2} color="#FFFFFF" />
-      </Pressable>
-      <Text style={styles.playerTitle}>{video.title}</Text>
+    <View style={[styles.playerWrap, { paddingTop: insets.top + space.s4, paddingBottom: insets.bottom + space.s4 }]}>
+      <View style={[styles.playerHeader, { width: Math.max(frameW, Math.min(availW, 360)) }]}>
+        <Text style={styles.playerTitle} numberOfLines={2}>{video.title}</Text>
+        <Pressable style={styles.close} onPress={onClose} hitSlop={10} accessibilityRole="button" accessibilityLabel="Cerrar video">
+          <X size={22} strokeWidth={2} color="#FFFFFF" />
+        </Pressable>
+      </View>
+      <View style={[styles.frame, { width: frameW, height: frameH }]}>
+        <VideoView player={player} style={{ width: frameW, height: frameH }} contentFit="contain" nativeControls fullscreenOptions={{ enable: true }} />
+      </View>
     </View>
   );
 }
@@ -73,14 +90,14 @@ const styles = StyleSheet.create({
     position: 'absolute', left: 22, top: 50, width: 28, height: 28, borderRadius: radius.pill,
     backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center',
   },
-  playerWrap: { flex: 1, backgroundColor: '#000' },
-  video: { flex: 1 },
+  playerWrap: { flex: 1, backgroundColor: '#111111', alignItems: 'center', justifyContent: 'center' },
+  playerHeader: {
+    height: PLAYER_HEADER, flexDirection: 'row', alignItems: 'center', gap: space.s3,
+  },
+  frame: { borderRadius: radius.lg, overflow: 'hidden', backgroundColor: '#000' },
   close: {
-    position: 'absolute', top: 48, right: 20, width: 40, height: 40, borderRadius: radius.pill,
-    backgroundColor: 'rgba(0,0,0,0.55)', alignItems: 'center', justifyContent: 'center',
+    width: 40, height: 40, borderRadius: radius.pill,
+    backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center',
   },
-  playerTitle: {
-    position: 'absolute', top: 56, left: 20, right: 76,
-    fontFamily: fonts.bodySemiBold, fontSize: 15, color: '#FFFFFF',
-  },
+  playerTitle: { flex: 1, fontFamily: fonts.bodySemiBold, fontSize: 15, color: '#FFFFFF' },
 });
