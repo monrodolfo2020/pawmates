@@ -1,27 +1,27 @@
-# Términos y Condiciones de Uso — PawMates
+# Términos y Condiciones de Uso — PET Conect@
 
 *Para dueños de mascotas y personas que usan la aplicación para
 encontrar servicios.*
 
 > **BORRADOR — REQUIERE REVISIÓN DE UN ABOGADO MEXICANO ANTES DE
 > USARSE.** Este es el documento que limita la responsabilidad de
-> PawMates frente a quien contrata un servicio, así que es el que más
+> PET Conect@ frente a quien contrata un servicio, así que es el que más
 > conviene que un abogado revise línea por línea. Las secciones marcadas
 > `[[ASÍ]]` son datos que solo tú puedes llenar. Al final hay notas que
 > debes borrar antes de publicar.
 
-**Versión:** 1.0-borrador
+**Versión:** 1.1-borrador
 **Última actualización:** 1 de octubre de 2026
 
 ---
 
-## Antes de empezar: qué es PawMates y qué no es
+## Antes de empezar: qué es PET Conect@ y qué no es
 
-PawMates es un **directorio**. Te ayuda a encontrar negocios de
+PET Conect@ es un **directorio**. Te ayuda a encontrar negocios de
 servicios para mascotas cerca de ti y a ponerte en contacto con ellos.
 
-**PawMates no cuida a tu mascota.** Quien la cuida es el negocio o la
-persona que tú elijas, con quien contratas directamente. PawMates no es
+**PET Conect@ no cuida a tu mascota.** Quien la cuida es el negocio o la
+persona que tú elijas, con quien contratas directamente. PET Conect@ no es
 su patrón, no lo supervisa, no lo certifica y no responde por su
 trabajo.
 
@@ -32,11 +32,11 @@ Las secciones **6 (verificación y sus límites)**, **8 (pagos)** y
 
 ## 1. Quiénes somos y a qué te obligas al usar la app
 
-**1.1.** PawMates es operada por Rodolfo Alberto Monterroza Gómez, persona
+**1.1.** PET Conect@ es operada por Rodolfo Alberto Monterroza Gómez, persona
 física con actividad empresarial, con Registro Federal de Contribuyentes
 **MOGR730915PB1** y domicilio en Privada Carpe 32, Paseo Arboleda, Santín, C.P. 50214, Toluca, Estado de México.
 
-**1.2.** Estos Términos son un contrato entre tú y PawMates. Al crear
+**1.2.** Estos Términos son un contrato entre tú y PET Conect@. Al crear
 una cuenta, marcar la casilla de aceptación o usar la aplicación,
 manifiestas que los leíste y los aceptas, en términos del artículo 1803
 del Código Civil Federal y de las disposiciones de comercio electrónico
@@ -53,9 +53,9 @@ parte de estos Términos.
 
 ## 2. Definiciones
 
-- **Plataforma:** la aplicación PawMates, en web y en móvil.
+- **Plataforma:** la aplicación PET Conect@, en web y en móvil.
 - **Prestador:** el negocio o la persona que ofrece servicios para
-  mascotas y publica su página en PawMates.
+  mascotas y publica su página en PET Conect@.
 - **Usuario** o **tú:** quien usa la Plataforma para buscar o contratar
   servicios.
 - **Micrositio:** la página pública de un Prestador.
@@ -66,7 +66,7 @@ parte de estos Términos.
 
 ---
 
-## 3. Quién puede usar PawMates
+## 3. Quién puede usar PET Conect@
 
 **3.1.** Debes ser mayor de 18 años y tener capacidad legal para
 contratar. La Plataforma no está dirigida a menores de edad.
@@ -81,7 +81,7 @@ inmediato si crees que alguien más las está usando.
 
 ---
 
-## 4. Qué hace PawMates por ti, y qué no
+## 4. Qué hace PET Conect@ por ti, y qué no
 
 **4.1. Lo que hacemos:**
 
@@ -111,11 +111,11 @@ g) **no respondemos** por lo que ocurra durante la prestación del
 
 **4.3.** La información de cada Micrositio —incluidos fotografías,
 precios, horarios, servicios y testimonios— **la escribe y la publica el
-propio Prestador**, bajo su exclusiva responsabilidad. PawMates no la
+propio Prestador**, bajo su exclusiva responsabilidad. PET Conect@ no la
 redacta, no la comprueba y no la avala.
 
 **4.4. Los testimonios que ves en la página de un negocio los redactó
-ese negocio.** No provienen de clientes verificados por PawMates, no
+ese negocio.** No provienen de clientes verificados por PET Conect@, no
 están ligados a reservas reales y no los comprobamos. Trátalos como lo
 que son: lo que el negocio dice de sí mismo. Nuestros Términos para
 Prestadores prohíben inventarlos, pero no podemos garantizar que sean
@@ -153,7 +153,7 @@ fotografía de su rostro y una de un documento oficial, y que **alguien
 de nuestro equipo las revisó visualmente** y consideró que corresponden
 a la misma persona.
 
-**6.2. La insignia NO significa que PawMates haya:**
+**6.2. La insignia NO significa que PET Conect@ haya:**
 
 a) consultado antecedentes penales o judiciales;
 b) verificado títulos, cédulas profesionales, certificaciones,
@@ -165,7 +165,7 @@ e) evaluado su experiencia, capacitación o aptitud para el trato con
 f) hecho ningún seguimiento posterior.
 
 **6.3.** La insignia **no es una recomendación, un aval ni una garantía**
-de PawMates. Un Prestador sin insignia no es necesariamente menos
+de PET Conect@. Un Prestador sin insignia no es necesariamente menos
 confiable, y uno con insignia no es necesariamente idóneo.
 
 **6.4.** La decisión de contratar es tuya. Te recomendamos, antes de
@@ -185,12 +185,12 @@ la Plataforma, directamente entre ustedes.
 
 **7.2. La reserva es una solicitud.** Enviarla no obliga al Paseador: él
 puede aceptarla o rechazarla. **Cuando la acepta, el contrato del
-servicio queda celebrado entre tú y él**, no con PawMates.
+servicio queda celebrado entre tú y él**, no con PET Conect@.
 
 **7.3. Cancelaciones.** Puedes cancelar una reserva desde la app. Las
 condiciones de cancelación, los cargos que en su caso apliquen y las
 devoluciones **las pactas con el Paseador**, porque el pago no pasa por
-PawMates (ver la sección 8).
+PET Conect@ (ver la sección 8).
 
 **7.4. Mensajería.** Los mensajes dentro de la app son para coordinar el
 servicio. No los uses para acosar, insultar, amenazar ni enviar
@@ -206,7 +206,7 @@ la app no sustituye estar en contacto con el Paseador.
 
 ## 8. Pagos
 
-**8.1. PawMates no cobra por los servicios de los Prestadores.** No
+**8.1. PET Conect@ no cobra por los servicios de los Prestadores.** No
 procesamos esos pagos, no los retenemos, no los garantizamos y no
 intervenimos en ellos.
 
@@ -215,12 +215,12 @@ directamente con el Prestador**. Págale a él, por el medio que acuerden.
 
 **8.3.** Cualquier reclamación por cobros, devoluciones, descuentos,
 cargos indebidos o falta de pago **se resuelve entre tú y el
-Prestador**. PawMates no puede reembolsarte lo que nunca cobró.
+Prestador**. PET Conect@ no puede reembolsarte lo que nunca cobró.
 
 **8.4.** El comprobante fiscal por el servicio **te lo expide el
-Prestador**, no PawMates.
+Prestador**, no PET Conect@.
 
-**8.5.** Usar PawMates como Usuario es **gratuito**. Si en el futuro
+**8.5.** Usar PET Conect@ como Usuario es **gratuito**. Si en el futuro
 cobráramos por alguna función, te lo informaríamos antes y lo aceptarías
 por separado.
 
@@ -239,7 +239,7 @@ d) publicar o enviar contenido que promueva el maltrato animal;
 e) extraer de forma masiva o automatizada la información del directorio,
    ni intentar acceder a datos que no te corresponden;
 f) suplantar la identidad de otra persona, de un Prestador o de
-   PawMates;
+   PET Conect@;
 g) intentar vulnerar, sobrecargar o alterar el funcionamiento de la
    Plataforma; ni
 h) usar los datos de contacto de un Prestador para enviarle publicidad
@@ -271,14 +271,14 @@ colaboraremos con la autoridad en lo que legalmente nos corresponda.
 
 ---
 
-## 11. Responsabilidad de PawMates
+## 11. Responsabilidad de PET Conect@
 
 **11.1.** Prestamos el servicio de la sección 4.1 con la diligencia que
 nos es exigible, pero **la Plataforma se ofrece tal como está**: no
 garantizamos que funcione sin interrupciones ni errores, ni que
 encuentres un Prestador disponible o adecuado.
 
-**11.2. PawMates no responde por:**
+**11.2. PET Conect@ no responde por:**
 
 a) los servicios que presta un Prestador, ni por su calidad, seguridad,
    legalidad u oportunidad;
@@ -293,7 +293,7 @@ g) la interrupción del seguimiento del paseo por causas del dispositivo
    o de la red del Paseador.
 
 **11.3.** En la medida que lo permita la ley, y **salvo dolo o mala fe de
-nuestra parte**, la responsabilidad de PawMates frente a ti por
+nuestra parte**, la responsabilidad de PET Conect@ frente a ti por
 cualquier concepto derivado de estos Términos se limita a los montos que
 nos hayas pagado en los doce meses anteriores al hecho que la origine
 —que hoy, siendo el uso gratuito para ti, es cero—, sin perjuicio de los
@@ -301,7 +301,7 @@ derechos que la Ley Federal de Protección al Consumidor te reconozca y
 que no puedes renunciar.
 
 **11.4.** Nada en esta sección limita la responsabilidad que
-corresponda a PawMates por su propia conducta, ni pretende exonerarla de
+corresponda a PET Conect@ por su propia conducta, ni pretende exonerarla de
 obligaciones que la ley declare irrenunciables.
 
 ---
@@ -309,7 +309,7 @@ obligaciones que la ley declare irrenunciables.
 ## 12. Propiedad intelectual
 
 **12.1.** La Plataforma, su código, su diseño, sus bases de datos y la
-marca PawMates son propiedad de PawMates o de sus licenciantes. Te
+marca PET Conect@ son propiedad de PET Conect@ o de sus licenciantes. Te
 otorgamos una licencia limitada, revocable y no transferible para usar
 la app conforme a estos Términos.
 
@@ -390,14 +390,14 @@ tribunales competentes de Toluca, Estado de México.
 ## 17. Disposiciones finales
 
 **17.1.** Estos Términos, junto con el Aviso de Privacidad, son el
-acuerdo completo entre tú y PawMates sobre el uso de la Plataforma.
+acuerdo completo entre tú y PET Conect@ sobre el uso de la Plataforma.
 
 **17.2.** Si una cláusula resulta nula, las demás siguen vigentes.
 
 **17.3.** Que no exijamos algo de inmediato no significa que
 renunciemos a exigirlo después.
 
-**17.4.** No puedes transferir estos Términos. PawMates puede cederlos
+**17.4.** No puedes transferir estos Términos. PET Conect@ puede cederlos
 con motivo de una reestructuración o transmisión de su negocio, dándote
 aviso.
 
@@ -417,7 +417,7 @@ Los otros dos regulan a quien te paga (prestadores) y al tratamiento de
 datos. **Este regula a quien puede perder a su mascota.** Es el escenario
 que genera las demandas más graves y el que más atención merece.
 
-La sección 11.2(b) —que PawMates no responde por daños, lesiones o
+La sección 11.2(b) —que PET Conect@ no responde por daños, lesiones o
 muerte del animal— es la cláusula central y la más probable de ser
 atacada. Pídele a tu abogado que evalúe:
 
@@ -426,7 +426,7 @@ atacada. Pídele a tu abogado que evalúe:
    reconocen los derechos irrenunciables), pero conviene confirmar el
    alcance.
 2. **Si la responsabilidad extracontractual puede limitarse así.** Si se
-   argumentara que PawMates tuvo culpa propia —por ejemplo, por la forma
+   argumentara que PET Conect@ tuvo culpa propia —por ejemplo, por la forma
    en que presenta la insignia de verificación—, el tope de 11.3
    probablemente no la cubra. De ahí que la sección 6 sea tan explícita
    sobre lo que la insignia no significa: **la mejor defensa aquí no es
@@ -439,7 +439,7 @@ atacada. Pídele a tu abogado que evalúe:
 
 Si alguna cambia, hay que rehacer la cláusula que se indica.
 
-1. **PawMates no cobra los servicios.** Sección 8 completa y 11.3. Si
+1. **PET Conect@ no cobra los servicios.** Sección 8 completa y 11.3. Si
    algún día procesas el pago, este documento cambia de raíz: pasarías a
    tener obligaciones frente al consumidor por el cobro, y el tope de
    responsabilidad de 11.3 ("cero, porque es gratis") deja de aplicar.
@@ -467,7 +467,7 @@ Si alguna cambia, hay que rehacer la cláusula que se indica.
    declaración contractual o si hace falta algo más.
 2. **La sesión de "Conócenos primero"** (el Meet & Greet, sin costo) se
    menciona en 6.4 como recomendación. Confirma que mencionarla no se
-   lea como que PawMates garantiza algo por ofrecerla.
+   lea como que PET Conect@ garantiza algo por ofrecerla.
 3. **Jurisdicción.** La 16.4 ofrece PROFECO y tribunales. Verifica que
    la redacción no se interprete como una renuncia al fuero del
    consumidor, que sería nula.

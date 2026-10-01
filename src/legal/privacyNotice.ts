@@ -2,16 +2,16 @@
 // Do not edit here — edit the markdown and re-run the script, then bump
 // the version in the backend's legal-document.ts.
 
-export const privacyNotice = `# Aviso de Privacidad — PawMates
+export const privacyNotice = `# Aviso de Privacidad — PET Conect@
 
-**Versión:** 1.1-borrador
+**Versión:** 1.2-borrador
 **Última actualización:** 1 de octubre de 2026
 
 ---
 
 ## 1. Quién es responsable de tus datos
 
-Rodolfo Alberto Monterroza Gómez ("PawMates"), persona física con
+Rodolfo Alberto Monterroza Gómez ("PET Conect@"), persona física con
 actividad empresarial, con Registro Federal de Contribuyentes
 **MOGR730915PB1**, domicilio en Privada Carpe 32, Paseo Arboleda, Santín, C.P. 50214, Toluca, Estado de México y
 correo de contacto **rmonterrozag@gmail.com**, es responsable del tratamiento de tus datos
@@ -25,7 +25,7 @@ los compartimos y cómo puedes controlarlos**.
 
 ## 2. A quién va dirigido este Aviso
 
-PawMates es un directorio de servicios para mascotas. Trata datos de
+PET Conect@ es un directorio de servicios para mascotas. Trata datos de
 dos tipos de personas, y no de la misma manera:
 
 - **Dueños de mascotas**, que buscan y contactan negocios, y en el caso
@@ -91,7 +91,7 @@ comprobante fiscal, también tus datos fiscales.
 
 ### 3.4. Datos que NO recabamos
 
-Para que quede claro, PawMates **no** recaba: datos de tu tarjeta
+Para que quede claro, PET Conect@ **no** recaba: datos de tu tarjeta
 bancaria o cuenta (no procesamos pagos con tarjeta dentro de la
 aplicación), tus contactos, tu agenda, tu historial de navegación en
 otros sitios, ni datos de salud, origen étnico, religión, opiniones
@@ -113,7 +113,7 @@ tu CURP y tu clave de elector.
 
 **4.2.** Por eso:
 
-a) **entregarlas es enteramente voluntario**: puedes usar PawMates y
+a) **entregarlas es enteramente voluntario**: puedes usar PET Conect@ y
    publicar tu página de negocio sin someterte a la verificación de
    identidad;
 b) lo único que obtienes al superarla es que se muestre una insignia de
@@ -181,10 +181,10 @@ darte el servicio:
 **No son necesarias** para el servicio, y **puedes negarte a ellas sin
 que eso afecte tu cuenta**:
 
-1. Enviarte novedades del producto, consejos y promociones de PawMates.
+1. Enviarte novedades del producto, consejos y promociones de PET Conect@.
 2. Invitarte a encuestas de satisfacción o de investigación de producto.
 3. **Para prestadores:** usar las fotografías y el nombre de tu negocio
-   en materiales promocionales de PawMates, incluidas nuestras redes
+   en materiales promocionales de PET Conect@, incluidas nuestras redes
    sociales.
 4. Elaborar estadísticas y análisis internos que nos permitan mejorar el
    producto.
@@ -202,7 +202,7 @@ cualquier momento, y dejaremos de usar tus datos para esa finalidad.
 
 ### 6.1. Proveedores que tratan datos por cuenta nuestra
 
-Para operar, PawMates se apoya en proveedores de servicios
+Para operar, PET Conect@ se apoya en proveedores de servicios
 tecnológicos que tratan datos **siguiendo nuestras instrucciones y sin
 finalidades propias**. Conforme a la ley, esto constituye una remisión
 de datos y **no requiere tu consentimiento**, pero te lo informamos:
@@ -224,7 +224,7 @@ cobro. Actualizaremos este Aviso antes de que eso ocurra.
 
 ### 6.2. Transferencias a terceros
 
-PawMates **no vende, no renta y no comercializa** tus datos personales.
+PET Conect@ **no vende, no renta y no comercializa** tus datos personales.
 
 Solo los transferimos en estos casos, que la ley permite sin necesidad
 de tu consentimiento:
@@ -236,7 +236,7 @@ b) a nuestros **asesores legales, contables o auditores**, en la medida
    estrictamente necesaria y bajo deber de confidencialidad;
 c) cuando sea necesario para **cumplir el contrato** que tenemos
    contigo; y
-d) a un **adquirente o causahabiente** de PawMates, en caso de fusión,
+d) a un **adquirente o causahabiente** de PET Conect@, en caso de fusión,
    escisión, adquisición o transmisión total o parcial del negocio,
    quien quedará obligado a respetar este Aviso.
 
@@ -374,7 +374,7 @@ hayamos hecho y lo que te recomendamos hacer.
 
 ## 11. Cookies y almacenamiento en tu dispositivo
 
-PawMates **no utiliza cookies de publicidad, de analítica ni de
+PET Conect@ **no utiliza cookies de publicidad, de analítica ni de
 rastreo de terceros.**
 
 Sí guardamos en el almacenamiento local de tu dispositivo o navegador un
@@ -388,7 +388,7 @@ menores de presentación.
 
 ## 12. Menores de edad
 
-PawMates está dirigido a personas mayores de 18 años y **no está
+PET Conect@ está dirigido a personas mayores de 18 años y **no está
 diseñado para recabar datos de menores**. No aceptamos registros de
 menores de edad. Si detectamos una cuenta de un menor, la
 suspenderemos y eliminaremos sus datos. Si eres madre, padre o tutor y
@@ -428,7 +428,7 @@ escríbenos a **rmonterrozag@gmail.com**.
 
 ## 15. Aceptación
 
-Al crear tu cuenta, marcar la casilla correspondiente y usar PawMates,
+Al crear tu cuenta, marcar la casilla correspondiente y usar PET Conect@,
 manifiestas que **leíste y entendiste este Aviso de Privacidad** y que
 consientes el tratamiento de tus datos para las finalidades
 necesarias de la sección 5.1.
