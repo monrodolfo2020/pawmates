@@ -1,6 +1,6 @@
 # Videos "Cómo funciona"
 
-Five vertical videos (720×1280, H.264, captioned in Spanish, some with
+Five vertical videos (720×1280, H.264, captioned in Spanish, with
 background music — see "Music" below) for
 businesses, shown in the app's "Cómo funciona" screen
 (`src/screens/HowToVideosScreen.tsx`, listed in `src/config/howToVideos.ts`).
@@ -43,8 +43,8 @@ Pexels video 4057411 — a trainer with a shiba inu (opening of
 From the YouTube Audio Library (free to use). Each track is cut to its
 video's length, lowered to about -19 LUFS and faded out at the end.
 
+- `bienvenida.mp4` — "With You", Everet Almond (from 0:36).
 - `registro.mp4` — "Vibe Check", Blue Deer Studio.
 - `tu-pagina.mp4` — "Toys Are Us", Blue Deer Studio.
 - `reservas.mp4` — "With You", Everet Almond.
-
-The other videos are still silent.
+- `resenas.mp4` — "Toys Are Us", Blue Deer Studio.
