@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet, Linking } from 'react-native';
-import { MapPin, Search, X, Navigation } from 'lucide-react-native';
+import { MapPin, Search, X, Navigation, LocateFixed } from 'lucide-react-native';
+import { locateOnce } from '../utils/useMyLocation';
 import { api, GeoSuggestion } from '../api/client';
 import { colors, fonts, radius, space } from '../theme/tokens';
 
@@ -74,6 +75,26 @@ export default function LocationPicker({
     }
   };
 
+  const [locating, setLocating] = useState(false);
+  const fillFromHere = async () => {
+    setLocating(true);
+    setMessage(null);
+    setResults(null);
+    try {
+      const here = await locateOnce();
+      if (here === 'denied') {
+        setMessage('No tenemos permiso para ver tu ubicación. Actívalo en tu navegador o teléfono, o busca tu dirección.');
+        return;
+      }
+      onChange(here);
+      setChosenLabel('Tu ubicación actual');
+    } catch {
+      setMessage('No pudimos obtener tu ubicación. Inténtalo de nuevo o busca tu dirección.');
+    } finally {
+      setLocating(false);
+    }
+  };
+
   const choose = (suggestion: GeoSuggestion) => {
     onChange({ latitude: suggestion.latitude, longitude: suggestion.longitude });
     setChosenLabel(suggestion.label);
@@ -85,8 +106,9 @@ export default function LocationPicker({
     <View style={styles.wrap}>
       <Text style={styles.label}>Ubicación en el mapa</Text>
       <Text style={styles.note}>
-        Opcional. Sirve para que el botón "Cómo llegar" de tu página lleve al punto exacto en vez de
-        buscar tu dirección por texto.
+        Recomendado. Los dueños que buscan "cerca de ti" ven primero los negocios más cercanos y la
+        distancia hasta el tuyo; sin ubicación apareces después de ellos. También hace que "Cómo llegar"
+        lleve al punto exacto. Si no atiendes en un local, marca un punto de tu zona, no tu casa.
       </Text>
 
       {hasPoint ? (
@@ -134,6 +156,11 @@ export default function LocationPicker({
         </Pressable>
       </View>
 
+      <Pressable style={styles.currentBtn} onPress={() => void fillFromHere()} disabled={locating} accessibilityRole="button">
+        <LocateFixed size={15} strokeWidth={2} color={colors.accent} />
+        <Text style={styles.currentBtnText}>{locating ? 'Buscando tu ubicación…' : 'Usar mi ubicación actual'}</Text>
+      </Pressable>
+
       {results !== null && results.length > 0 && (
         <View style={styles.results}>
           {results.map((r, i) => (
@@ -178,6 +205,9 @@ const styles = StyleSheet.create({
     borderRadius: radius.md, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border,
   },
   searchBtnText: { fontFamily: fonts.bodySemiBold, fontSize: 14, color: colors.text },
+
+  currentBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', paddingVertical: space.s1 },
+  currentBtnText: { fontFamily: fonts.bodySemiBold, fontSize: 13.5, color: colors.accent },
 
   results: { gap: 2, borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, backgroundColor: colors.surface },
   result: { flexDirection: 'row', alignItems: 'center', gap: space.s2, padding: space.s3 },

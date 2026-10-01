@@ -132,6 +132,8 @@ export async function createBusiness(options: {
   businessName: string;
   category: string;
   approved?: boolean;
+  /** Where the business placed itself on the map. */
+  location?: { latitude: number; longitude: number };
 }): Promise<Session> {
   const email = uniqueEmail('negocio');
   const session = await api<Session>('POST', '/v1/auth/signup', {
@@ -150,10 +152,12 @@ export async function createBusiness(options: {
   markEmailVerified(session.accountId);
   await api('PATCH', '/v1/providers/me', {
     token: session.token,
-    body:
-      options.category === 'walker'
+    body: {
+      ...(options.category === 'walker'
         ? { bio: 'Paseos con cariño', serviceArea: 'Metepec', priceAmount: 15000, priceCurrency: 'MXN' }
-        : { bio: 'Atención con cariño', serviceArea: 'Metepec', whatsapp: '7221234567' },
+        : { bio: 'Atención con cariño', serviceArea: 'Metepec', whatsapp: '7221234567' }),
+      ...options.location,
+    },
   });
   if (options.approved !== false) {
     const admin = await createAdmin();

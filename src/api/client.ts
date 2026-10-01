@@ -314,6 +314,11 @@ export interface ProviderListing {
   plansOffered: string | null;
   services: BusinessService[];
   walkingSpots: string | null;
+  /** Where the business placed itself on the map, if it did. Optional
+   * because a server from before this was added to the directory leaves
+   * it out. */
+  latitude?: number | null;
+  longitude?: number | null;
   emailVerified: boolean;
   identityVerified: boolean;
   /** Bones, 1 to 5, averaged to one decimal — null until the first
