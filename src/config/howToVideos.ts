@@ -1,5 +1,5 @@
 /** The explainer videos for businesses, in the order to watch them.
- * Vertical 720×1280, silent, captioned; see assets/videos. */
+ * Vertical 720×1280, captioned, some with background music; see assets/videos. */
 export type HowToVideo = {
   id: string;
   title: string;

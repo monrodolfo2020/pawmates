@@ -1,6 +1,7 @@
 # Videos "Cómo funciona"
 
-Five vertical videos (720×1280, H.264, silent, captioned in Spanish) for
+Five vertical videos (720×1280, H.264, captioned in Spanish, some with
+background music — see "Music" below) for
 businesses, shown in the app's "Cómo funciona" screen
 (`src/screens/HowToVideosScreen.tsx`, listed in `src/config/howToVideos.ts`).
 
@@ -36,3 +37,12 @@ Unsplash photos (`https://unsplash.com/photos/<id>` or
 
 Pexels video 4057411 — a trainer with a shiba inu (opening of
 "PawMates para tu negocio").
+
+## Music
+
+From the YouTube Audio Library (free to use). Each track is cut to its
+video's length, lowered to about -19 LUFS and faded out at the end.
+
+- `registro.mp4` — "Vibe Check", Blue Deer Studio.
+
+The other videos are still silent.
