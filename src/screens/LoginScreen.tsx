@@ -30,7 +30,7 @@ export default function LoginScreen({ navigation }: Props) {
   };
 
   return (
-    <ScreenContainer>
+    <ScreenContainer width="narrow">
       <ScreenHeader
         onBack={() => navigation.goBack()}
         title="Iniciar sesión"

@@ -70,7 +70,7 @@ export default function PendingLegalScreen({ navigation }: Props) {
   };
 
   return (
-    <ScreenContainer>
+    <ScreenContainer width="narrow">
       <ScrollView contentContainerStyle={styles.body}>
         <View style={styles.header}>
           <FileText size={26} strokeWidth={1.25} color={colors.text} />

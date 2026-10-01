@@ -37,7 +37,7 @@ export default function ForgotPasswordScreen({ navigation }: Props) {
 
   if (sent) {
     return (
-      <ScreenContainer>
+      <ScreenContainer width="narrow">
         <View style={styles.body}>
           <MailCheck size={40} strokeWidth={1.25} color={colors.text} />
           <Text style={styles.title}>Revisa tu correo</Text>
@@ -54,7 +54,7 @@ export default function ForgotPasswordScreen({ navigation }: Props) {
   }
 
   return (
-    <ScreenContainer>
+    <ScreenContainer width="narrow">
       <ScreenHeader onBack={() => navigation.goBack()} title="Olvidé mi contraseña" />
       <View style={styles.form}>
         <CardBody>Escribe tu correo y te enviamos un enlace para crear una contraseña nueva.</CardBody>

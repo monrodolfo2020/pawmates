@@ -164,7 +164,7 @@ export default function SignupScreen({ navigation, route }: Props) {
   );
 
   return (
-    <ScreenContainer>
+    <ScreenContainer width="narrow">
       <ScreenHeader
         onBack={goBack}
         kicker={isProvider ? `Paso ${step + 1} de ${PROVIDER_STEPS.length}` : undefined}

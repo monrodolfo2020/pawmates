@@ -37,7 +37,7 @@ export default function WelcomeScreen({ navigation }: Props) {
   }, [navigation]);
 
   return (
-    <ScreenContainer>
+    <ScreenContainer width="narrow">
       <View style={styles.top}>
         <Wordmark size={24} />
       </View>

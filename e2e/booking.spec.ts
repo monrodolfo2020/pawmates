@@ -9,7 +9,7 @@ test('la dueña solicita un paseo, el negocio lo acepta y ella ve la confirmaci�
   await openAs(page, owner);
   await page.getByText(businessName).first().click();
   await page.getByText('Reservar', { exact: true }).click();
-  await page.getByText('Mañana', { exact: true }).click();
+  await page.getByRole('button', { name: 'Mañana', exact: true }).click();
   await page.getByText('10:00', { exact: true }).click();
   await page.getByText('Revisar solicitud').click();
 
@@ -45,7 +45,7 @@ test('"Conócenos primero" pide día y hora, y el negocio la recibe a esa hora',
   await page.getByText(businessName).first().click();
   await page.getByText('Conócenos primero').click();
   const send = page.getByText('Solicitar Meet & Greet');
-  await page.getByText('Mañana', { exact: true }).click();
+  await page.getByRole('button', { name: 'Mañana', exact: true }).click();
   await page.getByText('17:30', { exact: true }).click();
   await send.click();
   await expect(page.getByText(/Pediste conocerse el .*17:30/)).toBeVisible();

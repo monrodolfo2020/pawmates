@@ -72,7 +72,7 @@ export default function AdminScreen({ navigation }: Props) {
   useEffect(load, [s.token]);
 
   return (
-    <ScreenContainer>
+    <ScreenContainer width="wide">
       <ScreenHeader onBack={() => navigation.goBack()} title="Panel de administrador" />
       <View style={styles.segRow}>
         <Segmented

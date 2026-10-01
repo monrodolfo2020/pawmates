@@ -32,7 +32,7 @@ test('el negocio arma su lista de paseos y la dueña reserva uno con su precio y
   // It arrives already chosen; its duration replaces the 30/60 choice.
   await expect(page.getByText('¿Qué paseo?')).toBeVisible();
   await expect(page.getByText('Duración', { exact: true })).toHaveCount(0);
-  await page.getByText('Mañana', { exact: true }).click();
+  await page.getByRole('button', { name: 'Mañana', exact: true }).click();
   await page.getByText('10:00', { exact: true }).click();
   await page.getByText('Revisar solicitud').click();
 

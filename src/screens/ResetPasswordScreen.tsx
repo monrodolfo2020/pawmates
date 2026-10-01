@@ -59,7 +59,7 @@ export default function ResetPasswordScreen({ route }: Props) {
   };
 
   return (
-    <ScreenContainer>
+    <ScreenContainer width="narrow">
       <View style={styles.root}>
         <View style={styles.body}>
           <View style={styles.icon}>
