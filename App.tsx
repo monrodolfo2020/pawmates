@@ -18,6 +18,7 @@ import { PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
 import { Caveat_700Bold } from '@expo-google-fonts/caveat';
 import RootNavigator from './src/navigation/RootNavigator';
 import { navigationRef } from './src/navigation/navigationRef';
+import { openLinkedVideo } from './src/navigation/sharedVideo';
 import { AppStateProvider, useAppState } from './src/state/AppState';
 import { colors } from './src/theme/tokens';
 
@@ -36,7 +37,7 @@ function AppShell({ fontsLoaded }: { fontsLoaded: boolean }) {
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }} onLayout={onLayout}>
       <StatusBar style="dark" />
-      <NavigationContainer ref={navigationRef}>
+      <NavigationContainer ref={navigationRef} onReady={() => openLinkedVideo()}>
         <RootNavigator />
       </NavigationContainer>
     </View>

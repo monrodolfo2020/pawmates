@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, Image, ScrollView, StyleSheet, Modal, Pressable, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Play, X } from 'lucide-react-native';
+import { Play, Share2, X } from 'lucide-react-native';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
 import ScreenHeader from '../components/ScreenHeader';
 import Card from '../components/Card';
+import ShareVideoSheet from '../components/ShareVideoSheet';
 import { colors, fonts, radius, space, type } from '../theme/tokens';
 import { HOW_TO_VIDEOS, type HowToVideo } from '../config/howToVideos';
 
@@ -15,8 +16,14 @@ type Props = NativeStackScreenProps<RootStackParamList, 'HowTo'>;
 
 /** Short videos that show a business how PawMates works. Open to guests
  * too: someone deciding whether to sign up is who needs them most. */
-export default function HowToVideosScreen({ navigation }: Props) {
+export default function HowToVideosScreen({ navigation, route }: Props) {
+  const linked = route.params?.videoId;
   const [playing, setPlaying] = useState<HowToVideo | null>(null);
+  // Opened from a shared link: start with that video.
+  useEffect(() => {
+    const video = HOW_TO_VIDEOS.find((v) => v.id === linked);
+    if (video) setPlaying(video);
+  }, [linked]);
 
   return (
     <ScreenContainer>
@@ -67,10 +74,14 @@ function Player({ video, onClose }: { video: HowToVideo; onClose: () => void }) 
   const availH = window.height - insets.top - insets.bottom - PLAYER_HEADER - space.s4 * 2;
   const frameH = Math.max(0, Math.min(availH, availW / VIDEO_ASPECT));
   const frameW = frameH * VIDEO_ASPECT;
+  const [sharing, setSharing] = useState(false);
   return (
     <View style={[styles.playerWrap, { paddingTop: insets.top + space.s4, paddingBottom: insets.bottom + space.s4 }]}>
       <View style={[styles.playerHeader, { width: Math.max(frameW, Math.min(availW, 360)) }]}>
         <Text style={styles.playerTitle} numberOfLines={2}>{video.title}</Text>
+        <Pressable style={styles.close} onPress={() => setSharing(true)} hitSlop={10} accessibilityRole="button" accessibilityLabel="Compartir video">
+          <Share2 size={20} strokeWidth={2} color="#FFFFFF" />
+        </Pressable>
         <Pressable style={styles.close} onPress={onClose} hitSlop={10} accessibilityRole="button" accessibilityLabel="Cerrar video">
           <X size={22} strokeWidth={2} color="#FFFFFF" />
         </Pressable>
@@ -78,6 +89,7 @@ function Player({ video, onClose }: { video: HowToVideo; onClose: () => void }) 
       <View style={[styles.frame, { width: frameW, height: frameH }]}>
         <VideoView player={player} style={{ width: frameW, height: frameH }} contentFit="contain" nativeControls fullscreenOptions={{ enable: true }} />
       </View>
+      <ShareVideoSheet video={video} visible={sharing} onClose={() => setSharing(false)} />
     </View>
   );
 }
