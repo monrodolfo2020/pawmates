@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable, Linking } from 'react-native';
-import { Check, ChevronRight, CirclePlay } from 'lucide-react-native';
+import { Check, ChevronRight, CirclePlay, MapPin } from 'lucide-react-native';
 import VerificationCard from '../components/VerificationCard';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -226,6 +226,24 @@ export default function DashboardScreen({ navigation }: Props) {
               Dale más confianza a los dueños confirmando que tu correo es real. Toca para verificarlo.
             </Notice>
           </Pressable>
+        )}
+
+        {/* Without a map point the business can't show a distance and goes
+            to the end of "Más cerca" in the directory. Gone once it's set. */}
+        {profile && profile.latitude == null && (
+          <Card>
+            <View style={styles.rowStart}>
+              <MapPin size={22} strokeWidth={1.75} color={colors.accent} />
+              <View style={{ flex: 1, gap: 2 }}>
+                <Text style={type.cardTitle}>Marca tu ubicación para aparecer cerca</Text>
+                <CardBody>
+                  Los dueños que buscan "cerca de ti" ven primero los negocios más cercanos. Sin ubicación
+                  apareces al final de la lista.
+                </CardBody>
+              </View>
+            </View>
+            <Button onPress={() => navigation.navigate('ProviderProfileEdit')}>Marcar mi ubicación</Button>
+          </Card>
         )}
 
         {/* Shown to every provider, in both layouts: an account whose
@@ -462,6 +480,7 @@ const styles = StyleSheet.create({
   section: { gap: space.s3 },
   actionsRow: { flexDirection: 'row', gap: space.s2 },
   rowBetween: { flexDirection: 'row', alignItems: 'center', gap: space.s3 },
+  rowStart: { flexDirection: 'row', alignItems: 'flex-start', gap: space.s3 },
   earnings: { fontFamily: fonts.bodyBold, fontSize: 36, lineHeight: 42, color: colors.text },
   weekRow: { flexDirection: 'row', gap: space.s1, marginTop: space.s2 },
   weekCell: {
