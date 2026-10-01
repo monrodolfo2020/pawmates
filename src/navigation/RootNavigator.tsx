@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import WelcomeScreen from '../screens/WelcomeScreen';
@@ -29,6 +29,7 @@ import VerifyEmailScreen from '../screens/VerifyEmailScreen';
 import HowToVideosScreen from '../screens/HowToVideosScreen';
 import { LegalDocumentType } from '../api/client';
 import { useAppState } from '../state/AppState';
+import { navigationRef } from './navigationRef';
 
 export type RootStackParamList = {
   Welcome: undefined;
@@ -119,6 +120,25 @@ function getMicrositeSlug(): string | null {
 
 export default function RootNavigator() {
   const s = useAppState();
+
+  // Signing out always lands on Welcome. Without this, signing out from
+  // Home (the menu's "Salir") could leave the guest on the directory
+  // instead: Home exists for guests too, so the navigation state carried
+  // over from the signed-in stack sometimes still fits.
+  const wasAuthed = useRef(false);
+  useEffect(() => {
+    const signedOut = wasAuthed.current && s.authStatus === 'guest';
+    wasAuthed.current = s.authStatus === 'authed';
+    if (
+      signedOut &&
+      navigationRef.isReady() &&
+      // Not on the standalone gates (/admin, a microsite), which have no Welcome.
+      navigationRef.getRootState()?.routeNames.includes('Welcome') &&
+      navigationRef.getCurrentRoute()?.name !== 'Welcome'
+    ) {
+      navigationRef.reset({ index: 0, routes: [{ name: 'Welcome' }] });
+    }
+  }, [s.authStatus]);
 
   // Auth state loads from AsyncStorage asynchronously (see AppState's
   // mount effect) — App.tsx keeps the splash screen up until this settles.
