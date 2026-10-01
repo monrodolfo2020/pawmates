@@ -63,7 +63,7 @@ export default function VerifyEmailScreen({ navigation }: Props) {
   const goToPanel = () => navigation.replace(s.roles.includes('provider') ? 'Dashboard' : 'Home');
 
   return (
-    <ScreenContainer>
+    <ScreenContainer width="narrow">
       <View style={styles.body}>
         {/* Right after a business signs up, this is its first screen: say
             plainly that the registration went through, and what's next. */}

@@ -323,7 +323,7 @@ export default function MyPageScreen({ navigation }: Props) {
   );
 
   return (
-    <ScreenContainer>
+    <ScreenContainer width="wide">
       <ScreenHeader onBack={() => navigation.goBack()} title="Mi página" />
 
       <View style={styles.tabs}>
