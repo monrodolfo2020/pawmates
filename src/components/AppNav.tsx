@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet, useWindowDimensions } from 'react-na
 import { Menu, X } from 'lucide-react-native';
 import { colors, fonts, space, radius } from '../theme/tokens';
 import Wordmark from './Wordmark';
+import { useAppState } from '../state/AppState';
 
 export type NavItem = { label: string; onPress: () => void };
 
@@ -14,7 +15,13 @@ export type NavItem = { label: string; onPress: () => void };
 // above it: the same items laid out as a plain horizontal top bar.
 const WEB_BREAKPOINT = 768;
 
-export default function AppNav({ items, activeIndex }: { items: NavItem[]; activeIndex: number }) {
+export default function AppNav({ items: screenItems, activeIndex }: { items: NavItem[]; activeIndex: number }) {
+  const s = useAppState();
+  // "Salir" lives here, on every menu, so signing out doesn't take a trip
+  // to the profile (which keeps its own button too). Signing out swaps the
+  // navigator to the signed-out screens on its own.
+  const items: NavItem[] =
+    s.authStatus === 'authed' ? [...screenItems, { label: 'Salir', onPress: () => void s.logout() }] : screenItems;
   const { width } = useWindowDimensions();
   const isWide = width >= WEB_BREAKPOINT;
   const [open, setOpen] = useState(false);
