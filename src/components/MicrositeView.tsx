@@ -24,6 +24,9 @@ type Props = {
   /** The editor's Edición mode: every entry (hidden or empty ones too)
    * goes through `wrap`, which adds its tap-to-edit frame. */
   editing?: { wrap: (section: PageDesignSection, content: React.ReactNode) => React.ReactNode };
+  /** Told when a visitor taps WhatsApp or "Cómo llegar", for the
+   * business's statistics. Left out in the editor's previews. */
+  onTrack?: (kind: 'whatsapp' | 'directions') => void;
 };
 
 const money = (cents: number, currency: string) => '$' + (cents / 100).toFixed(0) + ' ' + currency;
@@ -34,7 +37,7 @@ const money = (cents: number, currency: string) => '$' + (cents / 100).toFixed(0
 // to look like the business, not like PawMates (the free plan just gets
 // handed PawMates' defaults as its design; see the backend's
 // ProviderProfile.effectiveDesign).
-export default function MicrositeView({ business, design, compact = false, editing }: Props) {
+export default function MicrositeView({ business, design, compact = false, editing, onTrack }: Props) {
   // The page always fills whatever column it's given — the public screen
   // caps that at a readable width, the editor hands it a phone-sized
   // frame — so the only difference here is that everything inside the
@@ -174,7 +177,10 @@ export default function MicrositeView({ business, design, compact = false, editi
           <Pressable
             key={id}
             style={[styles.outlineButton, { borderColor: design.primaryColor }]}
-            onPress={() => void Linking.openURL(mapUrl)}
+            onPress={() => {
+              onTrack?.('directions');
+              void Linking.openURL(mapUrl);
+            }}
           >
             <Navigation size={16 * scale} strokeWidth={2} color={design.primaryColor} />
             <Text style={[styles.outlineButtonText, { color: design.primaryColor, fontSize: 14 * ts }]}>
@@ -194,7 +200,10 @@ export default function MicrositeView({ business, design, compact = false, editi
                 ? [styles.outlineButton, { borderColor: design.primaryColor }]
                 : [styles.ctaButton, { backgroundColor: design.primaryColor }]
             }
-            onPress={() => void Linking.openURL(waUrl)}
+            onPress={() => {
+              onTrack?.('whatsapp');
+              void Linking.openURL(waUrl);
+            }}
           >
             <MessageCircle size={18 * scale} strokeWidth={2} color={canReserve ? design.primaryColor : '#fff'} />
             <Text

@@ -326,6 +326,14 @@ export interface ProviderListing {
   rating: RatingSummary | null;
 }
 
+export type PageEventKind = 'view' | 'whatsapp' | 'directions';
+
+export type PageStatTotals = Record<PageEventKind, number>;
+
+export type PageStats =
+  | { unlocked: true; thisMonth: PageStatTotals; lastMonth: PageStatTotals }
+  | { unlocked: false; thisMonth: { view: number }; lastMonth: null };
+
 export interface RatingSummary {
   average: number;
   count: number;
@@ -1199,6 +1207,22 @@ export const api = {
       token,
       body: params,
     });
+  },
+
+  /** Counts a visit to a business's page, or a tap on its WhatsApp or
+   * "Cómo llegar". Fire and forget: a stat that can't be sent must never
+   * get in the way of whoever is looking at the page. */
+  trackPageEvent(accountId: string, kind: PageEventKind) {
+    void request(`/v1/providers/${encodeURIComponent(accountId)}/events`, {
+      method: 'POST',
+      body: { kind },
+    }).catch(() => undefined);
+  },
+
+  /** The signed-in business's page statistics; full numbers on VIP or
+   * during the trial, only this month's visits otherwise. */
+  getMyPageStats(token: string) {
+    return request<PageStats>('/v1/providers/me/stats', { token });
   },
 
   getMyProviderProfile(token: string) {
