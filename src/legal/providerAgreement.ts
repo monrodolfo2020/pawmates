@@ -2,16 +2,16 @@
 // Do not edit here — edit the markdown and re-run the script, then bump
 // the version in the backend's legal-document.ts.
 
-export const providerAgreement = `# Acuerdo de Prestadores de Servicios — PawMates
+export const providerAgreement = `# Acuerdo de Prestadores de Servicios — PET Conect@
 
-**Versión:** 1.2-borrador
+**Versión:** 1.3-borrador
 **Última actualización:** 1 de octubre de 2026
 
 ---
 
 ## Aviso previo al prestador
 
-Este Acuerdo regula tu uso de PawMates **como negocio o prestador de
+Este Acuerdo regula tu uso de PET Conect@ **como negocio o prestador de
 servicios para mascotas**. No regula la relación entre tú y tus
 clientes, ni el uso de la aplicación por parte de los dueños de
 mascotas, que se rige por documentos distintos.
@@ -19,7 +19,7 @@ mascotas, que se rige por documentos distintos.
 Lee especialmente las cláusulas **4 (no existe relación laboral)**,
 **9 (verificación de identidad y sus límites)**, **13 (suscripción y
 vencimiento)** y **17 (limitación de responsabilidad)**, porque definen
-lo que PawMates sí hace y lo que expresamente no hace por ti.
+lo que PET Conect@ sí hace y lo que expresamente no hace por ti.
 
 ---
 
@@ -30,8 +30,8 @@ Celebran este Acuerdo:
 **1.1.** Rodolfo Alberto Monterroza Gómez, persona física con actividad
 empresarial, con Registro Federal de Contribuyentes **MOGR730915PB1** y
 domicilio en Privada Carpe 32, Paseo Arboleda, Santín, C.P. 50214, Toluca, Estado de México, quien opera la plataforma
-digital PawMates y a quien en lo sucesivo se le denominará
-**"PawMates"** o **"la Plataforma"**.
+digital PET Conect@ y a quien en lo sucesivo se le denominará
+**"PET Conect@"** o **"la Plataforma"**.
 
 **1.2.** La persona física o moral que se registra en la Plataforma con
 el carácter de negocio o prestador de servicios para mascotas, a quien
@@ -48,7 +48,7 @@ error, dolo, violencia, lesión ni mala fe.
 
 Para efectos de este Acuerdo se entenderá por:
 
-- **Plataforma:** la aplicación web y móvil PawMates, sus sitios,
+- **Plataforma:** la aplicación web y móvil PET Conect@, sus sitios,
   interfaces y servicios asociados.
 - **Directorio:** el listado público de negocios de servicios para
   mascotas que la Plataforma pone a disposición de los Usuarios.
@@ -71,10 +71,10 @@ Para efectos de este Acuerdo se entenderá por:
 
 ---
 
-## 3. Objeto del Acuerdo y naturaleza del servicio de PawMates
+## 3. Objeto del Acuerdo y naturaleza del servicio de PET Conect@
 
-**3.1. Lo que PawMates ofrece.** PawMates es un servicio tecnológico de
-**publicidad, catalogación y presencia digital**. Concretamente, PawMates:
+**3.1. Lo que PET Conect@ ofrece.** PET Conect@ es un servicio tecnológico de
+**publicidad, catalogación y presencia digital**. Concretamente, PET Conect@:
 
 a) incluye al Prestador en el Directorio, con la posibilidad de que los
    Usuarios lo encuentren por categoría y por texto de búsqueda;
@@ -85,8 +85,8 @@ d) en el caso de la categoría de paseadores, y únicamente en esa
    categoría, facilita un mecanismo de solicitud de reserva y mensajería
    dentro de la Plataforma.
 
-**3.2. Lo que PawMates NO ofrece.** El Prestador reconoce y acepta
-expresamente que PawMates:
+**3.2. Lo que PET Conect@ NO ofrece.** El Prestador reconoce y acepta
+expresamente que PET Conect@:
 
 a) **no presta servicios para mascotas** de ninguna naturaleza;
 b) **no es parte** del contrato que el Prestador celebre con sus
@@ -104,9 +104,9 @@ g) **no verifica la calidad, la idoneidad profesional ni la seguridad**
    de los servicios del Prestador, más allá de lo expresamente señalado
    en la cláusula 9.
 
-**3.3.** La única contraprestación que PawMates percibe del Prestador es
+**3.3.** La única contraprestación que PET Conect@ percibe del Prestador es
 la del plan de suscripción que el Prestador contrate conforme a la
-cláusula 13. PawMates no percibe comisión alguna sobre los servicios que
+cláusula 13. PET Conect@ no percibe comisión alguna sobre los servicios que
 el Prestador presta a sus Clientes.
 
 ---
@@ -116,7 +116,7 @@ el Prestador presta a sus Clientes.
 **4.1.** El Prestador presta sus servicios a sus Clientes de manera
 **independiente, autónoma y por cuenta y riesgo propios**. Este Acuerdo
 no crea, ni podrá interpretarse como creando, relación de trabajo alguna
-entre PawMates y el Prestador, ni entre PawMates y el personal,
+entre PET Conect@ y el Prestador, ni entre PET Conect@ y el personal,
 colaboradores, socios o auxiliares del Prestador.
 
 **4.2.** Conforme al artículo 20 de la Ley Federal del Trabajo, la
@@ -125,23 +125,23 @@ subordinado mediante el pago de un salario. En la relación que este
 Acuerdo regula **no concurre ninguno de esos elementos**, y en
 particular:
 
-a) PawMates **no paga al Prestador** ningún salario, honorario,
+a) PET Conect@ **no paga al Prestador** ningún salario, honorario,
    comisión, anticipo ni retribución de cualquier naturaleza; el flujo
-   económico es el inverso, pues es el Prestador quien paga a PawMates
+   económico es el inverso, pues es el Prestador quien paga a PET Conect@
    una suscripción;
 b) el Prestador **fija libremente sus propios precios y tarifas**, sus
    servicios, sus promociones y sus condiciones de contratación;
 c) el Prestador **define libremente sus horarios**, su zona de servicio,
    sus días de descanso y su disponibilidad, y puede suspenderlos en
-   cualquier momento sin autorización ni aviso a PawMates;
+   cualquier momento sin autorización ni aviso a PET Conect@;
 d) el Prestador **puede aceptar o rechazar** a cualquier Cliente o
-   solicitud, sin consecuencia alguna frente a PawMates;
+   solicitud, sin consecuencia alguna frente a PET Conect@;
 e) el Prestador **utiliza sus propias herramientas, instalaciones,
    vehículos, insumos y personal**;
 f) el Prestador **puede anunciarse y operar simultáneamente** en
    cualquier otra plataforma, directorio o medio, incluidos los
-   competidores de PawMates, sin restricción de exclusividad; y
-g) PawMates **no impone al Prestador metas, cuotas, uniformes, jornadas,
+   competidores de PET Conect@, sin restricción de exclusividad; y
+g) PET Conect@ **no impone al Prestador metas, cuotas, uniformes, jornadas,
    rutas, protocolos de atención ni instrucciones** sobre cómo ejecutar
    su trabajo.
 
@@ -149,7 +149,7 @@ g) PawMates **no impone al Prestador metas, cuotas, uniformes, jornadas,
 contrate o emplee, y es el único responsable del cumplimiento de las
 obligaciones laborales, de seguridad social, de vivienda, fiscales y de
 cualquier otra índole que deriven de esas relaciones. El Prestador se
-obliga a sacar a PawMates en paz y a salvo, y a indemnizarla, respecto de
+obliga a sacar a PET Conect@ en paz y a salvo, y a indemnizarla, respecto de
 cualquier reclamación, demanda, procedimiento o resolución en materia
 laboral o de seguridad social que se promueva en su contra por este
 concepto.
@@ -185,10 +185,10 @@ suspensión o terminación conforme a la cláusula 16.
 
 **5.3.** El Prestador es responsable de la confidencialidad de sus
 credenciales de acceso y de toda actividad realizada desde su cuenta. Se
-obliga a notificar a PawMates de inmediato cualquier uso no autorizado.
+obliga a notificar a PET Conect@ de inmediato cualquier uso no autorizado.
 
 **5.4.** Cada Prestador podrá mantener una sola cuenta de negocio, salvo
-autorización expresa y por escrito de PawMates.
+autorización expresa y por escrito de PET Conect@.
 
 ---
 
@@ -218,7 +218,7 @@ inmediato al Cliente ante cualquier incidente, enfermedad, lesión,
 extravío o urgencia. Queda expresamente prohibido el uso de métodos de
 adiestramiento o contención que causen sufrimiento innecesario.
 
-**6.3. Seguros.** PawMates **no contrata** seguro alguno a favor del
+**6.3. Seguros.** PET Conect@ **no contrata** seguro alguno a favor del
 Prestador, de sus Clientes ni de los animales atendidos. Es
 responsabilidad exclusiva del Prestador evaluar y contratar las
 coberturas de responsabilidad civil u otras que su actividad requiera.
@@ -226,7 +226,7 @@ coberturas de responsabilidad civil u otras que su actividad requiera.
 **6.4. Personal y sustitución.** El Prestador podrá prestar sus servicios
 por conducto de su propio personal, siempre que informe de ello a sus
 Clientes cuando así lo soliciten, y permaneciendo el Prestador
-responsable frente al Cliente y frente a PawMates.
+responsable frente al Cliente y frente a PET Conect@.
 
 ---
 
@@ -237,7 +237,7 @@ autor y responsable del Contenido del Prestador. Declara que cuenta con
 todos los derechos necesarios sobre él y que su publicación no infringe
 derechos de terceros.
 
-**7.2. Licencia a favor de PawMates.** El Prestador otorga a PawMates una
+**7.2. Licencia a favor de PET Conect@.** El Prestador otorga a PET Conect@ una
 licencia **no exclusiva, gratuita, sin límite territorial y vigente
 durante la vigencia de este Acuerdo**, para reproducir, almacenar,
 adaptar técnicamente, comunicar públicamente y exhibir el Contenido del
@@ -265,27 +265,27 @@ f) precios o promociones que no esté dispuesto a respetar, en términos de
 
 **7.4. Testimonios.** El Prestador reconoce que los testimonios que el
 Plan VIP le permite publicar **son redactados y cargados por él mismo**,
-que PawMates no los recaba, no los atribuye a cuentas verificadas y no
+que PET Conect@ no los recaba, no los atribuye a cuentas verificadas y no
 los comprueba. En consecuencia, el Prestador se obliga a publicar
 únicamente testimonios **reales, atribuibles a Clientes que existen y que
 consintieron su publicación**. La publicación de testimonios fabricados
 constituye publicidad engañosa, es responsabilidad exclusiva del
 Prestador y es causa de terminación inmediata.
 
-**7.5. Moderación.** PawMates podrá retirar, ocultar o solicitar la
+**7.5. Moderación.** PET Conect@ podrá retirar, ocultar o solicitar la
 corrección de cualquier Contenido del Prestador que, a su juicio
 razonable, infrinja este Acuerdo, la ley o derechos de terceros, o que
 haya sido objeto de una reclamación fundada. Cuando la naturaleza del
-caso lo permita, PawMates dará aviso previo al Prestador.
+caso lo permita, PET Conect@ dará aviso previo al Prestador.
 
 **7.6. Dirección del Micrositio.** La dirección del Micrositio se asigna
 una sola vez, a partir del nombre con el que el Prestador se registra, y
 **no cambia automáticamente si el Prestador cambia después el nombre de
 su negocio**, con el fin de que los enlaces ya compartidos sigan
-funcionando. El Prestador podrá solicitar su modificación, que PawMates
+funcionando. El Prestador podrá solicitar su modificación, que PET Conect@
 atenderá en la medida de lo posible advirtiendo que los enlaces previos
 dejarán de funcionar. El dominio y la estructura de direcciones son
-propiedad de PawMates y se conceden al Prestador en uso durante la
+propiedad de PET Conect@ y se conceden al Prestador en uso durante la
 vigencia de este Acuerdo.
 
 ---
@@ -305,7 +305,7 @@ contratación ocurre fuera de la Plataforma.
 
 **8.3. Pago de los servicios.** El precio de los servicios del Prestador
 se pacta y se paga **directamente entre el Prestador y su Cliente**.
-PawMates no participa en ese cobro, no lo garantiza, no lo retiene y no
+PET Conect@ no participa en ese cobro, no lo garantiza, no lo retiene y no
 responde por su falta de pago, por devoluciones, cancelaciones,
 descuentos o cualquier controversia económica entre ellos.
 
@@ -313,39 +313,39 @@ descuentos o cualquier controversia económica entre ellos.
 obligado a expedir a sus Clientes los comprobantes fiscales digitales por
 Internet que correspondan conforme a los artículos 29 y 29-A del Código
 Fiscal de la Federación, así como a declarar y pagar las contribuciones
-que se generen por su actividad. PawMates no expide comprobantes por los
+que se generen por su actividad. PET Conect@ no expide comprobantes por los
 servicios del Prestador ni actúa como retenedor de los mismos.
 
 ---
 
 ## 9. Verificación de identidad: alcance y límites
 
-**9.1.** PawMates ofrece un proceso de verificación de identidad en el
+**9.1.** PET Conect@ ofrece un proceso de verificación de identidad en el
 que el Prestador carga **una fotografía de su rostro y una fotografía de
 un documento oficial de identificación**. El Prestador acepta que
-PawMates **verifique esas imágenes por cualquier medio lícito que estime
+PET Conect@ **verifique esas imágenes por cualquier medio lícito que estime
 adecuado**, manual, automatizado o una combinación de ambos, incluidos, de
 manera enunciativa y no limitativa:
 
-a) la revisión visual de ambas imágenes por personal de PawMates;
+a) la revisión visual de ambas imágenes por personal de PET Conect@;
 b) la comparación automatizada del rostro que aparece en ambas imágenes,
    mediante herramientas tecnológicas propias o de proveedores de
-   servicios que actúen por cuenta de PawMates; y
+   servicios que actúen por cuenta de PET Conect@; y
 c) el análisis de la calidad, legibilidad, integridad o posible
    alteración de las imágenes.
 
-PawMates podrá emplear, agregar, sustituir o dejar de usar cualquiera de
+PET Conect@ podrá emplear, agregar, sustituir o dejar de usar cualquiera de
 esos medios sin necesidad de modificar este Acuerdo.
 
 **9.1 bis.** La decisión de aprobar o rechazar cada solicitud la toma
-una persona del equipo de PawMates. Los resultados de los medios
+una persona del equipo de PET Conect@. Los resultados de los medios
 automatizados sirven únicamente de apoyo a esa decisión; ninguna
 solicitud se aprueba ni se rechaza exclusivamente con base en ellos.
 
 **9.1 ter.** Cuando alguno de esos medios indique que una imagen no
-permite la verificación o que los rostros no parecen coincidir, PawMates
+permite la verificación o que los rostros no parecen coincidir, PET Conect@
 podrá informárselo al Prestador —en la Plataforma o por correo
-electrónico— e invitarlo a cargar nuevas imágenes. PawMates no está
+electrónico— e invitarlo a cargar nuevas imágenes. PET Conect@ no está
 obligado a revelar el detalle, los criterios ni los valores de esos
 resultados.
 
@@ -354,7 +354,7 @@ insignia de "Identidad verificada" en el Directorio y en el Micrositio
 del Prestador.
 
 **9.3. El Prestador reconoce expresamente que esa verificación NO
-comprende, y que PawMates NO realiza:**
+comprende, y que PET Conect@ NO realiza:**
 
 a) consulta de antecedentes penales, judiciales o administrativos;
 b) verificación de títulos, cédulas profesionales, certificaciones,
@@ -365,7 +365,7 @@ e) evaluación de aptitudes, experiencia o competencia profesional; ni
 f) supervisión continua ni reverificación periódica.
 
 **9.4.** La insignia de "Identidad verificada" **no constituye
-recomendación, aval, certificación ni garantía** de PawMates respecto del
+recomendación, aval, certificación ni garantía** de PET Conect@ respecto del
 Prestador, de su idoneidad o de la seguridad de sus servicios, y así se
 comunica a los Usuarios.
 
@@ -373,20 +373,20 @@ comunica a los Usuarios.
 propia persona y a un documento auténtico y vigente, y que su remisión es
 voluntaria. El tratamiento de esas imágenes —incluido, en su caso, el de
 datos biométricos derivado de la comparación automatizada de rostros— se
-rige por el Aviso de Privacidad de PawMates y se realiza con base en el
+rige por el Aviso de Privacidad de PET Conect@ y se realiza con base en el
 consentimiento expreso que el Prestador otorga, de forma separada, al
 cargarlas.
 
 **9.6.** Esas imágenes **se eliminan en cuanto la verificación queda
-resuelta**; PawMates conserva únicamente el resultado y su fecha. En
-consecuencia, si el Prestador impugna la decisión, PawMates podrá
+resuelta**; PET Conect@ conserva únicamente el resultado y su fecha. En
+consecuencia, si el Prestador impugna la decisión, PET Conect@ podrá
 solicitarle nuevamente las imágenes para revisarla.
 
 ---
 
 ## 10. Datos personales
 
-**10.1. PawMates como responsable.** PawMates trata los datos personales
+**10.1. PET Conect@ como responsable.** PET Conect@ trata los datos personales
 del Prestador en su carácter de responsable, conforme a la Ley Federal de
 Protección de Datos Personales en Posesión de los Particulares y a su
 Aviso de Privacidad, disponible en https://pawmates-one.vercel.app/aviso-de-privacidad, el
@@ -413,30 +413,30 @@ conocimiento y que afecte a la otra parte o a los Usuarios.
 
 ---
 
-## 11. Propiedad intelectual de PawMates
+## 11. Propiedad intelectual de PET Conect@
 
 **11.1.** La Plataforma, su código, su diseño, sus bases de datos, sus
-interfaces, sus plantillas de Micrositio, la marca PawMates y todos sus
-signos distintivos son propiedad de PawMates o de sus licenciantes.
+interfaces, sus plantillas de Micrositio, la marca PET Conect@ y todos sus
+signos distintivos son propiedad de PET Conect@ o de sus licenciantes.
 
-**11.2.** PawMates otorga al Prestador una licencia **limitada,
+**11.2.** PET Conect@ otorga al Prestador una licencia **limitada,
 revocable, no exclusiva y no transferible** para usar la Plataforma
-conforme a este Acuerdo y para utilizar la marca PawMates con el único
+conforme a este Acuerdo y para utilizar la marca PET Conect@ con el único
 fin de indicar su presencia en el Directorio, respetando los
-lineamientos de uso que PawMates comunique.
+lineamientos de uso que PET Conect@ comunique.
 
 **11.3.** Queda prohibido al Prestador: descompilar o realizar
 ingeniería inversa sobre la Plataforma; extraer de forma masiva o
 automatizada el Directorio o los datos de otros Prestadores o Usuarios;
-suplantar la identidad de PawMates; y registrar como propios signos
-distintivos o nombres de dominio confundibles con la marca PawMates.
+suplantar la identidad de PET Conect@; y registrar como propios signos
+distintivos o nombres de dominio confundibles con la marca PET Conect@.
 
 ---
 
 ## 12. Planes de servicio
 
 **12.1. Plan Gratuito.** Sin costo. Comprende la inclusión en el
-Directorio y un Micrositio con el **diseño estándar de PawMates**, con
+Directorio y un Micrositio con el **diseño estándar de PET Conect@**, con
 la información, las fotografías y los datos de contacto que el Prestador
 cargue. No comprende personalización de diseño.
 
@@ -451,7 +451,7 @@ Plataforma tenga habilitados en cada momento.
 vence, se cancela o se da de baja:
 
 a) el Micrositio del Prestador **permanece publicado**, pero vuelve a
-   exhibirse con el diseño estándar de PawMates;
+   exhibirse con el diseño estándar de PET Conect@;
 b) la dirección del Micrositio **no cambia** y los enlaces ya
    compartidos siguen funcionando;
 c) el diseño personalizado que el Prestador hubiera creado **se
@@ -460,7 +460,7 @@ c) el diseño personalizado que el Prestador hubiera creado **se
 d) las herramientas de edición de diseño se deshabilitan mientras el
    plan no esté vigente.
 
-**12.4. Evolución de los planes.** PawMates podrá agregar, modificar o
+**12.4. Evolución de los planes.** PET Conect@ podrá agregar, modificar o
 retirar funcionalidades de los planes. Si un cambio suprime de manera
 sustancial una funcionalidad del Plan VIP ya pagado, el Prestador podrá
 terminar la suscripción conforme a la cláusula 13.8.
@@ -486,26 +486,26 @@ pérdida de los días no consumidos. Si renueva después del vencimiento, el
 nuevo periodo se computa a partir de la fecha de reactivación.
 
 **13.4. Medios de contratación.** El Plan VIP podrá contratarse por los
-medios que PawMates habilite en cada momento, que a la fecha de este
+medios que PET Conect@ habilite en cada momento, que a la fecha de este
 Acuerdo son: (i) el pago en línea dentro de la Plataforma, cuando esté
-disponible, y (ii) **códigos de activación** que PawMates entrega al
+disponible, y (ii) **códigos de activación** que PET Conect@ entrega al
 Prestador una vez recibido el pago por los medios que se le indiquen. El
 Prestador reconoce que el código de activación es personal, de un solo
 uso salvo que se indique lo contrario, y que su divulgación a terceros es
 su responsabilidad.
 
-**13.5. Cortesías.** PawMates podrá otorgar el Plan VIP sin costo y por
+**13.5. Cortesías.** PET Conect@ podrá otorgar el Plan VIP sin costo y por
 tiempo indefinido a su discreción, con fines promocionales o de prueba.
 Una cortesía no genera derecho adquirido y podrá retirarse dando aviso
 previo al Prestador con al menos **quince días naturales** de
 anticipación.
 
-**13.6. Comprobante fiscal.** PawMates expedirá al Prestador el
+**13.6. Comprobante fiscal.** PET Conect@ expedirá al Prestador el
 comprobante fiscal digital por Internet que corresponda a la
 suscripción, siempre que el Prestador proporcione oportunamente sus
 datos fiscales completos y correctos.
 
-**13.7. Cambios de precio.** PawMates podrá modificar el precio de los
+**13.7. Cambios de precio.** PET Conect@ podrá modificar el precio de los
 planes dando aviso al Prestador con al menos **treinta días naturales de
 anticipación**. El nuevo precio **no afectará periodos ya pagados** y
 aplicará únicamente a renovaciones posteriores a su entrada en vigor. Si
@@ -514,9 +514,9 @@ el Prestador no está de acuerdo, podrá no renovar.
 **13.8. Devoluciones.** Los periodos ya iniciados no son objeto de
 devolución proporcional, salvo que: (i) el Prestador lo solicite dentro
 de los primeros **catorce días naturales** del primer periodo que
-contrate; (ii) exista una falla de la Plataforma atribuible a PawMates
+contrate; (ii) exista una falla de la Plataforma atribuible a PET Conect@
 que impida sustancialmente el uso del Plan VIP durante un periodo
-prolongado; o (iii) PawMates suprima de manera sustancial una
+prolongado; o (iii) PET Conect@ suprima de manera sustancial una
 funcionalidad del plan ya pagado. Lo anterior sin perjuicio de los
 derechos irrenunciables que la Ley Federal de Protección al Consumidor
 reconozca al Prestador.
@@ -529,7 +529,7 @@ momento; el plan seguirá vigente hasta el término del periodo pagado.
 ## 14. Obligaciones fiscales de cada parte
 
 **14.1.** Cada parte es responsable del cumplimiento de sus propias
-obligaciones fiscales. PawMates tributa por los ingresos que percibe por
+obligaciones fiscales. PET Conect@ tributa por los ingresos que percibe por
 las suscripciones; el Prestador tributa por los ingresos que percibe de
 sus Clientes.
 
@@ -537,10 +537,10 @@ sus Clientes.
 Federal de Contribuyentes, o se obliga a inscribirse, y a expedir los
 comprobantes fiscales que la ley le exija respecto de su actividad.
 
-**14.3.** Dado que PawMates **no cobra ni procesa el precio de los
+**14.3.** Dado que PET Conect@ **no cobra ni procesa el precio de los
 servicios** que el Prestador presta a sus Clientes (cláusula 3.2 inciso
-e), PawMates **no efectúa retenciones** de impuesto sobre la renta ni de
-impuesto al valor agregado sobre esos ingresos. Si en el futuro PawMates
+e), PET Conect@ **no efectúa retenciones** de impuesto sobre la renta ni de
+impuesto al valor agregado sobre esos ingresos. Si en el futuro PET Conect@
 llegara a intervenir en el cobro de dichos servicios, quedaría sujeta al
 régimen fiscal de plataformas digitales y lo comunicaría al Prestador con
 la anticipación necesaria, modificando este Acuerdo conforme a la
@@ -559,12 +559,12 @@ dirigidas a manipular su posicionamiento, sus búsquedas o sus métricas.
 los propios de su categoría, ni para actividades ilícitas.
 
 **15.3.** No inducir a los Usuarios a error respecto de su relación con
-PawMates, ni afirmar que PawMates lo recomienda, avala o certifica.
+PET Conect@, ni afirmar que PET Conect@ lo recomienda, avala o certifica.
 
 **15.4.** Atender con diligencia las solicitudes y mensajes que reciba a
 través de la Plataforma, y mantener actualizados sus medios de contacto.
 
-**15.5.** Informar a PawMates de cualquier incidente grave ocurrido con un
+**15.5.** Informar a PET Conect@ de cualquier incidente grave ocurrido con un
 Cliente o con un animal que haya derivado o pueda derivar en una
 reclamación en la que se mencione a la Plataforma.
 
@@ -586,13 +586,13 @@ c) los recursos con que opera su negocio y los que recibe por sus
 d) ni el Prestador ni, en su caso, sus socios, representantes o
    empleados que presten los servicios, están impedidos por resolución
    de autoridad para realizar la actividad que anuncian; y
-e) informará a PawMates de inmediato si cualquiera de estas
+e) informará a PET Conect@ de inmediato si cualquiera de estas
    declaraciones deja de ser cierta.
 
 La falsedad de cualquiera de estas declaraciones, o su incumplimiento
 posterior, es causa de suspensión o terminación inmediata conforme a la
 cláusula 16.3, sin perjuicio de las acciones legales que correspondan y
-de que PawMates dé aviso a las autoridades competentes cuando la ley lo
+de que PET Conect@ dé aviso a las autoridades competentes cuando la ley lo
 exija o lo permita.
 
 ---
@@ -604,13 +604,13 @@ Acuerdo en cualquier momento solicitando la baja de su cuenta, sin
 penalización, sin perjuicio de lo previsto en la cláusula 13.8 respecto
 de periodos ya pagados.
 
-**16.2. Terminación por PawMates sin causa.** PawMates podrá terminar
+**16.2. Terminación por PET Conect@ sin causa.** PET Conect@ podrá terminar
 este Acuerdo dando aviso al Prestador con al menos **treinta días
-naturales de anticipación**. En ese supuesto, PawMates devolverá al
+naturales de anticipación**. En ese supuesto, PET Conect@ devolverá al
 Prestador la parte proporcional de la suscripción correspondiente al
 periodo no transcurrido.
 
-**16.3. Suspensión o terminación inmediata por causa.** PawMates podrá
+**16.3. Suspensión o terminación inmediata por causa.** PET Conect@ podrá
 suspender el acceso del Prestador, retirar su Micrositio del Directorio o
 terminar este Acuerdo de inmediato, sin responsabilidad y sin necesidad
 de declaración judicial, cuando:
@@ -631,7 +631,7 @@ g) resulte falsa cualquiera de las declaraciones de licitud de la
    cláusula 15.6, o el Prestador deje de cumplirlas; o
 h) incumpla cualquier otra obligación de este Acuerdo y no la subsane
    dentro de los **diez días naturales** siguientes al requerimiento de
-   PawMates, cuando la naturaleza del incumplimiento admita subsanación.
+   PET Conect@, cuando la naturaleza del incumplimiento admita subsanación.
 
 **16.4. Efectos de la terminación.** Al terminar este Acuerdo:
 
@@ -651,12 +651,12 @@ directamente con ellos.
 
 ## 17. Limitación de responsabilidad
 
-**17.1.** PawMates presta el servicio descrito en la cláusula 3 con la
+**17.1.** PET Conect@ presta el servicio descrito en la cláusula 3 con la
 diligencia que le es exigible, pero **no garantiza** que la Plataforma
 opere de manera ininterrumpida o libre de errores, ni que genere
 Clientes, contactos o ingresos al Prestador.
 
-**17.2.** PawMates **no responde** frente al Prestador, frente a sus
+**17.2.** PET Conect@ **no responde** frente al Prestador, frente a sus
 Clientes ni frente a terceros por:
 
 a) los servicios que el Prestador presta, ni por su calidad, seguridad,
@@ -669,14 +669,14 @@ e) el Contenido del Prestador; ni
 f) las controversias entre el Prestador y sus Clientes.
 
 **17.3.** En la medida que lo permita la legislación aplicable, la
-responsabilidad total de PawMates frente al Prestador por cualquier
+responsabilidad total de PET Conect@ frente al Prestador por cualquier
 concepto derivado de este Acuerdo **no excederá el monto de las
-suscripciones efectivamente pagadas por el Prestador a PawMates durante
+suscripciones efectivamente pagadas por el Prestador a PET Conect@ durante
 los doce meses anteriores** al hecho que la origine. Esta limitación no
-aplica en casos de dolo o mala fe de PawMates, ni respecto de derechos
+aplica en casos de dolo o mala fe de PET Conect@, ni respecto de derechos
 irrenunciables conforme a la ley.
 
-**17.4. Indemnización.** El Prestador se obliga a sacar a PawMates en paz
+**17.4. Indemnización.** El Prestador se obliga a sacar a PET Conect@ en paz
 y a salvo, y a indemnizarla de todo daño, gasto, costa, multa u honorario
 legal razonable, derivado de reclamaciones de terceros que tengan por
 causa: la prestación de sus servicios, el Contenido del Prestador, el
@@ -699,7 +699,7 @@ por autoridad competente.
 
 ## 19. Modificaciones al Acuerdo
 
-**19.1.** PawMates podrá modificar este Acuerdo. Notificará al Prestador
+**19.1.** PET Conect@ podrá modificar este Acuerdo. Notificará al Prestador
 las modificaciones **con al menos quince días naturales de anticipación**
 a su entrada en vigor, por correo electrónico a la dirección registrada y
 mediante aviso visible en la Plataforma.
@@ -718,7 +718,7 @@ ocurridos antes de su entrada en vigor.
 ## 20. Notificaciones y consentimiento por medios electrónicos
 
 **20.1.** Las partes aceptan comunicarse por medios electrónicos. Las
-notificaciones a PawMates se enviarán a rmonterrozag@gmail.com y
+notificaciones a PET Conect@ se enviarán a rmonterrozag@gmail.com y
 las notificaciones al Prestador a la dirección de correo electrónico
 registrada en su cuenta, que declara vigente y bajo su control.
 
@@ -739,7 +739,7 @@ Protección de Datos Personales en Posesión de los Particulares y la Ley
 Federal del Derecho de Autor.
 
 **21.2.** Este Acuerdo tiene la naturaleza de **contrato de adhesión**,
-en tanto sus cláusulas son elaboradas unilateralmente por PawMates y se
+en tanto sus cláusulas son elaboradas unilateralmente por PET Conect@ y se
 presentan de manera uniforme a los Prestadores. En consecuencia, se
 interpretará en el sentido más favorable al adherente, y **se tendrá por
 no puesta cualquier cláusula que resulte nula conforme a la Ley Federal
@@ -775,7 +775,7 @@ compatible con la ley.
 de la otra no se entenderá como renuncia a exigirlo posteriormente.
 
 **22.4. Cesión.** El Prestador no podrá ceder este Acuerdo sin
-consentimiento escrito de PawMates. PawMates podrá cederlo con motivo de
+consentimiento escrito de PET Conect@. PET Conect@ podrá cederlo con motivo de
 una reestructuración, fusión o transmisión de su negocio, dando aviso al
 Prestador.
 
@@ -789,7 +789,7 @@ interpretación.
 Al marcar la casilla de aceptación y completar su registro como
 Prestador, o al continuar usando la Plataforma con ese carácter, el
 Prestador manifiesta que **ha leído, entendido y aceptado íntegramente
-este Acuerdo**, así como el Aviso de Privacidad de PawMates.
+este Acuerdo**, así como el Aviso de Privacidad de PET Conect@.
 
-PawMates conservará el registro electrónico de la aceptación, con la
+PET Conect@ conservará el registro electrónico de la aceptación, con la
 fecha, la hora y la versión del Acuerdo aceptada.`;

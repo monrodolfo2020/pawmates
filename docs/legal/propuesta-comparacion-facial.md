@@ -7,7 +7,7 @@ siendo borradores que debe revisar el abogado. La función sigue apagada
 
 ## Qué hace la función
 
-Cuando un negocio envía su foto de rostro y la de su identificación, PawMates las manda a
+Cuando un negocio envía su foto de rostro y la de su identificación, PET Conect@ las manda a
 Amazon Rekognition (Amazon Web Services), que calcula qué tanto se parecen los dos
 rostros (0 a 100 %). El resultado se muestra **solo al administrador**, como ayuda para
 revisar. **La decisión sigue siendo de una persona**; nada se aprueba ni se rechaza de
@@ -61,7 +61,7 @@ Reemplazar el texto por:
    datos biométricos, que la ley considera datos personales sensibles. ¿Basta el
    consentimiento expreso con casilla separada que ya se usa, o debe ser por escrito con
    firma, electrónica o autógrafa?
-2. **Encargado en el extranjero.** Amazon trata las imágenes por cuenta de PawMates
+2. **Encargado en el extranjero.** Amazon trata las imágenes por cuenta de PET Conect@
    (remisión) en Estados Unidos. Confirmar que la redacción de la sección 6 es suficiente
    con la ley vigente.
 3. **Uso de las imágenes por el proveedor.** Por defecto, algunos servicios de IA de AWS
