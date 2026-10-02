@@ -71,6 +71,18 @@ export default function BusinessProfileScreen({ navigation, route }: Props) {
 
   useEffect(loadProvider, [loadProvider]);
 
+  // The business's own statistics (see the panel's "Tu página este mes"):
+  // one visit per page load, never counting the business looking at itself.
+  const visitedId = provider?.accountId;
+  const isOwnPage = visitedId != null && visitedId === s.accountId;
+  useEffect(() => {
+    if (visitedId && !isOwnPage) api.trackPageEvent(visitedId, 'view');
+  }, [visitedId, isOwnPage]);
+  const openTracked = (url: string, kind: 'whatsapp' | 'directions') => {
+    if (visitedId && !isOwnPage) api.trackPageEvent(visitedId, kind);
+    void Linking.openURL(url);
+  };
+
   useEffect(() => {
     if (!providerId) return;
     api.listReviews(providerId).then(setReviews).catch(() => setReviews([]));
@@ -214,7 +226,7 @@ export default function BusinessProfileScreen({ navigation, route }: Props) {
                 the business published, for walkers too (vets and the rest
                 have it as their main button below). */}
             {bookable && waUrl && (
-              <Card row onPress={() => void Linking.openURL(waUrl)}>
+              <Card row onPress={() => openTracked(waUrl, 'whatsapp')}>
                 <View style={styles.waIcon}>
                   <Phone size={18} strokeWidth={1.75} color={colors.success} />
                 </View>
@@ -248,7 +260,7 @@ export default function BusinessProfileScreen({ navigation, route }: Props) {
                     <MapPin size={18} strokeWidth={1.75} color={colors.textMuted} />
                     <Text style={styles.infoText}>{provider.publicAddress}</Text>
                     {mapUrl && (
-                      <Text style={styles.link} onPress={() => void Linking.openURL(mapUrl)}>
+                      <Text style={styles.link} onPress={() => openTracked(mapUrl, 'directions')}>
                         Cómo llegar
                       </Text>
                     )}
@@ -344,7 +356,7 @@ export default function BusinessProfileScreen({ navigation, route }: Props) {
               block
               disabled={!waUrl}
               icon={<Phone size={16} strokeWidth={1.75} color={colors.onAccent} />}
-              onPress={() => waUrl && void Linking.openURL(waUrl)}
+              onPress={() => waUrl && openTracked(waUrl, 'whatsapp')}
             >
               {waUrl ? 'Contactar por WhatsApp' : 'Sin contacto disponible'}
             </Button>

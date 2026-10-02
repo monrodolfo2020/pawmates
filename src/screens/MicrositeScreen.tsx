@@ -7,6 +7,7 @@ import ScreenContainer from '../components/ScreenContainer';
 import MicrositeView from '../components/MicrositeView';
 import { colors, fonts, space, type } from '../theme/tokens';
 import { api, ProviderDetail } from '../api/client';
+import { useAppState } from '../state/AppState';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Microsite'>;
 
@@ -32,6 +33,14 @@ export default function MicrositeScreen({ route }: Props) {
   const { width } = useWindowDimensions();
   const [business, setBusiness] = useState<ProviderDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const s = useAppState();
+  // For the business's statistics: one visit per page load, and its taps
+  // on WhatsApp / "Cómo llegar" — except the business opening its own link.
+  const visitedId = business?.accountId;
+  const isOwnPage = visitedId != null && visitedId === s.accountId;
+  useEffect(() => {
+    if (visitedId && !isOwnPage) api.trackPageEvent(visitedId, 'view');
+  }, [visitedId, isOwnPage]);
 
   useEffect(() => {
     api
@@ -66,7 +75,11 @@ export default function MicrositeScreen({ route }: Props) {
     <View style={[styles.canvas, { backgroundColor: business.design.backgroundColor }]}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={{ width: Math.min(width, PAGE_MAX_WIDTH) }}>
-          <MicrositeView business={business} design={business.design} />
+          <MicrositeView
+            business={business}
+            design={business.design}
+            onTrack={isOwnPage ? undefined : (kind) => api.trackPageEvent(business.accountId, kind)}
+          />
         </View>
       </ScrollView>
     </View>

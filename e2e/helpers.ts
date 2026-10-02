@@ -59,8 +59,10 @@ async function legal(types: string[]) {
 const requireFromBackend = createRequire(join(BACKEND_DIR, 'package.json'));
 type Db = { prepare(sql: string): { run(...args: unknown[]): unknown; get(...args: unknown[]): unknown } };
 function db(): Db {
-  const Database = requireFromBackend('better-sqlite3') as new (file: string) => Db;
-  return new Database(DB_FILE);
+  const Database = requireFromBackend('better-sqlite3') as new (file: string, options?: { timeout?: number }) => Db;
+  // The backend may be writing at the same moment (a page visit is
+  // counted as the page loads), so wait for it rather than fail.
+  return new Database(DB_FILE, { timeout: 15_000 });
 }
 
 /** Moves a business's free month of the editor into the past. */

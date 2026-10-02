@@ -57,7 +57,8 @@ test('al terminar la prueba la página vuelve al diseño estándar y el editor s
 
   await openAs(page, walker, '/');
   await expect(page.getByText('Prueba terminada')).toBeVisible();
-  await page.getByText('Ver plan VIP').click();
+  // The design card's button (the stats card has one too, to the same place).
+  await page.getByText('Ver plan VIP').first().click();
   await page.getByText('Edición', { exact: true }).click();
   await expect(page.getByText('Tu prueba gratis terminó')).toBeVisible();
   await expect(page.getByText('Agregar bloque', { exact: true })).toHaveCount(0);
