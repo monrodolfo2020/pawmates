@@ -320,6 +320,12 @@ export default function BusinessProfileScreen({ navigation, route }: Props) {
                     </Text>
                   </View>
                   {r.comment && <Text style={styles.reviewText}>{r.comment}</Text>}
+                  {r.reply && (
+                    <View style={styles.reply}>
+                      <Text style={styles.replyLabel}>Respuesta del negocio</Text>
+                      <Text style={styles.reviewText}>{r.reply}</Text>
+                    </View>
+                  )}
                 </View>
               ))}
               {!showAllReviews && reviews.length > REVIEWS_SHOWN && (
@@ -407,4 +413,9 @@ const styles = StyleSheet.create({
   review: { gap: space.s1, paddingTop: space.s3, borderTopWidth: 1, borderTopColor: colors.divider },
   reviewHead: { flexDirection: 'row', alignItems: 'center', gap: space.s2, flexWrap: 'wrap' },
   reviewText: { ...type.body, fontSize: 14.5 },
+  reply: {
+    marginTop: space.s1, marginLeft: space.s3, paddingLeft: space.s3, gap: 2,
+    borderLeftWidth: 3, borderLeftColor: colors.accent,
+  },
+  replyLabel: { fontFamily: fonts.bodySemiBold, fontSize: 12.5, color: colors.accent },
 });

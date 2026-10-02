@@ -3,6 +3,7 @@ import { View, Text, ScrollView, StyleSheet, Pressable, Linking } from 'react-na
 import { Check, ChevronRight, CirclePlay, MapPin } from 'lucide-react-native';
 import VerificationCard from '../components/VerificationCard';
 import PageStatsCard from '../components/PageStatsCard';
+import ReviewRepliesCard from '../components/ReviewRepliesCard';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
@@ -294,6 +295,8 @@ export default function DashboardScreen({ navigation }: Props) {
         )}
 
         {profile && <PageStatsCard onSeeVip={() => navigation.navigate('MyPage')} />}
+
+        {profile && <ReviewRepliesCard />}
 
         {profile === null && (
           <Card>

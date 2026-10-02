@@ -348,6 +348,10 @@ export interface PublicReview {
   authorName: string;
   createdAt: string;
   updatedAt: string;
+  /** The business's public answer, if it wrote one. Optional because a
+   * server from before replies existed leaves it out. */
+  reply?: string | null;
+  replyAt?: string | null;
 }
 
 /** A review as its author sees it (GET /v1/me/reviews). */
@@ -1164,6 +1168,14 @@ export const api = {
   /** Public: a business's reviews, newest first. */
   listReviews(providerId: string) {
     return request<PublicReview[]>(`/v1/providers/${providerId}/reviews`);
+  },
+
+  /** The signed-in business answers one of its reviews; '' removes the answer. */
+  replyToReview(token: string, reviewId: string, reply: string) {
+    return request<{ id: string; reply: string | null; replyAt: string | null }>(
+      `/v1/providers/me/reviews/${encodeURIComponent(reviewId)}/reply`,
+      { method: 'PUT', token, body: { reply } },
+    );
   },
 
   /** The reviews the signed-in owner has written. */
