@@ -1,6 +1,20 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable, TextInput } from 'react-native';
-import { ChevronRight, LocateFixed, MapPin, Plus, Search, ShieldCheck } from 'lucide-react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable, TextInput, useWindowDimensions } from 'react-native';
+import {
+  ChevronRight,
+  Ellipsis,
+  Footprints,
+  GraduationCap,
+  Hotel,
+  LocateFixed,
+  MapPin,
+  PawPrint,
+  Plus,
+  Scissors,
+  Search,
+  ShieldCheck,
+  Stethoscope,
+} from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import ScreenContainer from '../components/ScreenContainer';
@@ -32,12 +46,25 @@ const money = (cents: number, currency: string) => '$' + (cents / 100).toFixed(0
  * of a place you visit (a vet, a groomer). */
 const where = (p: ProviderListing) => p.serviceArea ?? p.publicAddress;
 
+/** All the kinds of business at a glance, each with its picture — a grid
+ * rather than a row of chips you'd have to swipe to discover. */
+const CATEGORY_ICONS = {
+  all: PawPrint,
+  walker: Footprints,
+  vet: Stethoscope,
+  grooming: Scissors,
+  boarding: Hotel,
+  training: GraduationCap,
+  other: Ellipsis,
+} as const;
+
 export default function HomeScreen({ navigation, route }: Props) {
   const s = useAppState();
   const [providers, setProviders] = useState<ProviderListing[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [category, setCategory] = useState<ServiceCategory | 'all'>('all');
   const [search, setSearch] = useState('');
+  const wide = useWindowDimensions().width >= 768;
   // With the owner's location, nearest first by default; the best-rated
   // order is one tap away and is what everyone gets without a location.
   const [order, setOrder] = useState<'near' | 'rated'>('near');
@@ -141,13 +168,37 @@ export default function HomeScreen({ navigation, route }: Props) {
           />
         </View>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipsRow}>
-          {(['all', ...SERVICE_CATEGORIES] as const).map((c) => (
-            <Tag key={c} variant={category === c ? 'accent' : 'outline'} onPress={() => setCategory(c)}>
-              {c === 'all' ? 'Todos' : CATEGORY_LABELS[c]}
-            </Tag>
-          ))}
-        </ScrollView>
+        <View style={styles.categoryGrid}>
+          {(['all', ...SERVICE_CATEGORIES] as const).map((c) => {
+            const selected = category === c;
+            const Icon = CATEGORY_ICONS[c];
+            const label = c === 'all' ? 'Todos' : c === 'other' ? 'Otros' : CATEGORY_LABELS[c];
+            return (
+              <View key={c} style={[styles.categoryCell, { width: wide ? `${100 / 7}%` : '25%' }]}>
+                <Pressable
+                  onPress={() => setCategory(c)}
+                  accessibilityRole="button"
+                  accessibilityLabel={label}
+                  accessibilityState={{ selected }}
+                  style={({ pressed }) => [
+                    styles.categoryTile,
+                    selected && styles.categoryTileSelected,
+                    pressed && !selected && { backgroundColor: colors.panel },
+                  ]}
+                >
+                  <Icon size={22} strokeWidth={2} color={selected ? colors.onAccent : colors.accent} />
+                  <Text
+                    style={[styles.categoryLabel, selected && { color: colors.onAccent }]}
+                    numberOfLines={2}
+                  >
+                    {/* A soft hyphen, so a narrow phone splits "Entrena-miento" where it reads well. */}
+                    {label.replace('Entrenamiento', 'Entrena\u00ADmiento')}
+                  </Text>
+                </Pressable>
+              </View>
+            );
+          })}
+        </View>
 
         <View style={styles.locationRow}>
           {here.status === 'ready' ? (
@@ -251,7 +302,20 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.md,
   },
   searchInput: { flex: 1, fontFamily: fonts.body, fontSize: 15, color: colors.text, paddingVertical: space.s3 },
-  chipsRow: { paddingHorizontal: space.s4, gap: space.s2, paddingBottom: space.s4 },
+  categoryGrid: {
+    flexDirection: 'row', flexWrap: 'wrap',
+    paddingHorizontal: space.s4 - 4, paddingBottom: space.s4 - 4, marginBottom: space.s1,
+  },
+  categoryCell: { padding: 4 },
+  categoryTile: {
+    flex: 1, alignItems: 'center', justifyContent: 'center', gap: 6, minHeight: 78,
+    paddingVertical: space.s2, paddingHorizontal: 4,
+    borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface,
+  },
+  categoryTileSelected: { backgroundColor: colors.accent, borderColor: colors.accent },
+  categoryLabel: {
+    fontFamily: fonts.bodySemiBold, fontSize: 12, lineHeight: 15, textAlign: 'center', color: colors.text,
+  },
   locationRow: {
     marginHorizontal: space.s4, marginBottom: space.s4,
     flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space.s2,
