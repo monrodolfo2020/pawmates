@@ -9,6 +9,7 @@ import Card from '../components/Card';
 import { CardBody, CardKicker, CardMeta, CardTitle } from '../components/CardText';
 import Tag from '../components/Tag';
 import AdminAccountCard from '../components/AdminAccountCard';
+import AdminInvitations from '../components/AdminInvitations';
 import {
   api,
   AdminAccount,
@@ -35,7 +36,7 @@ const VERIFICATION_LABEL: Record<AdminVerification['status'], { text: string; va
 const formatDate = (iso: string) =>
   new Date(iso).toLocaleString('es-MX', { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' });
 
-type Section = 'cuentas' | 'negocios' | 'codigos' | 'verificaciones';
+type Section = 'cuentas' | 'negocios' | 'invitaciones' | 'codigos' | 'verificaciones';
 
 export default function AdminScreen({ navigation }: Props) {
   const s = useAppState();
@@ -79,11 +80,13 @@ export default function AdminScreen({ navigation }: Props) {
           options={[
             { label: 'Cuentas', value: 'cuentas' },
             { label: 'Negocios', value: 'negocios' },
+            { label: 'Invitaciones', value: 'invitaciones' },
             { label: 'Códigos', value: 'codigos' },
             { label: 'Verificaciones', value: 'verificaciones' },
           ]}
           value={section}
           onChange={(v) => setSection(v as Section)}
+          wrap
         />
       </View>
       <ScrollView contentContainerStyle={styles.body}>
@@ -127,6 +130,8 @@ export default function AdminScreen({ navigation }: Props) {
             ))}
           </View>
         )}
+
+        {section === 'invitaciones' && <AdminInvitations />}
 
         {section === 'codigos' && (
           <View style={{ gap: space.s2 }}>
