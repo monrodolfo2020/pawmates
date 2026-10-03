@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { claimPendingInvitation } from '../navigation/invitation';
 import {
   api,
   setAccountDisabledHandler,
@@ -258,6 +259,9 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       setState((s) => ({ ...s, authError: null }));
       try {
         const result: AuthResult = await api.signup(params);
+        // Before the app opens, so the business's panel already shows the
+        // page it was invited to claim.
+        await claimPendingInvitation(result);
         await applyAuth(result);
         // A brand-new account is never verified yet — applyAuth's `me`
         // param is omitted here (signup's response doesn't include it),
@@ -287,6 +291,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       setState((s) => ({ ...s, authError: null }));
       try {
         const result: AuthResult = await api.login(email, password);
+        await claimPendingInvitation(result);
         const me = await api.me(result.token);
         await applyAuth(result, me);
       } catch (err) {

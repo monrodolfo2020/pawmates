@@ -32,8 +32,8 @@ export default function SignupScreen({ navigation, route }: Props) {
   const s = useAppState();
   const role: 'owner' | 'provider' = route.params?.role ?? 'owner';
   const [name, setName] = useState('');
-  const [category, setCategory] = useState<ServiceCategory>('walker');
-  const [businessName, setBusinessName] = useState('');
+  const [category, setCategory] = useState<ServiceCategory>(route.params?.category ?? 'walker');
+  const [businessName, setBusinessName] = useState(route.params?.businessName ?? '');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');

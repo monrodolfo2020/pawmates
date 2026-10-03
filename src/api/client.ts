@@ -452,6 +452,42 @@ export interface PlanCode {
   createdAt: string;
 }
 
+/** A business page PET Conect@ prepared for a business to claim (admin
+ * panel, "Invitaciones"). */
+export interface Invitation {
+  id: string;
+  token: string;
+  businessName: string;
+  category: ServiceCategory;
+  publicAddress: string | null;
+  whatsapp: string | null;
+  hours: string | null;
+  bio: string;
+  note: string | null;
+  claimedAt: string | null;
+  /** Who claimed it, while that account exists. Only in the admin list. */
+  claimedByEmail?: string | null;
+  createdAt: string;
+}
+
+export type NewInvitation = {
+  businessName: string;
+  category: ServiceCategory;
+  publicAddress?: string;
+  whatsapp?: string;
+  hours?: string;
+  bio?: string;
+};
+
+/** What an invitation link opens: the page as it will look, and whether
+ * someone already claimed it. */
+export interface InvitationPreview {
+  claimed: boolean;
+  businessName: string;
+  category: ServiceCategory;
+  page: ProviderDetail;
+}
+
 export const PAGE_TEMPLATES = ['classic', 'gallery', 'minimal'] as const;
 export type PageTemplate = (typeof PAGE_TEMPLATES)[number];
 
@@ -926,6 +962,31 @@ export const api = {
       '/v1/admin/provider-verifications/secure-legacy-photos',
       { method: 'POST', token },
     );
+  },
+
+  adminListInvitations(token: string) {
+    return request<Invitation[]>('/v1/admin/invitations', { token });
+  },
+
+  adminCreateInvitations(token: string, invitations: NewInvitation[]) {
+    return request<Invitation[]>('/v1/admin/invitations', { method: 'POST', token, body: { invitations } });
+  },
+
+  adminDeleteInvitation(token: string, id: string) {
+    return request<{ id: string }>(`/v1/admin/invitations/${encodeURIComponent(id)}`, { method: 'DELETE', token });
+  },
+
+  /** Public: whoever opens an invitation link has no account yet. */
+  getInvitation(invitationToken: string) {
+    return request<InvitationPreview>(`/v1/invitations/${encodeURIComponent(invitationToken)}`);
+  },
+
+  /** The signed-in business takes the prepared page. */
+  claimInvitation(token: string, invitationToken: string) {
+    return request<{ claimed: boolean }>(`/v1/invitations/${encodeURIComponent(invitationToken)}/claim`, {
+      method: 'POST',
+      token,
+    });
   },
 
   adminListPlanCodes(token: string) {

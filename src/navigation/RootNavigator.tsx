@@ -27,7 +27,9 @@ import ComingSoonScreen from '../screens/ComingSoonScreen';
 import ProviderProfileEditScreen from '../screens/ProviderProfileEditScreen';
 import VerifyEmailScreen from '../screens/VerifyEmailScreen';
 import HowToVideosScreen from '../screens/HowToVideosScreen';
-import { LegalDocumentType } from '../api/client';
+import InviteScreen from '../screens/InviteScreen';
+import { LegalDocumentType, ServiceCategory } from '../api/client';
+import { invitationToken } from './invitation';
 import { useAppState } from '../state/AppState';
 import { navigationRef } from './navigationRef';
 
@@ -36,7 +38,11 @@ export type RootStackParamList = {
   Login: undefined;
   ForgotPassword: undefined;
   ResetPassword: { token: string };
-  Signup: { role?: 'owner' | 'provider' } | undefined;
+  /** businessName/category: arrived from an invitation (see
+   * invitation.ts) — the form starts filled in with them. */
+  Signup: { role?: 'owner' | 'provider'; businessName?: string; category?: ServiceCategory } | undefined;
+  /** The page PET Conect@ prepared for a business, opened from its link. */
+  Invite: undefined;
   Onboarding: { petId?: string } | undefined;
   /** nearMe: arrived from "Ver servicios cerca de ti" — ask for the
    * location straight away instead of waiting for a tap. */
@@ -213,8 +219,14 @@ export default function RootNavigator() {
   if (s.authStatus !== 'authed') {
     initialAuthedRoute.current = null;
     return (
-      <Stack.Navigator key="guest" screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
+      <Stack.Navigator
+        key="guest"
+        // An invitation link opens on the page prepared for that business.
+        initialRouteName={invitationToken() ? 'Invite' : 'Welcome'}
+        screenOptions={{ headerShown: false, animation: 'slide_from_right' }}
+      >
         <Stack.Screen name="Welcome" component={WelcomeScreen} />
+        <Stack.Screen name="Invite" component={InviteScreen} />
         <Stack.Screen name="LegalDocument" component={LegalDocumentScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
